@@ -1,6 +1,5 @@
 @page "/kategori/{Slug}"
-@using Microsoft.EntityFrameworkCore
-@inject IDbContextFactory<FlygioDbContext> DbFactory
+@inject SiteData Data
 
 <div class="max-w-4xl mx-auto px-4 py-8">
     @if (_category is not null)
@@ -71,23 +70,13 @@
     private Category? _category;
     private List<TravelService> _services = [];
 
-    protected override async Task OnInitializedAsync()
+    protected override void OnInitialized()
     {
-        try
-        {
-            await using var db = await DbFactory.CreateDbContextAsync();
-            _category = await db.Categories.AsNoTracking().FirstOrDefaultAsync(c => c.Slug == Slug);
+        _category = Data.GetCategoryBySlug(Slug);
 
-            if (_category is not null)
-            {
-                _services = await db.TravelServiceCategories
-                    .Where(tsc => tsc.CategoryId == _category.Id && tsc.TravelService.IsPublished)
-                    .OrderByDescending(tsc => tsc.TravelService.Rating)
-                    .Select(tsc => tsc.TravelService)
-                    .AsNoTracking()
-                    .ToListAsync();
-            }
+        if (_category is not null)
+        {
+            _services = Data.GetServicesByCategory(_category.Id);
         }
-        catch { }
     }
 }

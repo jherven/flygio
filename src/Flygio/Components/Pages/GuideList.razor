@@ -1,7 +1,6 @@
 @page "/guider"
 @page "/guider/sida/{PageNumber:int}"
-@using Microsoft.EntityFrameworkCore
-@inject IDbContextFactory<FlygioDbContext> DbFactory
+@inject SiteData Data
 
 <PageTitle>Reseguider - Flygio.se</PageTitle>
 <HeadContent>
@@ -78,25 +77,16 @@
     private int _totalPages = 1;
     private const int PageSize = 12;
 
-    protected override async Task OnInitializedAsync()
+    protected override void OnInitialized()
     {
         _currentPage = PageNumber < 1 ? 1 : PageNumber;
 
-        try
-        {
-            await using var db = await DbFactory.CreateDbContextAsync();
-            var total = await db.Articles.CountAsync(a => a.IsPublished);
-            _totalPages = Math.Max(1, (int)Math.Ceiling(total / (double)PageSize));
+        var allArticles = Data.GetPublishedArticles();
+        _totalPages = Math.Max(1, (int)Math.Ceiling(allArticles.Count / (double)PageSize));
 
-            _articles = await db.Articles
-                .Include(a => a.Category)
-                .Where(a => a.IsPublished)
-                .OrderByDescending(a => a.CreatedAt)
-                .Skip((_currentPage - 1) * PageSize)
-                .Take(PageSize)
-                .AsNoTracking()
-                .ToListAsync();
-        }
-        catch { _articles = []; }
+        _articles = allArticles
+            .Skip((_currentPage - 1) * PageSize)
+            .Take(PageSize)
+            .ToList();
     }
 }

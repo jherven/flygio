@@ -1,6 +1,5 @@
 @page "/"
-@using Microsoft.EntityFrameworkCore
-@inject IDbContextFactory<FlygioDbContext> DbFactory
+@inject SiteData Data
 
 <PageTitle>Flygio.se — Jämför resetjänster | Hitta bästa flyg, hotell & hyrbil</PageTitle>
 <HeadContent>
@@ -166,33 +165,11 @@
     private List<TravelService> _featuredServices = [];
     private List<Article> _articles = [];
 
-    protected override async Task OnInitializedAsync()
+    protected override void OnInitialized()
     {
-        try
-        {
-            await using var db = await DbFactory.CreateDbContextAsync();
-
-            _categories = await db.Categories
-                .OrderBy(c => c.SortOrder)
-                .Select(c => new { Category = c, Count = c.TravelServiceCategories.Count(tsc => tsc.TravelService.IsPublished) })
-                .AsNoTracking()
-                .ToListAsync()
-                .ContinueWith(t => t.Result.Select(x => (x.Category, x.Count)).ToList());
-
-            _featuredServices = await db.TravelServices
-                .Where(s => s.IsPublished && s.IsFeatured)
-                .OrderByDescending(s => s.Rating)
-                .Take(4)
-                .AsNoTracking()
-                .ToListAsync();
-
-            _articles = await db.Articles
-                .Where(a => a.IsPublished)
-                .OrderByDescending(a => a.CreatedAt)
-                .Take(3)
-                .AsNoTracking()
-                .ToListAsync();
-        }
-        catch { }
+        var categories = Data.GetCategories();
+        _categories = categories.Select(c => (c, Data.GetCategoryServiceCount(c.Id))).ToList();
+        _featuredServices = Data.GetFeaturedServices(4);
+        _articles = Data.GetArticles();
     }
 }

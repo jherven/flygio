@@ -1,7 +1,6 @@
 @page "/tjanst/{Slug}"
 @using System.Text.Json
-@using Microsoft.EntityFrameworkCore
-@inject IDbContextFactory<FlygioDbContext> DbFactory
+@inject SiteData Data
 
 <div class="max-w-4xl mx-auto px-4 py-8">
     @if (_service is not null)
@@ -204,40 +203,18 @@
     private Category? _primaryCategory;
     private List<TravelService> _relatedServices = [];
 
-    protected override async Task OnInitializedAsync()
+    protected override void OnInitialized()
     {
-        try
+        _service = Data.GetServiceBySlug(Slug);
+
+        if (_service is not null)
         {
-            await using var db = await DbFactory.CreateDbContextAsync();
-            _service = await db.TravelServices
-                .AsNoTracking()
-                .FirstOrDefaultAsync(s => s.Slug == Slug && s.IsPublished);
+            _primaryCategory = Data.GetPrimaryCategory(_service.Id);
 
-            if (_service is not null)
+            if (_primaryCategory is not null)
             {
-                // Get primary category
-                var categoryLink = await db.TravelServiceCategories
-                    .Include(tsc => tsc.Category)
-                    .AsNoTracking()
-                    .FirstOrDefaultAsync(tsc => tsc.TravelServiceId == _service.Id);
-
-                _primaryCategory = categoryLink?.Category;
-
-                // Get related services from same category
-                if (_primaryCategory is not null)
-                {
-                    _relatedServices = await db.TravelServiceCategories
-                        .Where(tsc => tsc.CategoryId == _primaryCategory.Id
-                                    && tsc.TravelServiceId != _service.Id
-                                    && tsc.TravelService.IsPublished)
-                        .OrderByDescending(tsc => tsc.TravelService.Rating)
-                        .Take(3)
-                        .Select(tsc => tsc.TravelService)
-                        .AsNoTracking()
-                        .ToListAsync();
-                }
+                _relatedServices = Data.GetRelatedServices(_service.Id, _primaryCategory.Id, 3);
             }
         }
-        catch { }
     }
 }

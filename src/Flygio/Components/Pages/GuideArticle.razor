@@ -1,6 +1,5 @@
 @page "/guider/{Slug}"
-@using Microsoft.EntityFrameworkCore
-@inject IDbContextFactory<FlygioDbContext> DbFactory
+@inject SiteData Data
 
 <div class="max-w-4xl mx-auto px-4 py-8">
     @if (_article is not null)
@@ -79,16 +78,8 @@
 
     private Article? _article;
 
-    protected override async Task OnInitializedAsync()
+    protected override void OnInitialized()
     {
-        try
-        {
-            await using var db = await DbFactory.CreateDbContextAsync();
-            _article = await db.Articles
-                .Include(a => a.Category)
-                .AsNoTracking()
-                .FirstOrDefaultAsync(a => a.Slug == Slug && a.IsPublished);
-        }
-        catch { }
+        _article = Data.GetArticleBySlug(Slug);
     }
 }
