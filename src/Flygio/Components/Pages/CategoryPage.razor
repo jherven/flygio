@@ -1,0 +1,95 @@
+@page "/kategori/{Slug}"
+@using Microsoft.EntityFrameworkCore
+@inject IDbContextFactory<FlygioDbContext> DbFactory
+
+<div class="max-w-7xl mx-auto px-4 py-8">
+    @if (_category is not null)
+    {
+        <PageTitle>@_category.Name — Jämför tjänster | Flygio.se</PageTitle>
+        <HeadContent>
+            <meta name="description" content="@_category.Description" />
+            <meta property="og:title" content="@_category.Name — Jämför tjänster | Flygio.se" />
+            <meta property="og:description" content="@_category.Description" />
+            <meta property="og:type" content="website" />
+            <meta property="og:url" content="https://flygio.se/kategori/@_category.Slug" />
+            <link rel="canonical" href="https://flygio.se/kategori/@_category.Slug" />
+            <script type="application/ld+json">
+            {
+                "@@context": "https://schema.org",
+                "@@type": "CollectionPage",
+                "name": "@_category.Name — Jämför tjänster",
+                "description": "@_category.Description",
+                "url": "https://flygio.se/kategori/@_category.Slug"
+            }
+            </script>
+        </HeadContent>
+
+        <!-- Breadcrumb -->
+        <nav class="text-sm text-gray-500 mb-6 animate-fade-in">
+            <a href="/" class="hover:text-brand-light transition-colors">Hem</a>
+            <span class="mx-1">&rsaquo;</span>
+            <span class="text-gray-700">@_category.Name</span>
+        </nav>
+
+        <div class="mb-10 animate-fade-in">
+            <h1 class="font-display text-3xl md:text-4xl text-brand mb-2">@_category.Name</h1>
+            <p class="text-gray-600 max-w-2xl">@_category.Description</p>
+        </div>
+
+        @if (_services.Count > 0)
+        {
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                @{ var idx = 0; }
+                @foreach (var service in _services)
+                {
+                    <div class="animate-fade-in-up animate-delay-@(idx % 6 + 1)">
+                        <ServiceCard Service="service" />
+                    </div>
+                    idx++;
+                }
+            </div>
+        }
+        else
+        {
+            <div class="text-center py-12 text-gray-500">
+                <p>Inga tjänster tillgängliga i denna kategori ännu.</p>
+            </div>
+        }
+    }
+    else
+    {
+        <PageTitle>Kategori hittades inte | Flygio.se</PageTitle>
+        <div class="text-center py-16 animate-fade-in">
+            <h1 class="font-display text-2xl text-brand mb-2">Kategori hittades inte</h1>
+            <p class="text-gray-500 mb-4">Denna kategori finns inte.</p>
+            <a href="/" class="text-brand-light hover:text-brand font-medium transition-colors">Tillbaka till startsidan &rarr;</a>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter] public string Slug { get; set; } = "";
+
+    private Category? _category;
+    private List<TravelService> _services = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            await using var db = await DbFactory.CreateDbContextAsync();
+            _category = await db.Categories.AsNoTracking().FirstOrDefaultAsync(c => c.Slug == Slug);
+
+            if (_category is not null)
+            {
+                _services = await db.TravelServiceCategories
+                    .Where(tsc => tsc.CategoryId == _category.Id && tsc.TravelService.IsPublished)
+                    .OrderByDescending(tsc => tsc.TravelService.Rating)
+                    .Select(tsc => tsc.TravelService)
+                    .AsNoTracking()
+                    .ToListAsync();
+            }
+        }
+        catch { }
+    }
+}

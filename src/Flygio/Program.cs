@@ -1,7 +1,7 @@
 using System.Text;
+using System.Text.Json;
 using System.Xml.Linq;
 using Flygio.Components;
-using Flygio.Configuration;
 using Flygio.Data;
 using Flygio.Models;
 using Flygio.Services;
@@ -15,13 +15,7 @@ builder.Services.AddRazorComponents()
 // Configuration
 var adminApiKey = Environment.GetEnvironmentVariable("ADMIN_API_KEY") ?? "";
 
-builder.Services.Configure<TravelpayoutsOptions>(options =>
-{
-    options.ApiToken = Environment.GetEnvironmentVariable("TRAVELPAYOUTS_API_TOKEN") ?? "";
-    options.Marker = Environment.GetEnvironmentVariable("TRAVELPAYOUTS_MARKER") ?? "503994";
-});
-
-builder.Services.Configure<ResendOptions>(options =>
+builder.Services.Configure<Flygio.Configuration.ResendOptions>(options =>
 {
     options.ApiKey = Environment.GetEnvironmentVariable("RESEND_API_KEY") ?? "";
 });
@@ -44,7 +38,8 @@ else
 builder.Services.AddOutputCache(options =>
 {
     options.AddBasePolicy(policy => policy.Expire(TimeSpan.FromMinutes(10)));
-    options.AddPolicy("RoutePage", policy => policy.Expire(TimeSpan.FromHours(1)).SetVaryByRouteValue(["RouteCode"]));
+    options.AddPolicy("CategoryPage", policy => policy.Expire(TimeSpan.FromHours(1)).SetVaryByRouteValue(["slug"]));
+    options.AddPolicy("ServicePage", policy => policy.Expire(TimeSpan.FromHours(1)).SetVaryByRouteValue(["slug"]));
     options.AddPolicy("ArticlePage", policy => policy.Expire(TimeSpan.FromHours(1)).SetVaryByRouteValue(["Slug"]));
     options.AddPolicy("StaticPage", policy => policy.Expire(TimeSpan.FromHours(1)));
 });
@@ -55,24 +50,8 @@ builder.Services.AddMemoryCache();
 // Health checks
 builder.Services.AddHealthChecks();
 
-// Flight search service (conditional)
-var flightProvider = Environment.GetEnvironmentVariable("FLIGHT_API_PROVIDER") ?? "travelpayouts";
-if (flightProvider == "amadeus")
-{
-    builder.Services.AddSingleton<IFlightSearchService, AmadeusService>();
-}
-else
-{
-    builder.Services.AddHttpClient<IFlightSearchService, TravelpayoutsService>();
-}
-
 // Services
-builder.Services.AddSingleton<AffiliateService>();
 builder.Services.AddHttpClient<IEmailService, EmailService>();
-
-// Background services
-builder.Services.AddHostedService<PriceTrackingService>();
-builder.Services.AddHostedService<AlertService>();
 
 // Railway uses PORT env variable
 var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
@@ -128,8 +107,7 @@ app.MapPost("/admin/articles/import", async (HttpContext ctx, IDbContextFactory<
             existing.Title = dto.Title;
             existing.MetaDescription = dto.MetaDescription;
             existing.Content = dto.Content;
-            existing.DestinationIata = dto.DestinationIata;
-            existing.DestinationCity = dto.DestinationCity;
+            existing.CategoryId = dto.CategoryId;
             existing.IsPublished = dto.IsPublished;
             existing.UpdatedAt = DateTime.UtcNow;
         }
@@ -141,8 +119,7 @@ app.MapPost("/admin/articles/import", async (HttpContext ctx, IDbContextFactory<
                 Title = dto.Title,
                 MetaDescription = dto.MetaDescription,
                 Content = dto.Content,
-                DestinationIata = dto.DestinationIata,
-                DestinationCity = dto.DestinationCity,
+                CategoryId = dto.CategoryId,
                 IsPublished = dto.IsPublished
             });
         }
@@ -180,18 +157,73 @@ app.MapDelete("/admin/articles/{id:int}", async (int id, HttpContext ctx, IDbCon
     return Results.Ok();
 });
 
+// ─── Admin Service Import ───
+
+app.MapPost("/admin/services/import", async (HttpContext ctx, IDbContextFactory<FlygioDbContext> dbFactory) =>
+{
+    if (ctx.Request.Headers["X-Admin-Key"].FirstOrDefault() != adminApiKey || string.IsNullOrEmpty(adminApiKey))
+        return Results.Unauthorized();
+
+    var services = await ctx.Request.ReadFromJsonAsync<List<TravelServiceImportDto>>();
+    if (services is null) return Results.BadRequest("Invalid JSON");
+
+    await using var db = await dbFactory.CreateDbContextAsync();
+
+    foreach (var dto in services)
+    {
+        var existing = await db.TravelServices.FirstOrDefaultAsync(s => s.Slug == dto.Slug);
+        if (existing is not null)
+        {
+            existing.Name = dto.Name;
+            existing.Description = dto.Description;
+            existing.LongDescription = dto.LongDescription;
+            existing.LogoUrl = dto.LogoUrl;
+            existing.WebsiteUrl = dto.WebsiteUrl;
+            existing.AffiliateUrl = dto.AffiliateUrl;
+            existing.Rating = dto.Rating;
+            existing.Pros = dto.Pros;
+            existing.Cons = dto.Cons;
+            existing.IsFeatured = dto.IsFeatured;
+            existing.IsPopular = dto.IsPopular;
+            existing.IsPublished = dto.IsPublished;
+        }
+        else
+        {
+            db.TravelServices.Add(new TravelService
+            {
+                Name = dto.Name,
+                Slug = dto.Slug,
+                Description = dto.Description,
+                LongDescription = dto.LongDescription,
+                LogoUrl = dto.LogoUrl,
+                WebsiteUrl = dto.WebsiteUrl,
+                AffiliateUrl = dto.AffiliateUrl,
+                Rating = dto.Rating,
+                Pros = dto.Pros,
+                Cons = dto.Cons,
+                IsFeatured = dto.IsFeatured,
+                IsPopular = dto.IsPopular,
+                IsPublished = dto.IsPublished
+            });
+        }
+    }
+
+    await db.SaveChangesAsync();
+    return Results.Ok(new { imported = services.Count });
+});
+
 // ─── Affiliate Click Tracking ───
 
-app.MapGet("/go", async (HttpContext ctx, string? url, int? route, string? dest, IDbContextFactory<FlygioDbContext> dbFactory) =>
+app.MapGet("/go", async (HttpContext ctx, string? url, int? service, string? name, IDbContextFactory<FlygioDbContext> dbFactory) =>
 {
     if (string.IsNullOrEmpty(url))
         return Results.BadRequest("Missing url parameter");
 
-    // Validate URL domain to prevent open redirect
+    // Validate URL is absolute to prevent open redirect
     if (!Uri.TryCreate(url, UriKind.Absolute, out var uri) ||
-        (!uri.Host.EndsWith("aviasales.com") && !uri.Host.EndsWith("travelpayouts.com")))
+        (uri.Scheme != "https" && uri.Scheme != "http"))
     {
-        return Results.BadRequest("Invalid affiliate URL");
+        return Results.BadRequest("Invalid URL");
     }
 
     try
@@ -199,8 +231,8 @@ app.MapGet("/go", async (HttpContext ctx, string? url, int? route, string? dest,
         await using var db = await dbFactory.CreateDbContextAsync();
         db.AffiliateClicks.Add(new AffiliateClick
         {
-            FlightRouteId = route,
-            DestinationIata = dest,
+            TravelServiceId = service,
+            ServiceName = name,
             AffiliateUrl = url,
             ClickedAt = DateTime.UtcNow,
             UserAgent = ctx.Request.Headers.UserAgent.FirstOrDefault()
@@ -230,10 +262,10 @@ app.MapGet("/admin/stats", async (HttpContext ctx, IDbContextFactory<FlygioDbCon
     var clicksWeek = await db.AffiliateClicks.CountAsync(c => c.ClickedAt >= weekAgo);
     var clicksMonth = await db.AffiliateClicks.CountAsync(c => c.ClickedAt >= monthAgo);
 
-    var topDestinations = await db.AffiliateClicks
-        .Where(c => c.ClickedAt >= monthAgo && c.DestinationIata != null)
-        .GroupBy(c => c.DestinationIata)
-        .Select(g => new { Destination = g.Key, Clicks = g.Count() })
+    var topServices = await db.AffiliateClicks
+        .Where(c => c.ClickedAt >= monthAgo && c.ServiceName != null)
+        .GroupBy(c => c.ServiceName)
+        .Select(g => new { Service = g.Key, Clicks = g.Count() })
         .OrderByDescending(x => x.Clicks)
         .Take(10)
         .ToListAsync();
@@ -245,13 +277,12 @@ app.MapGet("/admin/stats", async (HttpContext ctx, IDbContextFactory<FlygioDbCon
         .OrderBy(x => x.Date)
         .ToListAsync();
 
-    return Results.Ok(new { clicksToday, clicksWeek, clicksMonth, topDestinations, dailyClicks });
+    return Results.Ok(new { clicksToday, clicksWeek, clicksMonth, topServices, dailyClicks });
 });
 
 // ─── SEO Endpoints ───
 
 app.MapGet("/sitemap.xml", async (IDbContextFactory<FlygioDbContext> dbFactory) =>
-
 {
     XNamespace ns = "http://www.sitemaps.org/schemas/sitemap/0.9";
     await using var db = await dbFactory.CreateDbContextAsync();
@@ -263,25 +294,26 @@ app.MapGet("/sitemap.xml", async (IDbContextFactory<FlygioDbContext> dbFactory) 
             new XElement(ns + "changefreq", "daily"),
             new XElement(ns + "priority", "1.0")),
         new(ns + "url",
-            new XElement(ns + "loc", "https://flygio.se/rutter"),
-            new XElement(ns + "changefreq", "daily"),
-            new XElement(ns + "priority", "0.8")),
-        new(ns + "url",
             new XElement(ns + "loc", "https://flygio.se/guider"),
             new XElement(ns + "changefreq", "weekly"),
             new XElement(ns + "priority", "0.8")),
-        new(ns + "url",
-            new XElement(ns + "loc", "https://flygio.se/bevakning"),
-            new XElement(ns + "changefreq", "monthly"),
-            new XElement(ns + "priority", "0.7")),
     };
 
-    var routes = await db.FlightRoutes.Where(r => r.IsPopular).ToListAsync();
-    foreach (var route in routes)
+    var categories = await db.Categories.ToListAsync();
+    foreach (var category in categories)
     {
         urls.Add(new XElement(ns + "url",
-            new XElement(ns + "loc", $"https://flygio.se/flyg/{route.OriginIata}-{route.DestinationIata}"),
-            new XElement(ns + "changefreq", "daily"),
+            new XElement(ns + "loc", $"https://flygio.se/kategori/{category.Slug}"),
+            new XElement(ns + "changefreq", "weekly"),
+            new XElement(ns + "priority", "0.8")));
+    }
+
+    var services = await db.TravelServices.Where(s => s.IsPublished).ToListAsync();
+    foreach (var service in services)
+    {
+        urls.Add(new XElement(ns + "url",
+            new XElement(ns + "loc", $"https://flygio.se/tjanst/{service.Slug}"),
+            new XElement(ns + "changefreq", "weekly"),
             new XElement(ns + "priority", "0.7")));
     }
 
@@ -305,7 +337,6 @@ app.MapGet("/robots.txt", () => Results.Text("""
     User-agent: *
     Allow: /
     Disallow: /admin/
-    Disallow: /api/
 
     Sitemap: https://flygio.se/sitemap.xml
     """, "text/plain"));
@@ -322,6 +353,20 @@ public record ArticleImportDto(
     string Title,
     string MetaDescription,
     string Content,
-    string? DestinationIata,
-    string? DestinationCity,
+    int? CategoryId,
+    bool IsPublished = true);
+
+public record TravelServiceImportDto(
+    string Name,
+    string Slug,
+    string Description,
+    string? LongDescription,
+    string? LogoUrl,
+    string WebsiteUrl,
+    string? AffiliateUrl,
+    decimal Rating,
+    string? Pros,
+    string? Cons,
+    bool IsFeatured = false,
+    bool IsPopular = false,
     bool IsPublished = true);

@@ -1,0 +1,15 @@
+@* 10 runda prickar + siffra *@
+<div class="flex items-center gap-1.5">
+    <div class="flex gap-0.5">
+        @for (var i = 1; i <= 10; i++)
+        {
+            var filled = i <= (int)Math.Round(Rating);
+            <div class="w-2.5 h-2.5 rounded-full @(filled ? "bg-accent" : "bg-gray-200")"></div>
+        }
+    </div>
+    <span class="text-sm font-semibold text-brand ml-1">@Rating.ToString("0.0")</span>
+</div>
+
+@code {
+    [Parameter] public decimal Rating { get; set; }
+}

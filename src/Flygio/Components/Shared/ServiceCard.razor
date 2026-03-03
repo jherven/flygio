@@ -1,0 +1,42 @@
+@using System.Text.Json
+
+<a href="/tjanst/@Service.Slug"
+   class="group bg-white rounded-2xl shadow-md hover:shadow-xl transition-all hover:-translate-y-1 overflow-hidden block">
+    <div class="p-6">
+        <div class="flex items-start gap-4 mb-4">
+            @if (!string.IsNullOrEmpty(Service.LogoUrl))
+            {
+                <img src="@Service.LogoUrl" alt="@Service.Name" class="w-12 h-12 rounded-xl object-contain bg-gray-50 p-1" loading="lazy" />
+            }
+            else
+            {
+                <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-brand to-brand-light flex items-center justify-center text-white font-display text-lg shrink-0">
+                    @Service.Name[0]
+                </div>
+            }
+            <div class="flex-1 min-w-0">
+                <h3 class="font-display text-lg text-brand group-hover:text-brand-light transition-colors truncate">@Service.Name</h3>
+                <StarRating Rating="@Service.Rating" />
+            </div>
+        </div>
+        <p class="text-sm text-gray-600 line-clamp-2 mb-4 leading-relaxed">@Service.Description</p>
+
+        @if (!string.IsNullOrEmpty(Service.Pros))
+        {
+            var pros = JsonSerializer.Deserialize<List<string>>(Service.Pros);
+            if (pros?.Count > 0)
+            {
+                <div class="flex flex-wrap gap-1.5">
+                    @foreach (var pro in pros.Take(2))
+                    {
+                        <span class="text-xs bg-teal-light text-teal px-2 py-0.5 rounded-full">@pro</span>
+                    }
+                </div>
+            }
+        }
+    </div>
+</a>
+
+@code {
+    [Parameter, EditorRequired] public TravelService Service { get; set; } = null!;
+}

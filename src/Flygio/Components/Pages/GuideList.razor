@@ -5,9 +5,9 @@
 
 <PageTitle>Reseguider - Flygio.se</PageTitle>
 <HeadContent>
-    <meta name="description" content="Reseguider och tips för populära resmål. Hitta information om billiga flyg, bästa restid och sevärdheter." />
+    <meta name="description" content="Reseguider och tips för att hitta de bästa resetjänsterna. Jämför flyg, hotell, hyrbil och mer." />
     <meta property="og:title" content="Reseguider - Flygio.se" />
-    <meta property="og:description" content="Reseguider och tips för populära resmål från Sverige." />
+    <meta property="og:description" content="Reseguider och tips för att hitta de bästa resetjänsterna." />
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://flygio.se/guider" />
     <link rel="canonical" href="https://flygio.se/guider" />
@@ -16,38 +16,25 @@
 <div class="max-w-7xl mx-auto px-4 py-8">
     <div class="mb-10 animate-fade-in">
         <h1 class="font-display text-3xl md:text-4xl text-brand mb-2">Reseguider</h1>
-        <p class="text-gray-600">Tips och guider för populära resmål från Sverige.</p>
+        <p class="text-gray-600">Tips och guider för att hitta de bästa resetjänsterna.</p>
     </div>
 
     @if (_articles.Count > 0)
     {
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            @{ var artIdx = 0; }
+            @{ var artIdx = 0; var accentColors = new[] { "from-accent to-coral", "from-coral to-brand-light", "from-teal to-brand" }; }
             @foreach (var article in _articles)
             {
-                var destImg = !string.IsNullOrEmpty(article.DestinationIata)
-                    ? IataData.GetDestinationImage(article.DestinationIata)
-                    : "";
+                var gradientClass = accentColors[artIdx % 3];
                 <a href="/guider/@article.Slug"
                    class="group bg-white rounded-xl shadow-md hover:shadow-xl transition-all hover:-translate-y-1 overflow-hidden block animate-fade-in-up animate-delay-@(artIdx % 6 + 1)">
-                    @if (!string.IsNullOrEmpty(destImg))
-                    {
-                        <div class="h-44 overflow-hidden">
-                            <img src="@destImg" alt="@article.Title" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" />
-                        </div>
-                    }
-                    else
-                    {
-                        <div class="h-44 bg-gradient-to-br from-brand to-brand-light flex items-center justify-center">
-                            <span class="text-white/20 text-5xl font-display">@(article.DestinationCity ?? article.Title[..1])</span>
-                        </div>
-                    }
+                    <div class="h-3 bg-gradient-to-r @gradientClass"></div>
                     <div class="p-5">
                         <h2 class="font-display text-brand mb-2 line-clamp-2 group-hover:text-brand-light transition-colors">@article.Title</h2>
                         <p class="text-sm text-gray-600 line-clamp-2 mb-3">@article.MetaDescription</p>
-                        @if (!string.IsNullOrEmpty(article.DestinationCity))
+                        @if (article.Category is not null)
                         {
-                            <span class="text-xs bg-mist text-brand-light px-2 py-1 rounded-full font-medium">@article.DestinationCity</span>
+                            <span class="text-xs bg-mist text-brand-light px-2 py-1 rounded-full font-medium">@article.Category.Name</span>
                         }
                     </div>
                 </a>
@@ -102,10 +89,12 @@
             _totalPages = Math.Max(1, (int)Math.Ceiling(total / (double)PageSize));
 
             _articles = await db.Articles
+                .Include(a => a.Category)
                 .Where(a => a.IsPublished)
                 .OrderByDescending(a => a.CreatedAt)
                 .Skip((_currentPage - 1) * PageSize)
                 .Take(PageSize)
+                .AsNoTracking()
                 .ToListAsync();
         }
         catch { _articles = []; }

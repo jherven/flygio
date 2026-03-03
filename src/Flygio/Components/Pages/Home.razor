@@ -1,13 +1,12 @@
 @page "/"
 @using Microsoft.EntityFrameworkCore
-@inject IFlightSearchService FlightSearch
 @inject IDbContextFactory<FlygioDbContext> DbFactory
 
-<PageTitle>Flygio.se - Hitta billiga flygbiljetter | Flygpris-tracker</PageTitle>
+<PageTitle>Flygio.se — Jämför resetjänster | Hitta bästa flyg, hotell & hyrbil</PageTitle>
 <HeadContent>
-    <meta name="description" content="Hitta billiga flygbiljetter från Sverige. Bevaka flygpriser och få notiser vid prisfall. Jämför priser till populära resmål." />
-    <meta property="og:title" content="Flygio.se - Hitta billiga flygbiljetter" />
-    <meta property="og:description" content="Sveriges smartaste flygpris-tracker. Bevaka flygpriser och få notiser vid prisfall." />
+    <meta name="description" content="Flygio.se — Sveriges oberoende jämförelsesajt för resetjänster. Jämför flygsökmotorer, hotellsajter, hyrbilstjänster och mer." />
+    <meta property="og:title" content="Flygio.se — Jämför resetjänster" />
+    <meta property="og:description" content="Sveriges oberoende jämförelsesajt för resetjänster. Hitta de bästa tjänsterna för flyg, hotell, hyrbil och mer." />
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://flygio.se" />
     <link rel="canonical" href="https://flygio.se/" />
@@ -17,30 +16,30 @@
         "@@type": "WebSite",
         "name": "Flygio.se",
         "url": "https://flygio.se",
-        "description": "Sveriges smartaste flygpris-tracker",
-        "potentialAction": {
-            "@@type": "SearchAction",
-            "target": "https://flygio.se/sok?from={from}&to={to}",
-            "query-input": "required name=from required name=to"
-        }
+        "description": "Sveriges oberoende jämförelsesajt för resetjänster"
     }
     </script>
 </HeadContent>
 
-<!-- Hero with background image + noise texture -->
-<section class="relative min-h-[600px] flex items-center justify-center overflow-hidden noise">
-    <div class="absolute inset-0 bg-cover bg-center scale-105" style="background-image: url('@IataData.HeroImages["default"]')"></div>
-    <div class="absolute inset-0 bg-gradient-to-b from-navy-deep/90 via-brand/70 to-brand/95"></div>
-    <div class="relative z-10 max-w-5xl mx-auto text-center px-4 py-20 md:py-32">
-        <p class="text-accent font-semibold text-sm tracking-widest uppercase mb-4 animate-fade-in">Sveriges smartaste flygpris-tracker</p>
+<!-- Hero with noise/gradient -->
+<section class="relative min-h-[500px] flex items-center justify-center overflow-hidden noise">
+    <div class="absolute inset-0 bg-gradient-to-b from-navy-deep via-brand to-brand-light"></div>
+    <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(245,158,11,0.15),transparent_50%)]"></div>
+    <div class="relative z-10 max-w-5xl mx-auto text-center px-4 py-20 md:py-28">
+        <p class="text-accent font-semibold text-sm tracking-widest uppercase mb-4 animate-fade-in">Sveriges oberoende jämförelsesajt</p>
         <h1 class="font-display text-5xl md:text-7xl text-white mb-6 animate-fade-in-up leading-tight">
-            Hitta billiga<br/><span class="text-gradient animate-shimmer">flygbiljetter</span>
+            Hitta de bästa<br/><span class="text-gradient animate-shimmer">resetjänsterna</span>
         </h1>
-        <p class="text-lg md:text-xl text-white/70 mb-12 max-w-2xl mx-auto animate-fade-in-up animate-delay-1">
-            Jämför priser, bevaka rutter och få notiser vid prisfall — helt gratis.
+        <p class="text-lg md:text-xl text-white/70 mb-10 max-w-2xl mx-auto animate-fade-in-up animate-delay-1">
+            Vi jämför och recenserar flygssökmotorer, hotellsajter, hyrbilstjänster och mer — så att du kan boka smartare.
         </p>
-        <div class="animate-fade-in-up animate-delay-2">
-            <SearchForm />
+        <div class="flex flex-wrap gap-3 justify-center animate-fade-in-up animate-delay-2">
+            <a href="/kategori/flyg" class="bg-gradient-to-r from-accent to-amber-500 hover:from-accent-hover hover:to-amber-600 text-white font-semibold px-6 py-3 rounded-xl transition-all duration-300 shadow-lg shadow-accent/20 hover:shadow-xl hover:-translate-y-0.5">
+                Jämför flygtjänster
+            </a>
+            <a href="/kategori/hotell" class="bg-white/10 hover:bg-white/20 text-white font-medium px-6 py-3 rounded-xl transition-all duration-300 backdrop-blur-sm border border-white/20">
+                Jämför hotellsajter
+            </a>
         </div>
     </div>
     <!-- Decorative floating elements -->
@@ -49,95 +48,64 @@
     <div class="absolute bottom-32 left-1/4 w-2 h-2 bg-coral/30 rounded-full animate-float animate-delay-5 hidden lg:block"></div>
 </section>
 
-<!-- Wave divider: hero → popular routes -->
+<!-- Wave divider: hero → categories -->
 <div class="wave-divider bg-sand">
     <svg viewBox="0 0 1440 60" fill="none" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
-        <path d="M0 60L1440 60L1440 20C1320 40 1200 50 1080 40C960 30 840 0 720 0C600 0 480 30 360 40C240 50 120 40 0 20L0 60Z" fill="#1e3a5f"/>
+        <path d="M0 60L1440 60L1440 20C1320 40 1200 50 1080 40C960 30 840 0 720 0C600 0 480 30 360 40C240 50 120 40 0 20L0 60Z" fill="#2d5f8a"/>
     </svg>
 </div>
 
-<!-- Popular Routes — Bento Grid -->
+<!-- Categories Grid -->
 <section class="py-16 px-4">
     <div class="max-w-7xl mx-auto">
         <div class="text-center mb-10">
-            <p class="text-accent font-semibold text-sm tracking-widest uppercase mb-2 animate-fade-in">Utforska</p>
-            <h2 class="font-display text-3xl md:text-4xl text-brand animate-fade-in">Populära rutter från Stockholm</h2>
+            <p class="text-accent font-semibold text-sm tracking-widest uppercase mb-2 animate-fade-in">Kategorier</p>
+            <h2 class="font-display text-3xl md:text-4xl text-brand animate-fade-in">Utforska resetjänster</h2>
         </div>
-
-        @if (_popularRoutes.Count > 0)
-        {
-            <!-- Bento grid: first 2 large, rest smaller -->
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 auto-rows-[200px] md:auto-rows-[220px]">
-                @{ var routeIdx = 0; }
-                @foreach (var route in _popularRoutes.Take(8))
-                {
-                    var img = IataData.GetDestinationImage(route.Destination);
-                    var spanClass = routeIdx < 2 ? "col-span-2 row-span-1 md:row-span-2" : "col-span-1";
-                    <a href="/flyg/@(route.Origin)-@(route.Destination)"
-                       class="group relative rounded-2xl overflow-hidden card-lift block @spanClass animate-fade-in-up animate-delay-@(routeIdx % 8 + 1)">
-                        <img src="@img" alt="@route.DestinationCity" class="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-out" loading="lazy" />
-                        <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent group-hover:from-black/70 transition-all duration-500"></div>
-                        @if (route.CheapestPrice.HasValue)
-                        {
-                            <div class="absolute top-3 right-3 glass-dark text-white text-sm font-bold px-3 py-1.5 rounded-full">
-                                @route.CheapestPrice.Value.ToString("N0") SEK
-                            </div>
-                        }
-                        <div class="absolute bottom-0 left-0 right-0 p-5">
-                            <span class="font-display text-2xl text-white drop-shadow-lg">@route.DestinationCity</span>
-                            <div class="text-white/60 text-xs mt-1 flex items-center gap-1.5">
-                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/></svg>
-                                @route.Origin → @route.Destination
-                            </div>
-                        </div>
-                    </a>
-                    routeIdx++;
-                }
-            </div>
-        }
-        else
-        {
-            <!-- Fallback bento -->
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 auto-rows-[200px] md:auto-rows-[220px]">
-                @{ var fbIdx = 0; }
-                @foreach (var dest in _fallbackRoutes)
-                {
-                    var img = IataData.GetDestinationImage(dest.Key);
-                    var spanClass = fbIdx < 2 ? "col-span-2 row-span-1 md:row-span-2" : "col-span-1";
-                    <a href="/flyg/ARN-@dest.Key"
-                       class="group relative rounded-2xl overflow-hidden card-lift block @spanClass animate-fade-in-up animate-delay-@(fbIdx % 8 + 1)">
-                        <img src="@img" alt="@dest.Value" class="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-out" loading="lazy" />
-                        <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
-                        <div class="absolute bottom-0 left-0 right-0 p-5">
-                            <span class="font-display text-2xl text-white drop-shadow-lg">@dest.Value</span>
-                            <div class="text-white/60 text-xs mt-1">ARN → @dest.Key</div>
-                        </div>
-                    </a>
-                    fbIdx++;
-                }
-            </div>
-        }
-
-        <div class="text-center mt-8">
-            <a href="/rutter" class="inline-flex items-center gap-2 text-brand-light hover:text-brand font-medium transition-colors group">
-                Visa alla rutter
-                <svg class="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
-                </svg>
-            </a>
+        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+            @{ var catIdx = 0; }
+            @foreach (var cat in _categories)
+            {
+                <div class="animate-fade-in-up animate-delay-@(catIdx % 6 + 1)">
+                    <CategoryCard Category="cat.Category" ServiceCount="cat.Count" />
+                </div>
+                catIdx++;
+            }
         </div>
     </div>
 </section>
 
-<!-- How it works — Dark section for contrast -->
+<!-- Featured Services -->
+@if (_featuredServices.Count > 0)
+{
+    <section class="py-16 px-4 bg-mist/30">
+        <div class="max-w-7xl mx-auto">
+            <div class="text-center mb-10">
+                <p class="text-accent font-semibold text-sm tracking-widest uppercase mb-2">Utvalda</p>
+                <h2 class="font-display text-3xl md:text-4xl text-brand">Populära resetjänster</h2>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                @{ var svcIdx = 0; }
+                @foreach (var service in _featuredServices)
+                {
+                    <div class="animate-fade-in-up animate-delay-@(svcIdx % 6 + 1)">
+                        <ServiceCard Service="service" />
+                    </div>
+                    svcIdx++;
+                }
+            </div>
+        </div>
+    </section>
+}
+
+<!-- How it works — Dark section -->
 <section class="relative py-20 px-4 bg-navy-deep overflow-hidden noise">
-    <!-- Decorative gradient orbs -->
     <div class="absolute top-0 left-1/4 w-96 h-96 bg-accent/5 rounded-full blur-3xl"></div>
     <div class="absolute bottom-0 right-1/4 w-96 h-96 bg-teal/5 rounded-full blur-3xl"></div>
 
     <div class="relative z-10 max-w-5xl mx-auto">
         <div class="text-center mb-14">
-            <p class="text-accent font-semibold text-sm tracking-widest uppercase mb-2 animate-fade-in">Enkelt & gratis</p>
+            <p class="text-accent font-semibold text-sm tracking-widest uppercase mb-2 animate-fade-in">Enkelt & oberoende</p>
             <h2 class="font-display text-3xl md:text-4xl text-white animate-fade-in">Så funkar det</h2>
         </div>
         <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -151,21 +119,21 @@
                     </div>
                     <span class="absolute -top-3 -left-3 text-6xl font-bold text-white/5 font-display">1</span>
                 </div>
-                <h3 class="font-display text-xl text-white mb-3">Sök</h3>
-                <p class="text-white/50 leading-relaxed">Sök bland tusentals flyg och hitta de bästa priserna till ditt resmål.</p>
+                <h3 class="font-display text-xl text-white mb-3">Utforska</h3>
+                <p class="text-white/50 leading-relaxed">Bläddra bland kategorier och hitta rätt typ av resetjänst för dina behov.</p>
             </div>
             <div class="text-center animate-fade-in-up animate-delay-2">
                 <div class="relative w-20 h-20 mx-auto mb-6 animate-float animate-delay-2">
                     <div class="absolute inset-0 bg-gradient-to-br from-brand-light to-teal rounded-2xl opacity-20 blur-lg"></div>
                     <div class="relative w-20 h-20 bg-gradient-to-br from-brand-light to-teal rounded-2xl flex items-center justify-center shadow-lg shadow-teal/20">
                         <svg class="w-9 h-9 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                         </svg>
                     </div>
                     <span class="absolute -top-3 -left-3 text-6xl font-bold text-white/5 font-display">2</span>
                 </div>
-                <h3 class="font-display text-xl text-white mb-3">Bevaka</h3>
-                <p class="text-white/50 leading-relaxed">Skapa en prisbevakning och få notiser direkt när priserna sjunker.</p>
+                <h3 class="font-display text-xl text-white mb-3">Jämför</h3>
+                <p class="text-white/50 leading-relaxed">Läs recensioner, jämför för- och nackdelar och se betyg från oss.</p>
             </div>
             <div class="text-center animate-fade-in-up animate-delay-3">
                 <div class="relative w-20 h-20 mx-auto mb-6 animate-float animate-delay-4">
@@ -178,7 +146,7 @@
                     <span class="absolute -top-3 -left-3 text-6xl font-bold text-white/5 font-display">3</span>
                 </div>
                 <h3 class="font-display text-xl text-white mb-3">Boka</h3>
-                <p class="text-white/50 leading-relaxed">Boka ditt flyg till bästa pris via våra partners.</p>
+                <p class="text-white/50 leading-relaxed">Gå direkt till den tjänst som passar dig bäst och boka din resa.</p>
             </div>
         </div>
     </div>
@@ -205,22 +173,9 @@
                 @foreach (var article in _articles.Take(3))
                 {
                     var gradientClass = accentColors[artIdx % 3];
-                    var destImg = !string.IsNullOrEmpty(article.DestinationIata)
-                        ? IataData.GetDestinationImage(article.DestinationIata)
-                        : "";
                     <a href="/guider/@article.Slug"
                        class="group bg-white rounded-2xl shadow-md overflow-hidden block card-lift animate-fade-in-up animate-delay-@(artIdx + 1)">
-                        @if (!string.IsNullOrEmpty(destImg))
-                        {
-                            <div class="h-44 overflow-hidden relative">
-                                <img src="@destImg" alt="@article.Title" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" loading="lazy" />
-                                <div class="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                            </div>
-                        }
-                        else
-                        {
-                            <div class="h-3 bg-gradient-to-r @gradientClass"></div>
-                        }
+                        <div class="h-3 bg-gradient-to-r @gradientClass"></div>
                         <div class="p-6">
                             <h3 class="font-display text-lg text-brand mb-2 group-hover:text-brand-light transition-colors">@article.Title</h3>
                             <p class="text-sm text-gray-500 line-clamp-2 leading-relaxed">@article.MetaDescription</p>
@@ -242,35 +197,37 @@
 }
 
 @code {
-    private List<PopularRoute> _popularRoutes = [];
+    private List<(Category Category, int Count)> _categories = [];
+    private List<TravelService> _featuredServices = [];
     private List<Article> _articles = [];
-
-    private static readonly Dictionary<string, string> _fallbackRoutes = new()
-    {
-        ["BCN"] = "Barcelona",
-        ["BKK"] = "Bangkok",
-        ["LHR"] = "London",
-        ["AGP"] = "Malaga",
-        ["ATH"] = "Aten",
-        ["PMI"] = "Palma de Mallorca",
-        ["IST"] = "Istanbul",
-        ["FCO"] = "Rom"
-    };
 
     protected override async Task OnInitializedAsync()
     {
-        try { _popularRoutes = await FlightSearch.GetPopularRoutesAsync("ARN"); }
-        catch { _popularRoutes = []; }
-
         try
         {
             await using var db = await DbFactory.CreateDbContextAsync();
+
+            _categories = await db.Categories
+                .OrderBy(c => c.SortOrder)
+                .Select(c => new { Category = c, Count = c.TravelServiceCategories.Count(tsc => tsc.TravelService.IsPublished) })
+                .AsNoTracking()
+                .ToListAsync()
+                .ContinueWith(t => t.Result.Select(x => (x.Category, x.Count)).ToList());
+
+            _featuredServices = await db.TravelServices
+                .Where(s => s.IsPublished && s.IsFeatured)
+                .OrderByDescending(s => s.Rating)
+                .Take(6)
+                .AsNoTracking()
+                .ToListAsync();
+
             _articles = await db.Articles
                 .Where(a => a.IsPublished)
                 .OrderByDescending(a => a.CreatedAt)
                 .Take(3)
+                .AsNoTracking()
                 .ToListAsync();
         }
-        catch { _articles = []; }
+        catch { }
     }
 }

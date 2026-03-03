@@ -1,0 +1,229 @@
+@page "/tjanst/{Slug}"
+@using System.Text.Json
+@using Microsoft.EntityFrameworkCore
+@inject IDbContextFactory<FlygioDbContext> DbFactory
+
+<div class="max-w-4xl mx-auto px-4 py-8">
+    @if (_service is not null)
+    {
+        <PageTitle>@_service.Name — Recension | Flygio.se</PageTitle>
+        <HeadContent>
+            <meta name="description" content="@_service.Description" />
+            <meta property="og:title" content="@_service.Name — Recension | Flygio.se" />
+            <meta property="og:description" content="@_service.Description" />
+            <meta property="og:type" content="website" />
+            <meta property="og:url" content="https://flygio.se/tjanst/@_service.Slug" />
+            <link rel="canonical" href="https://flygio.se/tjanst/@_service.Slug" />
+            <script type="application/ld+json">
+            {
+                "@@context": "https://schema.org",
+                "@@type": "Product",
+                "name": "@_service.Name",
+                "description": "@_service.Description",
+                "url": "https://flygio.se/tjanst/@_service.Slug",
+                "review": {
+                    "@@type": "Review",
+                    "reviewRating": {
+                        "@@type": "Rating",
+                        "ratingValue": "@_service.Rating.ToString("0.0", System.Globalization.CultureInfo.InvariantCulture)",
+                        "bestRating": "10"
+                    },
+                    "author": {
+                        "@@type": "Organization",
+                        "name": "Flygio.se"
+                    }
+                }
+            }
+            </script>
+        </HeadContent>
+
+        <!-- Breadcrumb -->
+        <nav class="text-sm text-gray-500 mb-6 animate-fade-in">
+            <a href="/" class="hover:text-brand-light transition-colors">Hem</a>
+            @if (_primaryCategory is not null)
+            {
+                <span class="mx-1">&rsaquo;</span>
+                <a href="/kategori/@_primaryCategory.Slug" class="hover:text-brand-light transition-colors">@_primaryCategory.Name</a>
+            }
+            <span class="mx-1">&rsaquo;</span>
+            <span class="text-gray-700">@_service.Name</span>
+        </nav>
+
+        <!-- Header -->
+        <div class="bg-white rounded-2xl shadow-md p-8 mb-8 animate-fade-in-up">
+            <div class="flex items-start gap-6">
+                @if (!string.IsNullOrEmpty(_service.LogoUrl))
+                {
+                    <img src="@_service.LogoUrl" alt="@_service.Name" class="w-20 h-20 rounded-2xl object-contain bg-gray-50 p-2 shrink-0" />
+                }
+                else
+                {
+                    <div class="w-20 h-20 rounded-2xl bg-gradient-to-br from-brand to-brand-light flex items-center justify-center text-white font-display text-3xl shrink-0">
+                        @_service.Name[0]
+                    </div>
+                }
+                <div class="flex-1">
+                    <h1 class="font-display text-3xl md:text-4xl text-brand mb-2">@_service.Name</h1>
+                    <StarRating Rating="@_service.Rating" />
+                    <p class="text-gray-600 mt-3 leading-relaxed">@_service.Description</p>
+                </div>
+            </div>
+            <div class="mt-6">
+                <AffiliateButton
+                    Url="@(_service.AffiliateUrl ?? _service.WebsiteUrl)"
+                    Text="@($"Besök {_service.Name}")"
+                    ServiceId="@_service.Id"
+                    ServiceName="@_service.Name" />
+            </div>
+        </div>
+
+        <!-- Full Review -->
+        @if (!string.IsNullOrEmpty(_service.LongDescription))
+        {
+            <div class="bg-white rounded-2xl shadow-md p-8 mb-8 animate-fade-in-up animate-delay-1">
+                <h2 class="font-display text-2xl text-brand mb-4">Recension</h2>
+                <div class="prose prose-lg max-w-none text-gray-700 leading-relaxed">
+                    <p>@_service.LongDescription</p>
+                </div>
+            </div>
+        }
+
+        <!-- Pros & Cons -->
+        @if (!string.IsNullOrEmpty(_service.Pros) || !string.IsNullOrEmpty(_service.Cons))
+        {
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8 animate-fade-in-up animate-delay-2">
+                @if (!string.IsNullOrEmpty(_service.Pros))
+                {
+                    var pros = JsonSerializer.Deserialize<List<string>>(_service.Pros);
+                    if (pros?.Count > 0)
+                    {
+                        <div class="bg-white rounded-2xl shadow-md p-6">
+                            <h3 class="font-display text-lg text-teal mb-4 flex items-center gap-2">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                </svg>
+                                Fördelar
+                            </h3>
+                            <ul class="space-y-3">
+                                @foreach (var pro in pros)
+                                {
+                                    <li class="flex items-start gap-2 text-gray-700">
+                                        <svg class="w-5 h-5 text-teal shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                        </svg>
+                                        @pro
+                                    </li>
+                                }
+                            </ul>
+                        </div>
+                    }
+                }
+                @if (!string.IsNullOrEmpty(_service.Cons))
+                {
+                    var cons = JsonSerializer.Deserialize<List<string>>(_service.Cons);
+                    if (cons?.Count > 0)
+                    {
+                        <div class="bg-white rounded-2xl shadow-md p-6">
+                            <h3 class="font-display text-lg text-coral mb-4 flex items-center gap-2">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                                Nackdelar
+                            </h3>
+                            <ul class="space-y-3">
+                                @foreach (var con in cons)
+                                {
+                                    <li class="flex items-start gap-2 text-gray-700">
+                                        <svg class="w-5 h-5 text-coral shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                        </svg>
+                                        @con
+                                    </li>
+                                }
+                            </ul>
+                        </div>
+                    }
+                }
+            </div>
+        }
+
+        <!-- CTA -->
+        <div class="bg-gradient-to-r from-brand to-brand-light rounded-2xl p-8 text-center mb-8 animate-fade-in-up animate-delay-3">
+            <h2 class="font-display text-2xl text-white mb-3">Redo att prova @_service.Name?</h2>
+            <p class="text-white/70 mb-5">Klicka nedan för att besöka tjänsten direkt.</p>
+            <AffiliateButton
+                Url="@(_service.AffiliateUrl ?? _service.WebsiteUrl)"
+                Text="@($"Besök {_service.Name}")"
+                ServiceId="@_service.Id"
+                ServiceName="@_service.Name" />
+        </div>
+
+        <!-- Related Services -->
+        @if (_relatedServices.Count > 0)
+        {
+            <div class="animate-fade-in-up animate-delay-4">
+                <h2 class="font-display text-2xl text-brand mb-6">Relaterade tjänster</h2>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    @foreach (var related in _relatedServices)
+                    {
+                        <ServiceCard Service="related" />
+                    }
+                </div>
+            </div>
+        }
+    }
+    else
+    {
+        <PageTitle>Tjänst hittades inte | Flygio.se</PageTitle>
+        <div class="text-center py-16 animate-fade-in">
+            <h1 class="font-display text-2xl text-brand mb-2">Tjänst hittades inte</h1>
+            <p class="text-gray-500 mb-4">Denna tjänst finns inte eller har tagits bort.</p>
+            <a href="/" class="text-brand-light hover:text-brand font-medium transition-colors">Tillbaka till startsidan &rarr;</a>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter] public string Slug { get; set; } = "";
+
+    private TravelService? _service;
+    private Category? _primaryCategory;
+    private List<TravelService> _relatedServices = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            await using var db = await DbFactory.CreateDbContextAsync();
+            _service = await db.TravelServices
+                .AsNoTracking()
+                .FirstOrDefaultAsync(s => s.Slug == Slug && s.IsPublished);
+
+            if (_service is not null)
+            {
+                // Get primary category
+                var categoryLink = await db.TravelServiceCategories
+                    .Include(tsc => tsc.Category)
+                    .AsNoTracking()
+                    .FirstOrDefaultAsync(tsc => tsc.TravelServiceId == _service.Id);
+
+                _primaryCategory = categoryLink?.Category;
+
+                // Get related services from same category
+                if (_primaryCategory is not null)
+                {
+                    _relatedServices = await db.TravelServiceCategories
+                        .Where(tsc => tsc.CategoryId == _primaryCategory.Id
+                                    && tsc.TravelServiceId != _service.Id
+                                    && tsc.TravelService.IsPublished)
+                        .OrderByDescending(tsc => tsc.TravelService.Rating)
+                        .Take(3)
+                        .Select(tsc => tsc.TravelService)
+                        .AsNoTracking()
+                        .ToListAsync();
+                }
+            }
+        }
+        catch { }
+    }
+}

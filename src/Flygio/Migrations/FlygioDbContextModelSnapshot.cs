@@ -8,7 +8,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
-namespace Flygio.Data.Migrations
+namespace Flygio.Migrations
 {
     [DbContext(typeof(FlygioDbContext))]
     partial class FlygioDbContextModelSnapshot : ModelSnapshot
@@ -17,7 +17,7 @@ namespace Flygio.Data.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "10.0.3")
+                .HasAnnotation("ProductVersion", "10.0.0")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -38,11 +38,11 @@ namespace Flygio.Data.Migrations
                     b.Property<DateTime>("ClickedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("DestinationIata")
-                        .HasMaxLength(3)
-                        .HasColumnType("character varying(3)");
+                    b.Property<string>("ServiceName")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
 
-                    b.Property<int?>("FlightRouteId")
+                    b.Property<int?>("TravelServiceId")
                         .HasColumnType("integer");
 
                     b.Property<string>("UserAgent")
@@ -53,9 +53,9 @@ namespace Flygio.Data.Migrations
 
                     b.HasIndex("ClickedAt");
 
-                    b.HasIndex("DestinationIata");
+                    b.HasIndex("ServiceName");
 
-                    b.HasIndex("FlightRouteId");
+                    b.HasIndex("TravelServiceId");
 
                     b.ToTable("AffiliateClicks");
                 });
@@ -68,20 +68,15 @@ namespace Flygio.Data.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
+                    b.Property<int?>("CategoryId")
+                        .HasColumnType("integer");
+
                     b.Property<string>("Content")
                         .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("DestinationCity")
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
-
-                    b.Property<string>("DestinationIata")
-                        .HasMaxLength(3)
-                        .HasColumnType("character varying(3)");
 
                     b.Property<bool>("IsPublished")
                         .HasColumnType("boolean");
@@ -106,7 +101,7 @@ namespace Flygio.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("DestinationIata");
+                    b.HasIndex("CategoryId");
 
                     b.HasIndex("IsPublished");
 
@@ -116,7 +111,7 @@ namespace Flygio.Data.Migrations
                     b.ToTable("Articles");
                 });
 
-            modelBuilder.Entity("Flygio.Models.FlightRoute", b =>
+            modelBuilder.Entity("Flygio.Models.Category", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -124,125 +119,33 @@ namespace Flygio.Data.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("DestinationCity")
+                    b.Property<string>("Description")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<string>("Icon")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
 
-                    b.Property<string>("DestinationIata")
-                        .IsRequired()
-                        .HasMaxLength(3)
-                        .HasColumnType("character varying(3)");
-
-                    b.Property<bool>("IsPopular")
-                        .HasColumnType("boolean");
-
-                    b.Property<string>("OriginCity")
+                    b.Property<string>("Slug")
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
 
-                    b.Property<string>("OriginIata")
-                        .IsRequired()
-                        .HasMaxLength(3)
-                        .HasColumnType("character varying(3)");
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("integer");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("IsPopular");
-
-                    b.HasIndex("OriginIata", "DestinationIata")
+                    b.HasIndex("Slug")
                         .IsUnique();
 
-                    b.ToTable("FlightRoutes");
-                });
-
-            modelBuilder.Entity("Flygio.Models.PriceAlert", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("ConfirmationToken")
-                        .IsRequired()
-                        .HasMaxLength(64)
-                        .HasColumnType("character varying(64)");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("Email")
-                        .IsRequired()
-                        .HasMaxLength(254)
-                        .HasColumnType("character varying(254)");
-
-                    b.Property<int>("FlightRouteId")
-                        .HasColumnType("integer");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("boolean");
-
-                    b.Property<bool>("IsConfirmed")
-                        .HasColumnType("boolean");
-
-                    b.Property<int>("MaxPrice")
-                        .HasColumnType("integer");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ConfirmationToken")
-                        .IsUnique();
-
-                    b.HasIndex("Email");
-
-                    b.HasIndex("FlightRouteId");
-
-                    b.HasIndex("IsActive", "IsConfirmed");
-
-                    b.ToTable("PriceAlerts");
-                });
-
-            modelBuilder.Entity("Flygio.Models.PricePoint", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Airline")
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
-
-                    b.Property<DateTime>("DepartureDate")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<int>("FlightRouteId")
-                        .HasColumnType("integer");
-
-                    b.Property<DateTime>("FoundAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<int>("NumberOfChanges")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("Price")
-                        .HasColumnType("integer");
-
-                    b.Property<DateTime?>("ReturnDate")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("DepartureDate");
-
-                    b.HasIndex("FlightRouteId");
-
-                    b.HasIndex("FoundAt");
-
-                    b.ToTable("PricePoints");
+                    b.ToTable("Categories");
                 });
 
             modelBuilder.Entity("Flygio.Models.Subscriber", b =>
@@ -280,43 +183,141 @@ namespace Flygio.Data.Migrations
                     b.ToTable("Subscribers");
                 });
 
+            modelBuilder.Entity("Flygio.Models.TravelService", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("AffiliateUrl")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<string>("Cons")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<bool>("IsFeatured")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsPopular")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsPublished")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("LogoUrl")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<string>("LongDescription")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<string>("Pros")
+                        .HasColumnType("text");
+
+                    b.Property<decimal>("Rating")
+                        .HasPrecision(3, 1)
+                        .HasColumnType("numeric(3,1)");
+
+                    b.Property<string>("Slug")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("WebsiteUrl")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("IsFeatured");
+
+                    b.HasIndex("IsPublished");
+
+                    b.HasIndex("Slug")
+                        .IsUnique();
+
+                    b.ToTable("TravelServices");
+                });
+
+            modelBuilder.Entity("Flygio.Models.TravelServiceCategory", b =>
+                {
+                    b.Property<int>("TravelServiceId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("CategoryId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("TravelServiceId", "CategoryId");
+
+                    b.HasIndex("CategoryId");
+
+                    b.ToTable("TravelServiceCategories");
+                });
+
             modelBuilder.Entity("Flygio.Models.AffiliateClick", b =>
                 {
-                    b.HasOne("Flygio.Models.FlightRoute", "FlightRoute")
+                    b.HasOne("Flygio.Models.TravelService", "TravelService")
                         .WithMany()
-                        .HasForeignKey("FlightRouteId")
+                        .HasForeignKey("TravelServiceId")
                         .OnDelete(DeleteBehavior.SetNull);
 
-                    b.Navigation("FlightRoute");
+                    b.Navigation("TravelService");
                 });
 
-            modelBuilder.Entity("Flygio.Models.PriceAlert", b =>
+            modelBuilder.Entity("Flygio.Models.Article", b =>
                 {
-                    b.HasOne("Flygio.Models.FlightRoute", "FlightRoute")
-                        .WithMany("PriceAlerts")
-                        .HasForeignKey("FlightRouteId")
+                    b.HasOne("Flygio.Models.Category", "Category")
+                        .WithMany()
+                        .HasForeignKey("CategoryId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("Category");
+                });
+
+            modelBuilder.Entity("Flygio.Models.TravelServiceCategory", b =>
+                {
+                    b.HasOne("Flygio.Models.Category", "Category")
+                        .WithMany("TravelServiceCategories")
+                        .HasForeignKey("CategoryId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("FlightRoute");
-                });
-
-            modelBuilder.Entity("Flygio.Models.PricePoint", b =>
-                {
-                    b.HasOne("Flygio.Models.FlightRoute", "FlightRoute")
-                        .WithMany("PricePoints")
-                        .HasForeignKey("FlightRouteId")
+                    b.HasOne("Flygio.Models.TravelService", "TravelService")
+                        .WithMany("TravelServiceCategories")
+                        .HasForeignKey("TravelServiceId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("FlightRoute");
+                    b.Navigation("Category");
+
+                    b.Navigation("TravelService");
                 });
 
-            modelBuilder.Entity("Flygio.Models.FlightRoute", b =>
+            modelBuilder.Entity("Flygio.Models.Category", b =>
                 {
-                    b.Navigation("PriceAlerts");
+                    b.Navigation("TravelServiceCategories");
+                });
 
-                    b.Navigation("PricePoints");
+            modelBuilder.Entity("Flygio.Models.TravelService", b =>
+                {
+                    b.Navigation("TravelServiceCategories");
                 });
 #pragma warning restore 612, 618
         }
