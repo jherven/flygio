@@ -21,50 +21,65 @@
     </script>
 </HeadContent>
 
-<!-- Destination Hero -->
-<section class="relative h-64 md:h-80 overflow-hidden">
-    <div class="absolute inset-0 bg-cover bg-center" style="background-image: url('@IataData.GetDestinationImage(_destination)')"></div>
-    <div class="absolute inset-0 bg-gradient-to-t from-brand/90 via-brand/40 to-transparent"></div>
-    <div class="relative z-10 h-full flex flex-col justify-end max-w-7xl mx-auto px-4 pb-8">
-        <!-- Breadcrumb -->
-        <nav class="text-sm text-white/70 mb-3">
-            <a href="/" class="hover:text-white transition-colors">Hem</a>
-            <span class="mx-1">›</span>
-            <a href="/rutter" class="hover:text-white transition-colors">Rutter</a>
-            <span class="mx-1">›</span>
-            <span class="text-white">@OriginCity → @DestCity</span>
+<!-- Destination Hero with noise -->
+<section class="relative h-72 md:h-96 overflow-hidden noise">
+    <div class="absolute inset-0 bg-cover bg-center scale-105" style="background-image: url('@IataData.GetDestinationImage(_destination)')"></div>
+    <div class="absolute inset-0 bg-gradient-to-t from-navy-deep/95 via-brand/50 to-brand/20"></div>
+    <div class="relative z-10 h-full flex flex-col justify-end max-w-7xl mx-auto px-4 pb-10">
+        <nav class="text-sm text-white/50 mb-3">
+            <a href="/" class="hover:text-white/80 transition-colors">Hem</a>
+            <span class="mx-1.5">›</span>
+            <a href="/rutter" class="hover:text-white/80 transition-colors">Rutter</a>
+            <span class="mx-1.5">›</span>
+            <span class="text-white/80">@OriginCity → @DestCity</span>
         </nav>
-        <h1 class="font-display text-3xl md:text-4xl text-white animate-fade-in-up">Flyg från @OriginCity till @DestCity</h1>
-        <p class="text-white/70 mt-1">@_origin → @_destination</p>
+        <h1 class="font-display text-4xl md:text-5xl text-white animate-fade-in-up drop-shadow-lg">Flyg från @OriginCity till @DestCity</h1>
+        <p class="text-white/50 mt-2 flex items-center gap-2">
+            <svg class="w-4 h-4 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/></svg>
+            @_origin → @_destination
+        </p>
     </div>
 </section>
+
+<!-- Wave divider -->
+<div class="wave-divider bg-sand">
+    <svg viewBox="0 0 1440 48" fill="none" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
+        <path d="M0 48L1440 48L1440 16C1320 32 1200 40 1080 32C960 24 840 0 720 0C600 0 480 24 360 32C240 40 120 32 0 16L0 48Z" fill="#0f2440"/>
+    </svg>
+</div>
 
 <div class="max-w-7xl mx-auto px-4 py-8">
     @if (_loading)
     {
         <div class="text-center py-12">
-            <div class="inline-block w-8 h-8 border-4 border-sand border-t-accent rounded-full animate-spin"></div>
+            <div class="inline-block w-10 h-10 border-4 border-sand border-t-accent rounded-full animate-spin"></div>
         </div>
     }
     else
     {
-        <!-- Price Summary -->
+        <!-- Price Summary Cards -->
         @if (_monthMatrix.Count > 0)
         {
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-5 mb-8 -mt-10 relative z-10">
-                <!-- Lowest price -->
-                <div class="bg-white rounded-xl shadow-lg p-6 text-center border-t-4 border-teal animate-fade-in-up animate-delay-1">
-                    <div class="text-sm text-gray-500 mb-1">Lägsta pris</div>
-                    <div class="font-display text-3xl text-teal">@_monthMatrix.Min(m => m.Price).ToString("N0") <span class="text-base font-body text-gray-500">SEK</span></div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-5 mb-10 -mt-14 relative z-10">
+                <div class="bg-white rounded-2xl shadow-xl p-6 text-center glow-teal animate-scale-in animate-delay-1 border border-teal/10">
+                    <div class="w-10 h-10 bg-teal/10 rounded-xl flex items-center justify-center mx-auto mb-3">
+                        <svg class="w-5 h-5 text-teal" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6"/></svg>
+                    </div>
+                    <div class="text-xs text-gray-400 uppercase tracking-wider mb-1">Lägsta pris</div>
+                    <div class="font-display text-3xl text-teal">@_monthMatrix.Min(m => m.Price).ToString("N0") <span class="text-sm font-body text-gray-400">SEK</span></div>
                 </div>
-                <!-- Average -->
-                <div class="bg-white rounded-xl shadow-lg p-6 text-center border-t-4 border-brand animate-fade-in-up animate-delay-2">
-                    <div class="text-sm text-gray-500 mb-1">Genomsnittspris</div>
-                    <div class="font-display text-3xl text-brand">@((int)_monthMatrix.Average(m => m.Price)) <span class="text-base font-body text-gray-500">SEK</span></div>
+                <div class="bg-white rounded-2xl shadow-xl p-6 text-center glow-brand animate-scale-in animate-delay-2 border border-brand/10">
+                    <div class="w-10 h-10 bg-brand/10 rounded-xl flex items-center justify-center mx-auto mb-3">
+                        <svg class="w-5 h-5 text-brand" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+                    </div>
+                    <div class="text-xs text-gray-400 uppercase tracking-wider mb-1">Genomsnittspris</div>
+                    <div class="font-display text-3xl text-brand">@((int)_monthMatrix.Average(m => m.Price)) <span class="text-sm font-body text-gray-400">SEK</span></div>
                 </div>
-                <!-- Best month -->
-                <div class="bg-white rounded-xl shadow-lg p-6 text-center border-t-4 border-accent animate-fade-in-up animate-delay-3">
-                    <div class="text-sm text-gray-500 mb-1">Bästa månad</div>
+                <div class="bg-white rounded-2xl shadow-xl p-6 text-center glow-hover animate-scale-in animate-delay-3 border border-accent/10">
+                    <div class="w-10 h-10 bg-accent/10 rounded-xl flex items-center justify-center mx-auto mb-3">
+                        <svg class="w-5 h-5 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                    </div>
+                    <div class="text-xs text-gray-400 uppercase tracking-wider mb-1">Bästa månad</div>
                     <div class="font-display text-3xl text-accent">
                         @{
                             var best = _monthMatrix.OrderBy(m => m.Price).First();
@@ -78,7 +93,7 @@
         <!-- Price Graph -->
         @if (_monthMatrix.Count > 0)
         {
-            <div class="mb-8">
+            <div class="mb-10 animate-fade-in-up animate-delay-4">
                 <PriceGraph Title="Prisutveckling per månad" Prices="_monthMatrix" />
             </div>
         }
@@ -86,16 +101,16 @@
         <!-- Month Matrix -->
         @if (_monthMatrix.Count > 0)
         {
-            <div class="bg-white rounded-xl shadow-md p-6 mb-8">
-                <h2 class="font-display text-lg text-brand mb-4">Billigaste pris per månad</h2>
+            <div class="bg-white rounded-2xl shadow-md p-6 mb-10 animate-fade-in-up animate-delay-5">
+                <h2 class="font-display text-xl text-brand mb-5">Billigaste pris per månad</h2>
                 <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
                     @foreach (var month in _monthMatrix.OrderBy(m => m.Date))
                     {
                         var isLowest = month.Price == _monthMatrix.Min(m => m.Price);
-                        <div class="text-center p-3 rounded-xl transition-all @(isLowest ? "bg-teal-light border-2 border-teal shadow-sm" : "bg-sand hover:shadow-sm")">
-                            <div class="text-sm text-gray-600 capitalize">@month.Date.ToString("MMM yyyy", new System.Globalization.CultureInfo("sv-SE"))</div>
-                            <div class="font-display text-lg @(isLowest ? "text-teal" : "text-brand")">@month.Price.ToString("N0")</div>
-                            <div class="text-xs text-gray-400">SEK</div>
+                        <div class="text-center p-4 rounded-xl transition-all duration-300 cursor-default @(isLowest ? "bg-teal/5 border-2 border-teal/20 shadow-sm glow-teal" : "bg-sand/80 hover:bg-white hover:shadow-md border border-transparent")">
+                            <div class="text-xs text-gray-400 capitalize font-medium">@month.Date.ToString("MMM yyyy", new System.Globalization.CultureInfo("sv-SE"))</div>
+                            <div class="font-display text-xl mt-1 @(isLowest ? "text-teal" : "text-brand")">@month.Price.ToString("N0")</div>
+                            <div class="text-xs text-gray-300 mt-0.5">SEK</div>
                         </div>
                     }
                 </div>
@@ -103,9 +118,9 @@
         }
 
         <!-- CTA -->
-        <div class="text-center py-8">
+        <div class="text-center py-10">
             <AffiliateButton Url="@_affiliateUrl" Text="@($"Sök flyg till {DestCity}")" DestinationIata="@_destination" />
-            <p class="text-xs text-gray-400 mt-3">Du skickas vidare till vår partner för bokning</p>
+            <p class="text-xs text-gray-400 mt-4">Du skickas vidare till vår partner för bokning</p>
         </div>
     }
 </div>

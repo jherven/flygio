@@ -27,47 +27,68 @@
     </script>
 </HeadContent>
 
-<!-- Hero with background image -->
-<section class="relative min-h-[500px] flex items-center justify-center overflow-hidden">
-    <div class="absolute inset-0 bg-cover bg-center" style="background-image: url('@IataData.HeroImages["default"]')"></div>
-    <div class="absolute inset-0 bg-gradient-to-b from-brand/80 via-brand/60 to-brand/90"></div>
-    <div class="relative z-10 max-w-4xl mx-auto text-center px-4 py-16 md:py-24">
-        <h1 class="font-display text-4xl md:text-6xl text-white mb-4 animate-fade-in-up">
-            Hitta billiga <span class="text-accent">flygbiljetter</span>
+<!-- Hero with background image + noise texture -->
+<section class="relative min-h-[600px] flex items-center justify-center overflow-hidden noise">
+    <div class="absolute inset-0 bg-cover bg-center scale-105" style="background-image: url('@IataData.HeroImages["default"]')"></div>
+    <div class="absolute inset-0 bg-gradient-to-b from-navy-deep/90 via-brand/70 to-brand/95"></div>
+    <div class="relative z-10 max-w-5xl mx-auto text-center px-4 py-20 md:py-32">
+        <p class="text-accent font-semibold text-sm tracking-widest uppercase mb-4 animate-fade-in">Sveriges smartaste flygpris-tracker</p>
+        <h1 class="font-display text-5xl md:text-7xl text-white mb-6 animate-fade-in-up leading-tight">
+            Hitta billiga<br/><span class="text-gradient animate-shimmer">flygbiljetter</span>
         </h1>
-        <p class="text-lg md:text-xl text-white/80 mb-10 animate-fade-in-up animate-delay-1">
-            Jämför priser, bevaka rutter och få notiser vid prisfall.
+        <p class="text-lg md:text-xl text-white/70 mb-12 max-w-2xl mx-auto animate-fade-in-up animate-delay-1">
+            Jämför priser, bevaka rutter och få notiser vid prisfall — helt gratis.
         </p>
         <div class="animate-fade-in-up animate-delay-2">
             <SearchForm />
         </div>
     </div>
+    <!-- Decorative floating elements -->
+    <div class="absolute top-20 left-10 w-3 h-3 bg-accent/30 rounded-full animate-float hidden lg:block"></div>
+    <div class="absolute top-40 right-20 w-2 h-2 bg-teal/40 rounded-full animate-float animate-delay-3 hidden lg:block"></div>
+    <div class="absolute bottom-32 left-1/4 w-2 h-2 bg-coral/30 rounded-full animate-float animate-delay-5 hidden lg:block"></div>
 </section>
 
-<!-- Popular Routes -->
-<section class="py-14 px-4">
+<!-- Wave divider: hero → popular routes -->
+<div class="wave-divider bg-sand">
+    <svg viewBox="0 0 1440 60" fill="none" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
+        <path d="M0 60L1440 60L1440 20C1320 40 1200 50 1080 40C960 30 840 0 720 0C600 0 480 30 360 40C240 50 120 40 0 20L0 60Z" fill="#1e3a5f"/>
+    </svg>
+</div>
+
+<!-- Popular Routes — Bento Grid -->
+<section class="py-16 px-4">
     <div class="max-w-7xl mx-auto">
-        <h2 class="font-display text-2xl md:text-3xl text-brand mb-8 text-center animate-fade-in">Populära rutter från Stockholm</h2>
+        <div class="text-center mb-10">
+            <p class="text-accent font-semibold text-sm tracking-widest uppercase mb-2 animate-fade-in">Utforska</p>
+            <h2 class="font-display text-3xl md:text-4xl text-brand animate-fade-in">Populära rutter från Stockholm</h2>
+        </div>
+
         @if (_popularRoutes.Count > 0)
         {
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+            <!-- Bento grid: first 2 large, rest smaller -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 auto-rows-[200px] md:auto-rows-[220px]">
                 @{ var routeIdx = 0; }
                 @foreach (var route in _popularRoutes.Take(8))
                 {
                     var img = IataData.GetDestinationImage(route.Destination);
+                    var spanClass = routeIdx < 2 ? "col-span-2 row-span-1 md:row-span-2" : "col-span-1";
                     <a href="/flyg/@(route.Origin)-@(route.Destination)"
-                       class="group relative rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-all hover:-translate-y-1 block h-52 animate-fade-in-up animate-delay-@(routeIdx % 6 + 1)">
-                        <img src="@img" alt="@route.DestinationCity" class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" />
-                        <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"></div>
+                       class="group relative rounded-2xl overflow-hidden card-lift block @spanClass animate-fade-in-up animate-delay-@(routeIdx % 8 + 1)">
+                        <img src="@img" alt="@route.DestinationCity" class="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-out" loading="lazy" />
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent group-hover:from-black/70 transition-all duration-500"></div>
                         @if (route.CheapestPrice.HasValue)
                         {
-                            <div class="absolute top-3 right-3 bg-accent text-white text-sm font-bold px-3 py-1 rounded-full shadow-md">
+                            <div class="absolute top-3 right-3 glass-dark text-white text-sm font-bold px-3 py-1.5 rounded-full">
                                 @route.CheapestPrice.Value.ToString("N0") SEK
                             </div>
                         }
-                        <div class="absolute bottom-0 left-0 right-0 p-4">
-                            <span class="font-display text-xl text-white">@route.DestinationCity</span>
-                            <div class="text-white/70 text-xs mt-0.5">@route.Origin → @route.Destination</div>
+                        <div class="absolute bottom-0 left-0 right-0 p-5">
+                            <span class="font-display text-2xl text-white drop-shadow-lg">@route.DestinationCity</span>
+                            <div class="text-white/60 text-xs mt-1 flex items-center gap-1.5">
+                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/></svg>
+                                @route.Origin → @route.Destination
+                            </div>
                         </div>
                     </a>
                     routeIdx++;
@@ -76,109 +97,145 @@
         }
         else
         {
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+            <!-- Fallback bento -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 auto-rows-[200px] md:auto-rows-[220px]">
+                @{ var fbIdx = 0; }
                 @foreach (var dest in _fallbackRoutes)
                 {
                     var img = IataData.GetDestinationImage(dest.Key);
+                    var spanClass = fbIdx < 2 ? "col-span-2 row-span-1 md:row-span-2" : "col-span-1";
                     <a href="/flyg/ARN-@dest.Key"
-                       class="group relative rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-all hover:-translate-y-1 block h-52">
-                        <img src="@img" alt="@dest.Value" class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" />
-                        <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"></div>
-                        <div class="absolute bottom-0 left-0 right-0 p-4">
-                            <span class="font-display text-xl text-white">@dest.Value</span>
-                            <div class="text-white/70 text-xs mt-0.5">ARN → @dest.Key</div>
+                       class="group relative rounded-2xl overflow-hidden card-lift block @spanClass animate-fade-in-up animate-delay-@(fbIdx % 8 + 1)">
+                        <img src="@img" alt="@dest.Value" class="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-out" loading="lazy" />
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
+                        <div class="absolute bottom-0 left-0 right-0 p-5">
+                            <span class="font-display text-2xl text-white drop-shadow-lg">@dest.Value</span>
+                            <div class="text-white/60 text-xs mt-1">ARN → @dest.Key</div>
                         </div>
                     </a>
+                    fbIdx++;
                 }
             </div>
         }
+
+        <div class="text-center mt-8">
+            <a href="/rutter" class="inline-flex items-center gap-2 text-brand-light hover:text-brand font-medium transition-colors group">
+                Visa alla rutter
+                <svg class="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
+                </svg>
+            </a>
+        </div>
     </div>
 </section>
 
-<!-- How it works -->
-<section class="py-16 px-4 bg-white/60">
-    <div class="max-w-5xl mx-auto">
-        <h2 class="font-display text-2xl md:text-3xl text-brand mb-12 text-center">Så funkar det</h2>
+<!-- How it works — Dark section for contrast -->
+<section class="relative py-20 px-4 bg-navy-deep overflow-hidden noise">
+    <!-- Decorative gradient orbs -->
+    <div class="absolute top-0 left-1/4 w-96 h-96 bg-accent/5 rounded-full blur-3xl"></div>
+    <div class="absolute bottom-0 right-1/4 w-96 h-96 bg-teal/5 rounded-full blur-3xl"></div>
+
+    <div class="relative z-10 max-w-5xl mx-auto">
+        <div class="text-center mb-14">
+            <p class="text-accent font-semibold text-sm tracking-widest uppercase mb-2 animate-fade-in">Enkelt & gratis</p>
+            <h2 class="font-display text-3xl md:text-4xl text-white animate-fade-in">Så funkar det</h2>
+        </div>
         <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div class="text-center animate-fade-in-up animate-delay-1">
-                <div class="relative w-20 h-20 mx-auto mb-5">
-                    <div class="absolute inset-0 bg-gradient-to-br from-accent to-coral rounded-2xl rotate-6 opacity-20"></div>
-                    <div class="relative w-20 h-20 bg-gradient-to-br from-accent to-coral rounded-2xl flex items-center justify-center">
+                <div class="relative w-20 h-20 mx-auto mb-6 animate-float">
+                    <div class="absolute inset-0 bg-gradient-to-br from-accent to-coral rounded-2xl opacity-20 blur-lg"></div>
+                    <div class="relative w-20 h-20 bg-gradient-to-br from-accent to-coral rounded-2xl flex items-center justify-center shadow-lg shadow-accent/20">
                         <svg class="w-9 h-9 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                         </svg>
                     </div>
-                    <span class="absolute -top-2 -left-2 text-5xl font-bold text-brand/10 font-display">1</span>
+                    <span class="absolute -top-3 -left-3 text-6xl font-bold text-white/5 font-display">1</span>
                 </div>
-                <h3 class="font-display text-lg text-brand mb-2">Sök</h3>
-                <p class="text-gray-600">Sök bland tusentals flyg och hitta de bästa priserna till ditt resmål.</p>
+                <h3 class="font-display text-xl text-white mb-3">Sök</h3>
+                <p class="text-white/50 leading-relaxed">Sök bland tusentals flyg och hitta de bästa priserna till ditt resmål.</p>
             </div>
             <div class="text-center animate-fade-in-up animate-delay-2">
-                <div class="relative w-20 h-20 mx-auto mb-5">
-                    <div class="absolute inset-0 bg-gradient-to-br from-brand to-brand-light rounded-2xl rotate-6 opacity-20"></div>
-                    <div class="relative w-20 h-20 bg-gradient-to-br from-brand to-brand-light rounded-2xl flex items-center justify-center">
+                <div class="relative w-20 h-20 mx-auto mb-6 animate-float animate-delay-2">
+                    <div class="absolute inset-0 bg-gradient-to-br from-brand-light to-teal rounded-2xl opacity-20 blur-lg"></div>
+                    <div class="relative w-20 h-20 bg-gradient-to-br from-brand-light to-teal rounded-2xl flex items-center justify-center shadow-lg shadow-teal/20">
                         <svg class="w-9 h-9 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
                         </svg>
                     </div>
-                    <span class="absolute -top-2 -left-2 text-5xl font-bold text-brand/10 font-display">2</span>
+                    <span class="absolute -top-3 -left-3 text-6xl font-bold text-white/5 font-display">2</span>
                 </div>
-                <h3 class="font-display text-lg text-brand mb-2">Bevaka</h3>
-                <p class="text-gray-600">Skapa en prisbevakning och få notiser direkt när priserna sjunker.</p>
+                <h3 class="font-display text-xl text-white mb-3">Bevaka</h3>
+                <p class="text-white/50 leading-relaxed">Skapa en prisbevakning och få notiser direkt när priserna sjunker.</p>
             </div>
             <div class="text-center animate-fade-in-up animate-delay-3">
-                <div class="relative w-20 h-20 mx-auto mb-5">
-                    <div class="absolute inset-0 bg-gradient-to-br from-teal to-brand rounded-2xl rotate-6 opacity-20"></div>
-                    <div class="relative w-20 h-20 bg-gradient-to-br from-teal to-brand rounded-2xl flex items-center justify-center">
+                <div class="relative w-20 h-20 mx-auto mb-6 animate-float animate-delay-4">
+                    <div class="absolute inset-0 bg-gradient-to-br from-teal to-accent rounded-2xl opacity-20 blur-lg"></div>
+                    <div class="relative w-20 h-20 bg-gradient-to-br from-teal to-accent rounded-2xl flex items-center justify-center shadow-lg shadow-accent/20">
                         <svg class="w-9 h-9 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
                         </svg>
                     </div>
-                    <span class="absolute -top-2 -left-2 text-5xl font-bold text-brand/10 font-display">3</span>
+                    <span class="absolute -top-3 -left-3 text-6xl font-bold text-white/5 font-display">3</span>
                 </div>
-                <h3 class="font-display text-lg text-brand mb-2">Boka</h3>
-                <p class="text-gray-600">Boka ditt flyg till bästa pris via våra partners.</p>
+                <h3 class="font-display text-xl text-white mb-3">Boka</h3>
+                <p class="text-white/50 leading-relaxed">Boka ditt flyg till bästa pris via våra partners.</p>
             </div>
         </div>
     </div>
 </section>
 
+<!-- Wave divider: dark → articles -->
+<div class="wave-divider bg-sand">
+    <svg viewBox="0 0 1440 60" fill="none" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
+        <path d="M0 60L1440 60L1440 20C1320 40 1200 50 1080 40C960 30 840 0 720 0C600 0 480 30 360 40C240 50 120 40 0 20L0 60Z" fill="#0f2440"/>
+    </svg>
+</div>
+
 <!-- Latest Articles -->
 @if (_articles.Count > 0)
 {
-    <section class="py-14 px-4">
+    <section class="py-16 px-4">
         <div class="max-w-7xl mx-auto">
-            <h2 class="font-display text-2xl md:text-3xl text-brand mb-8 text-center">Reseguider</h2>
+            <div class="text-center mb-10">
+                <p class="text-accent font-semibold text-sm tracking-widest uppercase mb-2">Inspiration</p>
+                <h2 class="font-display text-3xl md:text-4xl text-brand">Reseguider</h2>
+            </div>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                @{ var accentColors = new[] { "bg-accent", "bg-coral", "bg-teal" }; var artIdx = 0; }
+                @{ var accentColors = new[] { "from-accent to-coral", "from-coral to-brand-light", "from-teal to-brand" }; var artIdx = 0; }
                 @foreach (var article in _articles.Take(3))
                 {
-                    var accentColor = accentColors[artIdx % 3];
+                    var gradientClass = accentColors[artIdx % 3];
                     var destImg = !string.IsNullOrEmpty(article.DestinationIata)
                         ? IataData.GetDestinationImage(article.DestinationIata)
                         : "";
                     <a href="/guider/@article.Slug"
-                       class="bg-white rounded-xl shadow-md hover:shadow-xl transition-all hover:-translate-y-1 overflow-hidden block animate-fade-in-up animate-delay-@(artIdx + 1)">
+                       class="group bg-white rounded-2xl shadow-md overflow-hidden block card-lift animate-fade-in-up animate-delay-@(artIdx + 1)">
                         @if (!string.IsNullOrEmpty(destImg))
                         {
-                            <div class="h-40 overflow-hidden">
-                                <img src="@destImg" alt="@article.Title" class="w-full h-full object-cover" loading="lazy" />
+                            <div class="h-44 overflow-hidden relative">
+                                <img src="@destImg" alt="@article.Title" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" loading="lazy" />
+                                <div class="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                             </div>
                         }
                         else
                         {
-                            <div class="h-2 @accentColor"></div>
+                            <div class="h-3 bg-gradient-to-r @gradientClass"></div>
                         }
-                        <div class="p-5">
-                            <h3 class="font-display text-brand mb-2">@article.Title</h3>
-                            <p class="text-sm text-gray-600 line-clamp-2">@article.MetaDescription</p>
+                        <div class="p-6">
+                            <h3 class="font-display text-lg text-brand mb-2 group-hover:text-brand-light transition-colors">@article.Title</h3>
+                            <p class="text-sm text-gray-500 line-clamp-2 leading-relaxed">@article.MetaDescription</p>
                         </div>
                     </a>
                     artIdx++;
                 }
             </div>
-            <div class="text-center mt-8">
-                <a href="/guider" class="text-brand-light hover:text-brand font-medium transition-colors">Visa alla guider →</a>
+            <div class="text-center mt-10">
+                <a href="/guider" class="inline-flex items-center gap-2 text-brand-light hover:text-brand font-medium transition-colors group">
+                    Visa alla guider
+                    <svg class="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
+                    </svg>
+                </a>
             </div>
         </div>
     </section>
