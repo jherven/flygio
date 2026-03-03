@@ -2,18 +2,18 @@
 
 ## Projektöversikt
 
-Flygio.se är en svensk flygpris-tracker kombinerad med AI-genererade reseguider. Användare kan bevaka flygpriser och få notiser vid prisfall. Sajten driver trafik via SEO-optimerade artiklar och monetariseras genom affiliate-länkar till bokningssajter.
+Flygio.se är en svensk flygpris-tracker kombinerad med reseguider. Användare kan bevaka flygpriser och få notiser vid prisfall. Sajten driver trafik via SEO-optimerade artiklar och monetariseras genom affiliate-länkar till bokningssajter.
 
 ## Teknisk stack
 
-- **Backend:** C# / .NET 8, ASP.NET Core
-- **Frontend:** Razor Pages med server-side rendering (kritiskt för SEO)
+- **Backend:** C# / .NET 10, ASP.NET Core
+- **Frontend:** Blazor Static SSR (Server-Side Rendering, kritiskt för SEO)
 - **Databas:** PostgreSQL (Railway addon)
-- **ORM:** Entity Framework Core
-- **Bakgrundsjobb:** Hosted Services (IHostedService) för prisbevakning och innehållsgenerering
+- **ORM:** Entity Framework Core med IDbContextFactory (Blazor-rekommenderat)
+- **Bakgrundsjobb:** Hosted Services (BackgroundService) för prisbevakning
 - **Flyg-API (v1):** Travelpayouts Flight Data API (ingår i affiliate-konto, gratis)
-- **Flyg-API (v2, framtida):** Amadeus Self-Service API (förberett i koden via interface/abstraktion)
-- **AI-innehåll:** Anthropic Claude API för artikelgenerering
+- **Flyg-API (v2, framtida):** Amadeus Self-Service API (förberett i koden via interface)
+- **Innehåll:** Artiklar genereras via Claude Code, importeras via admin-endpoint (ingen Anthropic API i runtime)
 - **Email:** Resend (gratis tier: 3000 mail/mån)
 - **Cache:** In-memory cache + output caching för sidor
 - **Hosting:** Railway (Docker-baserad deploy)
@@ -25,154 +25,129 @@ Flygio.se är en svensk flygpris-tracker kombinerad med AI-genererade reseguider
 flygio.se/
 ├── src/
 │   └── Flygio/
-│       ├── Program.cs                 # App startup, DI, middleware
+│       ├── Program.cs                 # App startup, DI, middleware, endpoints
 │       ├── Flygio.csproj
 │       ├── Dockerfile
 │       │
 │       ├── Data/
 │       │   ├── FlygioDbContext.cs
+│       │   ├── DataSeeder.cs
+│       │   ├── ArticleSeedData.cs
 │       │   └── Migrations/
 │       │
 │       ├── Models/
-│       │   ├── FlightRoute.cs         # Avgång, destination, flygbolag
+│       │   ├── FlightRoute.cs         # Avgång, destination
 │       │   ├── PricePoint.cs          # Pris vid en viss tidpunkt
 │       │   ├── PriceAlert.cs          # Användarens bevakning
 │       │   ├── Article.cs             # SEO-artikel
+│       │   ├── AffiliateClick.cs      # Klick-tracking
 │       │   └── Subscriber.cs          # Email-prenumerant
 │       │
 │       ├── Services/
-│       │   ├── IFlightSearchService.cs    # Interface: abstraktion för flyg-API
-│       │   ├── TravelpayoutsService.cs    # v1: Travelpayouts Flight Data API
-│       │   ├── AmadeusService.cs          # v2: Amadeus (förberett, ej aktivt)
-│       │   ├── PriceTrackingService.cs    # Bakgrundsjobb: hämtar priser
-│       │   ├── AlertService.cs            # Kollar bevakningar, skickar mail
-│       │   ├── ContentService.cs          # AI-generering av artiklar
+│       │   ├── IFlightSearchService.cs
+│       │   ├── TravelpayoutsService.cs
+│       │   ├── AmadeusService.cs          # Stub, förberett
+│       │   ├── PriceTrackingService.cs    # BackgroundService: hämtar priser
+│       │   ├── AlertService.cs            # BackgroundService: skickar alerts
+│       │   ├── IEmailService.cs
 │       │   ├── EmailService.cs            # Resend-integration
-│       │   └── AffiliateService.cs        # Genererar Travelpayouts affiliate-länkar
+│       │   └── AffiliateService.cs        # Genererar affiliate-länkar
 │       │
-│       ├── Pages/
-│       │   ├── Index.cshtml           # Startsida: sökruta + populära rutter
-│       │   ├── Search.cshtml          # Sökresultat med priser
-│       │   ├── Route.cshtml           # Enskild rutt: prisgraf + historik
-│       │   ├── Alert/
-│       │   │   └── Create.cshtml      # Skapa prisbevakning
-│       │   ├── Guides/
-│       │   │   ├── Index.cshtml       # Artikellistning
-│       │   │   └── Article.cshtml     # Enskild artikel
-│       │   ├── Shared/
-│       │   │   ├── _Layout.cshtml     # Huvudlayout med nav, footer
-│       │   │   └── _Partials/
-│       │   │       ├── _PriceCard.cshtml
-│       │   │       └── _AffiliateButton.cshtml
-│       │   └── Error.cshtml
+│       ├── Configuration/
+│       │   ├── TravelpayoutsOptions.cs
+│       │   ├── ResendOptions.cs
+│       │   └── IataData.cs                # Svenska flygplatser + destinationer
+│       │
+│       ├── Components/
+│       │   ├── App.razor                  # Root: CDN-scripts, meta
+│       │   ├── Routes.razor
+│       │   ├── _Imports.razor
+│       │   ├── Layout/
+│       │   │   └── MainLayout.razor       # Header, nav, footer
+│       │   ├── Pages/
+│       │   │   ├── Home.razor             # Startsida
+│       │   │   ├── Search.razor           # /sok
+│       │   │   ├── RouteDetail.razor      # /flyg/{origin}-{destination}
+│       │   │   ├── RouteList.razor        # /rutter
+│       │   │   ├── AlertCreate.razor      # /bevakning
+│       │   │   ├── AlertConfirm.razor     # /bevakning/bekrafta/{token}
+│       │   │   ├── AlertCancel.razor      # /bevakning/avsluta/{token}
+│       │   │   ├── GuideList.razor        # /guider
+│       │   │   ├── GuideArticle.razor     # /guider/{slug}
+│       │   │   ├── Error.razor
+│       │   │   └── NotFound.razor
+│       │   └── Shared/
+│       │       ├── PriceCard.razor
+│       │       ├── AffiliateButton.razor
+│       │       ├── SearchForm.razor       # @rendermode InteractiveServer
+│       │       └── PriceGraph.razor       # Chart.js wrapper
 │       │
 │       └── wwwroot/
-│           ├── css/site.css
-│           ├── js/site.js             # Minimal JS: prisgraf (Chart.js)
-│           ├── robots.txt
-│           └── sitemap.xml            # Dynamisk sitemap
+│           ├── app.css
+│           └── favicon.png
 │
 ├── tests/
 │   └── Flygio.Tests/
 │       ├── Flygio.Tests.csproj
 │       └── Services/
 │
+├── flygio.sln
 ├── PROMPT.md
 ├── plan.md
 ├── activity.md
-├── .claude/
-│   └── settings.json
 ├── railway.toml
-├── .gitignore
-└── flygio.sln
+└── .gitignore
 ```
 
 ## Flyg-API design
 
-Flyg-API:t ska abstraheras bakom ett interface så vi enkelt kan byta implementation:
-
 ```csharp
 public interface IFlightSearchService
 {
-    Task<List<FlightOffer>> SearchFlightsAsync(string origin, string destination, DateTime departureDate, DateTime? returnDate = null);
-    Task<List<PricePoint>> GetPriceHistoryAsync(string origin, string destination);
+    Task<List<FlightOffer>> GetLatestPricesAsync(string origin, string destination);
+    Task<List<FlightOffer>> GetCheapestAsync(string origin, string destination);
+    Task<List<CalendarPrice>> GetMonthMatrixAsync(string origin, string destination);
+    Task<List<CalendarPrice>> GetCalendarPricesAsync(string origin, string destination, int month, int year);
     Task<List<PopularRoute>> GetPopularRoutesAsync(string origin = "ARN");
-    Task<Dictionary<string, decimal>> GetCalendarPricesAsync(string origin, string destination, int month, int year);
 }
 ```
 
-### v1: TravelpayoutsService (implementera nu)
+### v1: TravelpayoutsService (aktiv)
 - **Base URL:** `https://api.travelpayouts.com/v2/`
 - **Auth:** `X-Access-Token` header med API-token
-- **Rate limit:** 200 req/timme
-- **Endpoints att använda:**
-  - `/prices/latest` - senaste priser per rutt
-  - `/prices/month-matrix` - prismatris per månad (kalendervy)
-  - `/prices/cheap` - billigaste priser
-  - `/prices/direct` - direktflyg-priser
-  - `/prices/calendar` - priser per dag (för prisgraf)
-  - `/city-directions` - populära destinationer från en stad
-- **Caching:** Cacha alla svar i 1 timme (datan uppdateras sällan)
+- **Rate limit:** 60 req/min → SemaphoreSlim + 1.1s delay
+- **Caching:** IMemoryCache, 1 timme per endpoint
+- **Endpoints:** `/prices/latest`, `/prices/month-matrix`, `/prices/cheap`, `/prices/calendar`, `/city-directions`
 
-### v2: AmadeusService (förberett, ej aktivt)
-- Implementera interfacet `IFlightSearchService`
-- OAuth2 client credentials flow
-- Aktiveras via miljövariabel `FLIGHT_API_PROVIDER=amadeus`
-- Registrering i DI baserat på config
+### v2: AmadeusService (stub)
+- Implementerar `IFlightSearchService`, alla metoder kastar `NotImplementedException`
+- Aktiveras via `FLIGHT_API_PROVIDER=amadeus`
 
 ## Principer
 
-1. **Enkel arkitektur** - Razor Pages, inte Blazor eller SPA. SSR för SEO.
-2. **Progressiv leverans** - Varje task ska resultera i något körbart.
-3. **Inga overengineering** - Minimal abstraktion, YAGNI. Undantag: IFlightSearchService-interfacet för API-byte.
-4. **SEO först** - Alla publika sidor ska ha korrekt meta, structured data (JSON-LD), semantisk HTML.
-5. **Mobil först** - Responsive design med Tailwind.
-6. **Affiliate-integration** - Alla flygpriser ska ha klickbara affiliate-länkar.
-7. **Kostnadsmedveten** - Använd gratis-tiers och cacha aggressivt.
-
-## Arbetsflöde per iteration
-
-1. Läs `activity.md` för att förstå nuvarande status.
-2. Läs `plan.md` och välj den högst prioriterade uppgiften där `passes: false`.
-3. Implementera uppgiften fullständigt.
-4. Verifiera att koden kompilerar (`dotnet build`) och att eventuella tester passerar (`dotnet test`).
-5. Uppdatera `plan.md` - sätt `passes: true` på avklarad uppgift.
-6. Logga vad som gjordes i `activity.md` med timestamp.
-7. Committa alla ändringar med ett beskrivande meddelande.
-8. Om alla uppgifter har `passes: true`, sätt EXIT_SIGNAL: true i slutet av activity.md.
-
-## Verifiering
-
-- Alla sidor ska returnera 200 OK
-- `dotnet build` ska lyckas utan varningar
-- `dotnet test` ska passera
-- Sidor ska ha korrekt `<title>`, `<meta description>`, och Open Graph-taggar
+1. **Blazor Static SSR** - Microsofts primära investering, framtidssäkert
+2. **Progressiv leverans** - Varje task resulterar i något körbart
+3. **Inga overengineering** - Minimal abstraktion, YAGNI
+4. **SEO först** - Korrekt meta, JSON-LD, semantisk HTML
+5. **Mobil först** - Responsive design med Tailwind
+6. **Affiliate-integration** - Alla flygpriser med klickbara affiliate-länkar
+7. **Kostnadsmedveten** - Gratis-tiers, aggressiv caching
 
 ## Affiliate-strategi
 
 - **Travelpayouts** (marker: 503994) - primär affiliate-partner
-  - Tracking-script: `https://emrld.cc/NTAzOTk0.js?t=503994` (lägg i _Layout.cshtml)
-  - Deep links för bokningar via Aviasales/Kiwi/WayAway
-  - Affiliate-länkformat: `https://www.aviasales.com/search/{origin}{destination}{date}?marker=503994`
-- Fallback: direktlänkar till Skyscanner/Google Flights med UTM-parametrar
+  - Tracking-script: `https://emrld.cc/NTAzOTk0.js?t=503994`
+  - Affiliate-länkformat: `https://www.aviasales.com/search/{ORIGIN}{DDMM}{DEST}{DDMM}1?marker=503994`
+  - Alla affiliate-länkar: `rel="nofollow sponsored"` + `target="_blank"`
 
-## Miljövariabler som krävs
+## Miljövariabler
 
 ```
-# Databas
 DATABASE_URL=postgresql://...           # Railway PostgreSQL
-
-# Flyg-API (v1 - krävs för deploy)
 TRAVELPAYOUTS_API_TOKEN=xxx             # Från travelpayouts.com/developers/api
 TRAVELPAYOUTS_MARKER=503994             # Affiliate marker ID
-
-# Flyg-API (v2 - valfritt, framtida)
 FLIGHT_API_PROVIDER=travelpayouts       # Byt till "amadeus" för v2
-AMADEUS_CLIENT_ID=xxx                   # Amadeus API (ej konfigurerat än)
-AMADEUS_CLIENT_SECRET=xxx
-
-# Övrigt
-ANTHROPIC_API_KEY=xxx                   # Claude för innehåll
 RESEND_API_KEY=xxx                      # Email-tjänst
+ADMIN_API_KEY=xxx                       # Skyddar admin-endpoints
 BASE_URL=https://flygio.se
 ```

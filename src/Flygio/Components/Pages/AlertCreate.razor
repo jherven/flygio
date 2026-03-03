@@ -1,0 +1,165 @@
+@page "/bevakning"
+@using Microsoft.EntityFrameworkCore
+@inject IDbContextFactory<FlygioDbContext> DbFactory
+@inject IEmailService EmailService
+
+<PageTitle>Prisbevakning - Flygio.se</PageTitle>
+<HeadContent>
+    <meta name="description" content="Skapa en prisbevakning och få notiser när flygpriserna sjunker. Gratis och utan inloggning." />
+    <meta property="og:title" content="Prisbevakning - Flygio.se" />
+    <meta property="og:description" content="Bevaka flygpriser och få notiser vid prisfall. Gratis och utan inloggning." />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://flygio.se/bevakning" />
+    <link rel="canonical" href="https://flygio.se/bevakning" />
+</HeadContent>
+
+<div class="max-w-2xl mx-auto px-4 py-8">
+    <h1 class="text-3xl font-bold text-sky-900 mb-2">Prisbevakning</h1>
+    <p class="text-gray-600 mb-8">Få notiser när flygpriserna sjunker till din bevakade rutt.</p>
+
+    @if (_submitted)
+    {
+        <div class="bg-green-50 border border-green-200 rounded-xl p-6 text-center">
+            <svg class="w-12 h-12 text-green-500 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <h2 class="text-xl font-semibold text-green-800 mb-2">Bevakning skapad!</h2>
+            <p class="text-green-700">Vi har skickat ett bekräftelsemail till <strong>@_email</strong>. Klicka på länken i mailet för att aktivera din bevakning.</p>
+        </div>
+    }
+    else
+    {
+        @if (!string.IsNullOrEmpty(_error))
+        {
+            <div class="bg-red-50 border border-red-200 rounded-xl p-4 mb-6 text-red-700">@_error</div>
+        }
+
+        <form method="post" @onsubmit="HandleSubmit" @formname="alert-form" class="bg-white rounded-xl shadow-md p-6 space-y-5">
+            <AntiforgeryToken />
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label for="from" class="block text-sm font-medium text-gray-700 mb-1">Från</label>
+                    <select id="from" name="from" @bind="_from" class="w-full border border-gray-300 rounded-lg px-3 py-2.5 focus:ring-2 focus:ring-sky-500 focus:border-sky-500 outline-none">
+                        <option value="">Välj avgångsflygplats</option>
+                        @foreach (var airport in IataData.SwedishAirports)
+                        {
+                            <option value="@airport.Key">@airport.Value (@airport.Key)</option>
+                        }
+                    </select>
+                </div>
+                <div>
+                    <label for="to" class="block text-sm font-medium text-gray-700 mb-1">Till</label>
+                    <select id="to" name="to" @bind="_to" class="w-full border border-gray-300 rounded-lg px-3 py-2.5 focus:ring-2 focus:ring-sky-500 focus:border-sky-500 outline-none">
+                        <option value="">Välj destination</option>
+                        @foreach (var dest in IataData.PopularDestinations)
+                        {
+                            <option value="@dest.Key">@dest.Value (@dest.Key)</option>
+                        }
+                    </select>
+                </div>
+            </div>
+
+            <div>
+                <label for="maxprice" class="block text-sm font-medium text-gray-700 mb-1">Maxpris (SEK)</label>
+                <input id="maxprice" type="number" name="maxprice" @bind="_maxPrice" min="100" max="50000" placeholder="5000"
+                       class="w-full border border-gray-300 rounded-lg px-3 py-2.5 focus:ring-2 focus:ring-sky-500 focus:border-sky-500 outline-none" />
+                <p class="text-xs text-gray-400 mt-1">Du får notis när priset sjunker under detta belopp.</p>
+            </div>
+
+            <div>
+                <label for="email" class="block text-sm font-medium text-gray-700 mb-1">E-post</label>
+                <input id="email" type="email" name="email" @bind="_email" placeholder="din@email.se" required
+                       class="w-full border border-gray-300 rounded-lg px-3 py-2.5 focus:ring-2 focus:ring-sky-500 focus:border-sky-500 outline-none" />
+            </div>
+
+            <button type="submit"
+                    class="w-full bg-sky-500 hover:bg-sky-600 text-white font-semibold py-3 rounded-lg transition-colors shadow-md">
+                Skapa bevakning
+            </button>
+        </form>
+    }
+</div>
+
+@code {
+    private string _from = "";
+    private string _to = "";
+    private int _maxPrice = 5000;
+    private string _email = "";
+    private string _error = "";
+    private bool _submitted;
+
+    private async Task HandleSubmit()
+    {
+        if (string.IsNullOrEmpty(_from) || string.IsNullOrEmpty(_to))
+        {
+            _error = "Välj avgångsflygplats och destination.";
+            return;
+        }
+        if (string.IsNullOrEmpty(_email) || !_email.Contains('@'))
+        {
+            _error = "Ange en giltig e-postadress.";
+            return;
+        }
+        if (_maxPrice < 100 || _maxPrice > 50000)
+        {
+            _error = "Maxpris måste vara mellan 100 och 50 000 SEK.";
+            return;
+        }
+
+        try
+        {
+            await using var db = await DbFactory.CreateDbContextAsync();
+
+            // Check alert limit per email
+            var existingAlerts = await db.PriceAlerts.CountAsync(a => a.Email == _email && a.IsActive);
+            if (existingAlerts >= 5)
+            {
+                _error = "Du kan ha max 5 aktiva bevakningar per e-postadress.";
+                return;
+            }
+
+            // Find or create route
+            var route = await db.FlightRoutes
+                .FirstOrDefaultAsync(r => r.OriginIata == _from && r.DestinationIata == _to);
+
+            if (route is null)
+            {
+                route = new FlightRoute
+                {
+                    OriginIata = _from,
+                    DestinationIata = _to,
+                    OriginCity = IataData.GetCityName(_from),
+                    DestinationCity = IataData.GetCityName(_to),
+                    IsPopular = false
+                };
+                db.FlightRoutes.Add(route);
+                await db.SaveChangesAsync();
+            }
+
+            var token = Guid.NewGuid().ToString("N");
+            db.PriceAlerts.Add(new PriceAlert
+            {
+                Email = _email,
+                FlightRouteId = route.Id,
+                MaxPrice = _maxPrice,
+                IsActive = true,
+                IsConfirmed = false,
+                ConfirmationToken = token
+            });
+            await db.SaveChangesAsync();
+
+            var baseUrl = Environment.GetEnvironmentVariable("BASE_URL") ?? "https://flygio.se";
+            var confirmUrl = $"{baseUrl}/bevakning/bekrafta/{token}";
+            var routeDesc = $"{IataData.GetCityName(_from)} → {IataData.GetCityName(_to)}";
+
+            await EmailService.SendConfirmationEmailAsync(_email, confirmUrl, routeDesc);
+
+            _submitted = true;
+        }
+        catch (Exception)
+        {
+            _error = "Något gick fel. Försök igen senare.";
+        }
+    }
+}

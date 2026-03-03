@@ -1,0 +1,102 @@
+@page "/sok"
+@inject IFlightSearchService FlightSearch
+
+<PageTitle>Sök flyg - Flygio.se</PageTitle>
+<HeadContent>
+    <meta name="robots" content="noindex" />
+</HeadContent>
+
+<div class="max-w-7xl mx-auto px-4 py-8">
+    <h1 class="text-3xl font-bold text-sky-900 mb-6">Sök flyg</h1>
+
+    <div class="mb-8">
+        <SearchForm />
+    </div>
+
+    @if (!string.IsNullOrEmpty(From) && !string.IsNullOrEmpty(To))
+    {
+        <h2 class="text-xl font-semibold text-gray-800 mb-4">
+            Flyg från @IataData.GetCityName(From) till @IataData.GetCityName(To)
+            @if (!string.IsNullOrEmpty(Date))
+            {
+                <span class="text-gray-500 font-normal">(@Date)</span>
+            }
+        </h2>
+
+        @if (_loading)
+        {
+            <div class="text-center py-12">
+                <div class="inline-block w-8 h-8 border-4 border-sky-200 border-t-sky-500 rounded-full animate-spin"></div>
+                <p class="text-gray-500 mt-3">Söker flygpriser...</p>
+            </div>
+        }
+        else if (_offers.Count > 0)
+        {
+            <p class="text-sm text-gray-500 mb-4">@_offers.Count flyg hittade</p>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                @foreach (var offer in _offers)
+                {
+                    <PriceCard Offer="offer" />
+                }
+            </div>
+        }
+        else
+        {
+            <div class="text-center py-12 bg-white rounded-xl shadow-md">
+                <svg class="w-16 h-16 text-gray-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <h3 class="text-lg font-semibold text-gray-700 mb-2">Inga flyg hittades</h3>
+                <p class="text-gray-500">Prova att ändra datum eller destination.</p>
+            </div>
+        }
+    }
+    else
+    {
+        <div class="text-center py-12 text-gray-500">
+            <p>Fyll i formuläret ovan för att söka flyg.</p>
+        </div>
+    }
+</div>
+
+@code {
+    [SupplyParameterFromQuery(Name = "from")] public string? From { get; set; }
+    [SupplyParameterFromQuery(Name = "to")] public string? To { get; set; }
+    [SupplyParameterFromQuery(Name = "date")] public string? Date { get; set; }
+
+    private List<FlightOffer> _offers = [];
+    private bool _loading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (string.IsNullOrEmpty(From) || string.IsNullOrEmpty(To))
+        {
+            _loading = false;
+            return;
+        }
+
+        try
+        {
+            var latest = await FlightSearch.GetLatestPricesAsync(From, To);
+            var cheapest = await FlightSearch.GetCheapestAsync(From, To);
+
+            var seen = new HashSet<string>();
+            var merged = new List<FlightOffer>();
+
+            foreach (var offer in latest.Concat(cheapest).OrderBy(o => o.Price))
+            {
+                var key = $"{offer.DepartureDate:yyyyMMdd}_{offer.Price}_{offer.Airline}";
+                if (seen.Add(key))
+                    merged.Add(offer);
+            }
+
+            _offers = merged;
+        }
+        catch
+        {
+            _offers = [];
+        }
+
+        _loading = false;
+    }
+}

@@ -1,0 +1,98 @@
+@page "/guider/{Slug}"
+@using Microsoft.EntityFrameworkCore
+@inject IDbContextFactory<FlygioDbContext> DbFactory
+@inject AffiliateService Affiliate
+
+<div class="max-w-4xl mx-auto px-4 py-8">
+    @if (_article is not null)
+    {
+        <PageTitle>@_article.Title | Flygio.se</PageTitle>
+        <HeadContent>
+            <meta name="description" content="@_article.MetaDescription" />
+            <meta property="og:title" content="@_article.Title" />
+            <meta property="og:description" content="@_article.MetaDescription" />
+            <meta property="og:type" content="article" />
+            <meta property="og:url" content="https://flygio.se/guider/@_article.Slug" />
+            <link rel="canonical" href="https://flygio.se/guider/@_article.Slug" />
+            <script type="application/ld+json">
+            {
+                "@@context": "https://schema.org",
+                "@@type": "Article",
+                "headline": "@_article.Title",
+                "description": "@_article.MetaDescription",
+                "datePublished": "@_article.CreatedAt.ToString("yyyy-MM-dd")",
+                "dateModified": "@_article.UpdatedAt.ToString("yyyy-MM-dd")",
+                "publisher": {
+                    "@@type": "Organization",
+                    "name": "Flygio.se",
+                    "url": "https://flygio.se"
+                }
+            }
+            </script>
+        </HeadContent>
+
+        <!-- Breadcrumb -->
+        <nav class="text-sm text-gray-500 mb-6">
+            <a href="/" class="hover:text-sky-600">Hem</a>
+            <span class="mx-1">›</span>
+            <a href="/guider" class="hover:text-sky-600">Guider</a>
+            <span class="mx-1">›</span>
+            <span class="text-gray-700">@_article.Title</span>
+        </nav>
+
+        <article>
+            <h1 class="text-3xl md:text-4xl font-bold text-sky-900 mb-4">@_article.Title</h1>
+            <p class="text-gray-500 text-sm mb-8">Uppdaterad @_article.UpdatedAt.ToString("d MMMM yyyy", new System.Globalization.CultureInfo("sv-SE"))</p>
+
+            <div class="prose prose-lg max-w-none mb-8">
+                @((MarkupString)_article.Content)
+            </div>
+        </article>
+
+        <!-- Related route CTA -->
+        @if (!string.IsNullOrEmpty(_article.DestinationIata))
+        {
+            <div class="bg-sky-50 rounded-xl p-6 text-center mt-8">
+                <h2 class="text-xl font-semibold text-gray-800 mb-3">Flyg till @_article.DestinationCity</h2>
+                <p class="text-gray-600 mb-4">Hitta billiga flygbiljetter till @_article.DestinationCity från Sverige.</p>
+                <div class="flex flex-wrap gap-3 justify-center">
+                    <a href="/flyg/ARN-@_article.DestinationIata" class="bg-sky-500 hover:bg-sky-600 text-white px-5 py-2.5 rounded-lg font-medium transition-colors">
+                        Från Stockholm
+                    </a>
+                    <AffiliateButton Url="@_affiliateUrl" Text="@($"Boka flyg till {_article.DestinationCity}")" DestinationIata="@_article.DestinationIata" />
+                </div>
+            </div>
+        }
+    }
+    else
+    {
+        <PageTitle>Artikel hittades inte | Flygio.se</PageTitle>
+        <div class="text-center py-16">
+            <h1 class="text-2xl font-bold text-gray-700 mb-2">Artikel hittades inte</h1>
+            <p class="text-gray-500 mb-4">Denna guide finns inte eller har tagits bort.</p>
+            <a href="/guider" class="text-sky-600 hover:text-sky-700 font-medium">Visa alla guider →</a>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter] public string Slug { get; set; } = "";
+
+    private Article? _article;
+    private string _affiliateUrl = "#";
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            await using var db = await DbFactory.CreateDbContextAsync();
+            _article = await db.Articles.FirstOrDefaultAsync(a => a.Slug == Slug && a.IsPublished);
+
+            if (_article?.DestinationIata is not null)
+            {
+                _affiliateUrl = Affiliate.GenerateGenericLink("ARN", _article.DestinationIata);
+            }
+        }
+        catch { }
+    }
+}

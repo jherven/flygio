@@ -1,21 +1,176 @@
 @page "/"
+@using Microsoft.EntityFrameworkCore
+@inject IFlightSearchService FlightSearch
+@inject IDbContextFactory<FlygioDbContext> DbFactory
 
-<div class="flex items-center justify-center min-h-screen px-4">
-    <div class="text-center max-w-lg">
-        <h1 class="text-5xl font-bold text-sky-900 mb-2">
-            flygio<span class="text-sky-500">.se</span>
+<PageTitle>Flygio.se - Hitta billiga flygbiljetter | Flygpris-tracker</PageTitle>
+<HeadContent>
+    <meta name="description" content="Hitta billiga flygbiljetter från Sverige. Bevaka flygpriser och få notiser vid prisfall. Jämför priser till populära resmål." />
+    <meta property="og:title" content="Flygio.se - Hitta billiga flygbiljetter" />
+    <meta property="og:description" content="Sveriges smartaste flygpris-tracker. Bevaka flygpriser och få notiser vid prisfall." />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://flygio.se" />
+    <link rel="canonical" href="https://flygio.se/" />
+    <script type="application/ld+json">
+    {
+        "@@context": "https://schema.org",
+        "@@type": "WebSite",
+        "name": "Flygio.se",
+        "url": "https://flygio.se",
+        "description": "Sveriges smartaste flygpris-tracker",
+        "potentialAction": {
+            "@@type": "SearchAction",
+            "target": "https://flygio.se/sok?from={from}&to={to}",
+            "query-input": "required name=from required name=to"
+        }
+    }
+    </script>
+</HeadContent>
+
+<!-- Hero -->
+<section class="py-16 md:py-24 px-4">
+    <div class="max-w-4xl mx-auto text-center">
+        <h1 class="text-4xl md:text-6xl font-bold text-sky-900 mb-4">
+            Hitta billiga <span class="text-sky-500">flygbiljetter</span>
         </h1>
-        <p class="text-xl text-sky-700 mb-8">
-            Sveriges smartaste flygpris-tracker
+        <p class="text-lg md:text-xl text-gray-600 mb-8">
+            Jämför priser, bevaka rutter och få notiser vid prisfall.
         </p>
-        <div class="bg-white/80 backdrop-blur rounded-2xl shadow-lg p-8 mb-8">
-            <p class="text-gray-600 text-lg mb-4">
-                Vi bygger något riktigt bra.
-            </p>
-            <p class="text-gray-500">
-                Bevaka flygpriser. Få notiser vid prisfall. Hitta de billigaste flygbiljetterna.
-            </p>
-        </div>
-        <p class="text-sm text-sky-600/60">Kommer snart</p>
+        <SearchForm />
     </div>
-</div>
+</section>
+
+<!-- Popular Routes -->
+<section class="py-12 px-4 bg-white/50">
+    <div class="max-w-7xl mx-auto">
+        <h2 class="text-2xl font-bold text-gray-800 mb-6 text-center">Populära rutter från Stockholm</h2>
+        @if (_popularRoutes.Count > 0)
+        {
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                @foreach (var route in _popularRoutes.Take(8))
+                {
+                    <a href="/flyg/@(route.Origin)-@(route.Destination)" class="bg-white rounded-xl shadow-md hover:shadow-lg transition-shadow p-5 block">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="font-semibold text-gray-800">@route.DestinationCity</span>
+                            <span class="text-xs bg-sky-100 text-sky-700 px-2 py-1 rounded-full">@route.Origin → @route.Destination</span>
+                        </div>
+                        @if (route.CheapestPrice.HasValue)
+                        {
+                            <div>
+                                <span class="text-sm text-gray-500">Från</span>
+                                <span class="text-2xl font-bold text-sky-600 ml-1">@route.CheapestPrice.Value.ToString("N0")</span>
+                                <span class="text-sm text-gray-500 ml-1">SEK</span>
+                            </div>
+                        }
+                    </a>
+                }
+            </div>
+        }
+        else
+        {
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                @foreach (var dest in _fallbackRoutes)
+                {
+                    <a href="/flyg/ARN-@dest.Key" class="bg-white rounded-xl shadow-md hover:shadow-lg transition-shadow p-5 block">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="font-semibold text-gray-800">@dest.Value</span>
+                            <span class="text-xs bg-sky-100 text-sky-700 px-2 py-1 rounded-full">ARN → @dest.Key</span>
+                        </div>
+                    </a>
+                }
+            </div>
+        }
+    </div>
+</section>
+
+<!-- How it works -->
+<section class="py-16 px-4">
+    <div class="max-w-5xl mx-auto">
+        <h2 class="text-2xl font-bold text-gray-800 mb-10 text-center">Så funkar det</h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div class="text-center">
+                <div class="w-16 h-16 bg-sky-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <svg class="w-8 h-8 text-sky-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                </div>
+                <h3 class="text-lg font-semibold text-gray-800 mb-2">1. Sök</h3>
+                <p class="text-gray-600">Sök bland tusentals flyg och hitta de bästa priserna till ditt resmål.</p>
+            </div>
+            <div class="text-center">
+                <div class="w-16 h-16 bg-sky-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <svg class="w-8 h-8 text-sky-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                    </svg>
+                </div>
+                <h3 class="text-lg font-semibold text-gray-800 mb-2">2. Bevaka</h3>
+                <p class="text-gray-600">Skapa en prisbevakning och få notiser direkt när priserna sjunker.</p>
+            </div>
+            <div class="text-center">
+                <div class="w-16 h-16 bg-sky-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <svg class="w-8 h-8 text-sky-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                    </svg>
+                </div>
+                <h3 class="text-lg font-semibold text-gray-800 mb-2">3. Boka</h3>
+                <p class="text-gray-600">Boka ditt flyg till bästa pris via våra partners.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Latest Articles -->
+@if (_articles.Count > 0)
+{
+    <section class="py-12 px-4 bg-white/50">
+        <div class="max-w-7xl mx-auto">
+            <h2 class="text-2xl font-bold text-gray-800 mb-6 text-center">Reseguider</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                @foreach (var article in _articles.Take(3))
+                {
+                    <a href="/guider/@article.Slug" class="bg-white rounded-xl shadow-md hover:shadow-lg transition-shadow p-5 block">
+                        <h3 class="font-semibold text-gray-800 mb-2">@article.Title</h3>
+                        <p class="text-sm text-gray-600 line-clamp-2">@article.MetaDescription</p>
+                    </a>
+                }
+            </div>
+            <div class="text-center mt-6">
+                <a href="/guider" class="text-sky-600 hover:text-sky-700 font-medium">Visa alla guider →</a>
+            </div>
+        </div>
+    </section>
+}
+
+@code {
+    private List<PopularRoute> _popularRoutes = [];
+    private List<Article> _articles = [];
+
+    private static readonly Dictionary<string, string> _fallbackRoutes = new()
+    {
+        ["BCN"] = "Barcelona",
+        ["BKK"] = "Bangkok",
+        ["LHR"] = "London",
+        ["AGP"] = "Malaga",
+        ["ATH"] = "Aten",
+        ["PMI"] = "Palma de Mallorca",
+        ["IST"] = "Istanbul",
+        ["FCO"] = "Rom"
+    };
+
+    protected override async Task OnInitializedAsync()
+    {
+        try { _popularRoutes = await FlightSearch.GetPopularRoutesAsync("ARN"); }
+        catch { _popularRoutes = []; }
+
+        try
+        {
+            await using var db = await DbFactory.CreateDbContextAsync();
+            _articles = await db.Articles
+                .Where(a => a.IsPublished)
+                .OrderByDescending(a => a.CreatedAt)
+                .Take(3)
+                .ToListAsync();
+        }
+        catch { _articles = []; }
+    }
+}

@@ -1,0 +1,66 @@
+@using Flygio.Services.DTOs
+@inject IJSRuntime JS
+
+<div class="bg-white rounded-xl shadow-md p-5">
+    <h3 class="text-lg font-semibold text-gray-800 mb-4">@Title</h3>
+    <canvas id="@_canvasId" style="max-height: 300px;"></canvas>
+</div>
+
+@code {
+    [Parameter] public string Title { get; set; } = "Prisutveckling";
+    [Parameter] public List<CalendarPrice> Prices { get; set; } = [];
+
+    private readonly string _canvasId = $"chart-{Guid.NewGuid():N}";
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender && Prices.Count > 0)
+        {
+            var labels = Prices.OrderBy(p => p.Date).Select(p => p.Date.ToString("d MMM", new System.Globalization.CultureInfo("sv-SE"))).ToArray();
+            var data = Prices.OrderBy(p => p.Date).Select(p => p.Price).ToArray();
+
+            await JS.InvokeVoidAsync("eval", $$"""
+                (function() {
+                    const ctx = document.getElementById('{{_canvasId}}');
+                    if (!ctx) return;
+                    new Chart(ctx, {
+                        type: 'line',
+                        data: {
+                            labels: {{System.Text.Json.JsonSerializer.Serialize(labels)}},
+                            datasets: [{
+                                label: 'Pris (SEK)',
+                                data: {{System.Text.Json.JsonSerializer.Serialize(data)}},
+                                borderColor: '#0ea5e9',
+                                backgroundColor: 'rgba(14, 165, 233, 0.1)',
+                                fill: true,
+                                tension: 0.3,
+                                pointRadius: 3,
+                                pointHoverRadius: 6
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: { display: false },
+                                tooltip: {
+                                    callbacks: {
+                                        label: function(ctx) { return ctx.parsed.y.toLocaleString('sv-SE') + ' SEK'; }
+                                    }
+                                }
+                            },
+                            scales: {
+                                y: {
+                                    beginAtZero: false,
+                                    ticks: {
+                                        callback: function(v) { return v.toLocaleString('sv-SE') + ' kr'; }
+                                    }
+                                }
+                            }
+                        }
+                    });
+                })();
+            """);
+        }
+    }
+}

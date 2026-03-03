@@ -1,0 +1,44 @@
+@page "/bevakning/avsluta/{Token}"
+@using Microsoft.EntityFrameworkCore
+@inject IDbContextFactory<FlygioDbContext> DbFactory
+
+<PageTitle>Avsluta bevakning - Flygio.se</PageTitle>
+
+<div class="max-w-lg mx-auto px-4 py-16 text-center">
+    @if (_cancelled)
+    {
+        <svg class="w-16 h-16 text-sky-500 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+        <h1 class="text-2xl font-bold text-gray-800 mb-2">Bevakning avslutad</h1>
+        <p class="text-gray-600 mb-6">Du kommer inte längre att få notiser för denna rutt.</p>
+        <a href="/bevakning" class="text-sky-600 hover:text-sky-700 font-medium">Skapa ny bevakning →</a>
+    }
+    else
+    {
+        <h1 class="text-2xl font-bold text-gray-800 mb-2">Ogiltig länk</h1>
+        <p class="text-gray-600">Denna länk är ogiltig eller har redan använts.</p>
+    }
+</div>
+
+@code {
+    [Parameter] public string Token { get; set; } = "";
+    private bool _cancelled;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            await using var db = await DbFactory.CreateDbContextAsync();
+            var alert = await db.PriceAlerts.FirstOrDefaultAsync(a => a.ConfirmationToken == Token && a.IsActive);
+
+            if (alert is not null)
+            {
+                alert.IsActive = false;
+                await db.SaveChangesAsync();
+                _cancelled = true;
+            }
+        }
+        catch { }
+    }
+}

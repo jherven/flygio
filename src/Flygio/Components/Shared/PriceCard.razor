@@ -1,0 +1,58 @@
+@using Flygio.Configuration
+@using Flygio.Services
+@using Flygio.Services.DTOs
+@inject AffiliateService Affiliate
+
+<div class="bg-white rounded-xl shadow-md hover:shadow-lg transition-shadow p-5 flex flex-col gap-3">
+    <div class="flex items-center justify-between">
+        <div>
+            <span class="text-sm text-gray-500">@IataData.GetCityName(Offer.Origin)</span>
+            <span class="text-gray-400 mx-1">→</span>
+            <span class="font-semibold text-gray-800">@IataData.GetCityName(Offer.Destination)</span>
+        </div>
+        @if (!string.IsNullOrEmpty(Offer.Airline))
+        {
+            <span class="text-xs bg-sky-100 text-sky-700 px-2 py-1 rounded-full">@Offer.Airline</span>
+        }
+    </div>
+
+    <div class="flex items-end justify-between">
+        <div>
+            <span class="text-3xl font-bold text-sky-600">@Offer.Price.ToString("N0")</span>
+            <span class="text-sm text-gray-500 ml-1">SEK</span>
+        </div>
+        <div class="text-right text-sm text-gray-500">
+            <div>@Offer.DepartureDate.ToString("d MMM", new System.Globalization.CultureInfo("sv-SE"))</div>
+            @if (Offer.ReturnDate.HasValue)
+            {
+                <div>Retur @Offer.ReturnDate.Value.ToString("d MMM", new System.Globalization.CultureInfo("sv-SE"))</div>
+            }
+        </div>
+    </div>
+
+    @if (Offer.NumberOfChanges > 0)
+    {
+        <div class="text-xs text-gray-400">@Offer.NumberOfChanges byte@(Offer.NumberOfChanges > 1 ? "n" : "")</div>
+    }
+    else
+    {
+        <div class="text-xs text-green-600 font-medium">Direktflyg</div>
+    }
+
+    <a href="/go?url=@(System.Net.WebUtility.UrlEncode(AffiliateUrl))&dest=@Offer.Destination"
+       rel="nofollow sponsored"
+       target="_blank"
+       class="mt-auto text-center bg-orange-500 hover:bg-orange-600 text-white font-semibold py-2.5 rounded-lg transition-colors">
+        Se pris & boka
+    </a>
+</div>
+
+@code {
+    [Parameter, EditorRequired] public FlightOffer Offer { get; set; } = null!;
+
+    private string AffiliateUrl => Affiliate.GenerateLink(
+        Offer.Origin,
+        Offer.Destination,
+        Offer.DepartureDate,
+        Offer.ReturnDate);
+}

@@ -1,5 +1,24 @@
-﻿@page "/not-found"
+@page "/not-found"
 @layout MainLayout
 
-<h3>Not Found</h3>
-<p>Sorry, the content you are looking for does not exist.</p>
+<PageTitle>Sidan hittades inte - Flygio.se</PageTitle>
+
+<div class="max-w-lg mx-auto px-4 py-16 text-center">
+    <div class="text-8xl font-bold text-sky-200 mb-4">404</div>
+    <h1 class="text-2xl font-bold text-gray-800 mb-3">Sidan hittades inte</h1>
+    <p class="text-gray-600 mb-6">Sidan du letar efter finns inte eller har flyttats.</p>
+
+    <div class="bg-white rounded-xl shadow-md p-6 mb-6 text-left">
+        <h2 class="font-semibold text-gray-800 mb-3">Kanske du letar efter:</h2>
+        <ul class="space-y-2">
+            <li><a href="/sok" class="text-sky-600 hover:text-sky-700">Sök flyg →</a></li>
+            <li><a href="/rutter" class="text-sky-600 hover:text-sky-700">Populära rutter →</a></li>
+            <li><a href="/guider" class="text-sky-600 hover:text-sky-700">Reseguider →</a></li>
+            <li><a href="/bevakning" class="text-sky-600 hover:text-sky-700">Prisbevakning →</a></li>
+        </ul>
+    </div>
+
+    <a href="/" class="bg-sky-500 hover:bg-sky-600 text-white px-6 py-2.5 rounded-lg font-medium transition-colors inline-block">
+        Tillbaka till startsidan
+    </a>
+</div>

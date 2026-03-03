@@ -1,0 +1,96 @@
+@page "/rutter"
+@using Microsoft.EntityFrameworkCore
+@inject IDbContextFactory<FlygioDbContext> DbFactory
+
+<PageTitle>Populära flygrutter från Sverige | Flygio.se</PageTitle>
+<HeadContent>
+    <meta name="description" content="Se populära flygrutter från Stockholm, Göteborg och Malmö. Jämför priser och hitta billiga flygbiljetter till populära resmål." />
+    <meta property="og:title" content="Populära flygrutter från Sverige | Flygio.se" />
+    <meta property="og:description" content="Se populära flygrutter från Stockholm, Göteborg och Malmö." />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://flygio.se/rutter" />
+    <link rel="canonical" href="https://flygio.se/rutter" />
+</HeadContent>
+
+<div class="max-w-7xl mx-auto px-4 py-8">
+    <h1 class="text-3xl font-bold text-sky-900 mb-8">Populära flygrutter</h1>
+
+    @if (_routesByOrigin.Count == 0)
+    {
+        <div class="text-center py-12 text-gray-500">
+            <p>Inga rutter tillgängliga ännu. Kom tillbaka snart!</p>
+        </div>
+    }
+    else
+    {
+        @foreach (var group in _routesByOrigin)
+        {
+            <div class="mb-10">
+                <h2 class="text-xl font-semibold text-gray-800 mb-4">Från @IataData.GetCityName(group.Key) (@group.Key)</h2>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                    @foreach (var route in group.Value)
+                    {
+                        <a href="/flyg/@(route.OriginIata)-@(route.DestinationIata)"
+                           class="bg-white rounded-xl shadow-md hover:shadow-lg transition-shadow p-5 block">
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="font-semibold text-gray-800">@route.DestinationCity</span>
+                                <span class="text-xs bg-sky-100 text-sky-700 px-2 py-1 rounded-full">@route.OriginIata → @route.DestinationIata</span>
+                            </div>
+                            @if (route.LatestPrice > 0)
+                            {
+                                <div>
+                                    <span class="text-sm text-gray-500">Från</span>
+                                    <span class="text-2xl font-bold text-sky-600 ml-1">@route.LatestPrice.ToString("N0")</span>
+                                    <span class="text-sm text-gray-500 ml-1">SEK</span>
+                                </div>
+                            }
+                        </a>
+                    }
+                </div>
+            </div>
+        }
+    }
+</div>
+
+@code {
+    private Dictionary<string, List<RouteWithPrice>> _routesByOrigin = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            await using var db = await DbFactory.CreateDbContextAsync();
+            var routes = await db.FlightRoutes
+                .Where(r => r.IsPopular)
+                .OrderBy(r => r.OriginIata)
+                .ThenBy(r => r.DestinationCity)
+                .Select(r => new RouteWithPrice
+                {
+                    OriginIata = r.OriginIata,
+                    DestinationIata = r.DestinationIata,
+                    DestinationCity = r.DestinationCity,
+                    LatestPrice = r.PricePoints
+                        .OrderByDescending(p => p.FoundAt)
+                        .Select(p => p.Price)
+                        .FirstOrDefault()
+                })
+                .ToListAsync();
+
+            _routesByOrigin = routes
+                .GroupBy(r => r.OriginIata)
+                .ToDictionary(g => g.Key, g => g.ToList());
+        }
+        catch
+        {
+            _routesByOrigin = [];
+        }
+    }
+
+    private class RouteWithPrice
+    {
+        public string OriginIata { get; set; } = "";
+        public string DestinationIata { get; set; } = "";
+        public string DestinationCity { get; set; } = "";
+        public int LatestPrice { get; set; }
+    }
+}

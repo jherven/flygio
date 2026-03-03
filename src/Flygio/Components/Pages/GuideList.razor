@@ -1,0 +1,91 @@
+@page "/guider"
+@page "/guider/sida/{PageNumber:int}"
+@using Microsoft.EntityFrameworkCore
+@inject IDbContextFactory<FlygioDbContext> DbFactory
+
+<PageTitle>Reseguider - Flygio.se</PageTitle>
+<HeadContent>
+    <meta name="description" content="Reseguider och tips för populära resmål. Hitta information om billiga flyg, bästa restid och sevärdheter." />
+    <meta property="og:title" content="Reseguider - Flygio.se" />
+    <meta property="og:description" content="Reseguider och tips för populära resmål från Sverige." />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://flygio.se/guider" />
+    <link rel="canonical" href="https://flygio.se/guider" />
+</HeadContent>
+
+<div class="max-w-7xl mx-auto px-4 py-8">
+    <h1 class="text-3xl font-bold text-sky-900 mb-2">Reseguider</h1>
+    <p class="text-gray-600 mb-8">Tips och guider för populära resmål från Sverige.</p>
+
+    @if (_articles.Count > 0)
+    {
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            @foreach (var article in _articles)
+            {
+                <a href="/guider/@article.Slug" class="bg-white rounded-xl shadow-md hover:shadow-lg transition-shadow overflow-hidden block">
+                    <div class="bg-gradient-to-r from-sky-400 to-blue-500 h-32 flex items-center justify-center">
+                        <span class="text-white text-4xl font-bold opacity-30">@(article.DestinationCity ?? article.Title[..1])</span>
+                    </div>
+                    <div class="p-5">
+                        <h2 class="font-semibold text-gray-800 mb-2 line-clamp-2">@article.Title</h2>
+                        <p class="text-sm text-gray-600 line-clamp-2 mb-3">@article.MetaDescription</p>
+                        @if (!string.IsNullOrEmpty(article.DestinationCity))
+                        {
+                            <span class="text-xs bg-sky-100 text-sky-700 px-2 py-1 rounded-full">@article.DestinationCity</span>
+                        }
+                    </div>
+                </a>
+            }
+        </div>
+
+        <!-- Pagination -->
+        @if (_totalPages > 1)
+        {
+            <nav class="flex justify-center gap-2 mt-8">
+                @for (var i = 1; i <= _totalPages; i++)
+                {
+                    var pageNum = i;
+                    <a href="@($"/guider/sida/{pageNum}")"
+                       class="@(pageNum == _currentPage ? "px-4 py-2 rounded-lg bg-sky-500 text-white shadow-sm transition-colors" : "px-4 py-2 rounded-lg bg-white text-gray-700 hover:bg-gray-100 shadow-sm transition-colors")">
+                        @pageNum
+                    </a>
+                }
+            </nav>
+        }
+    }
+    else
+    {
+        <div class="text-center py-12 text-gray-500">
+            <p>Inga guider tillgängliga ännu. Kom tillbaka snart!</p>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter] public int PageNumber { get; set; } = 1;
+
+    private List<Article> _articles = [];
+    private int _currentPage = 1;
+    private int _totalPages = 1;
+    private const int PageSize = 12;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _currentPage = PageNumber < 1 ? 1 : PageNumber;
+
+        try
+        {
+            await using var db = await DbFactory.CreateDbContextAsync();
+            var total = await db.Articles.CountAsync(a => a.IsPublished);
+            _totalPages = Math.Max(1, (int)Math.Ceiling(total / (double)PageSize));
+
+            _articles = await db.Articles
+                .Where(a => a.IsPublished)
+                .OrderByDescending(a => a.CreatedAt)
+                .Skip((_currentPage - 1) * PageSize)
+                .Take(PageSize)
+                .ToListAsync();
+        }
+        catch { _articles = []; }
+    }
+}

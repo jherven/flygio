@@ -1,0 +1,80 @@
+@rendermode InteractiveServer
+@using Flygio.Configuration
+@inject NavigationManager Navigation
+
+<div class="bg-white rounded-2xl shadow-lg p-6 max-w-3xl mx-auto">
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div>
+            <label for="from" class="block text-sm font-medium text-gray-700 mb-1">Från</label>
+            <input id="from" type="text" list="airports-from" @bind="FromInput" placeholder="Stockholm (ARN)"
+                   class="w-full border border-gray-300 rounded-lg px-3 py-2.5 focus:ring-2 focus:ring-sky-500 focus:border-sky-500 outline-none" />
+            <datalist id="airports-from">
+                @foreach (var airport in IataData.SwedishAirports)
+                {
+                    <option value="@airport.Key">@airport.Value (@airport.Key)</option>
+                }
+            </datalist>
+        </div>
+        <div>
+            <label for="to" class="block text-sm font-medium text-gray-700 mb-1">Till</label>
+            <input id="to" type="text" list="airports-to" @bind="ToInput" placeholder="Barcelona (BCN)"
+                   class="w-full border border-gray-300 rounded-lg px-3 py-2.5 focus:ring-2 focus:ring-sky-500 focus:border-sky-500 outline-none" />
+            <datalist id="airports-to">
+                @foreach (var dest in IataData.PopularDestinations)
+                {
+                    <option value="@dest.Key">@dest.Value (@dest.Key)</option>
+                }
+                @foreach (var airport in IataData.SwedishAirports)
+                {
+                    <option value="@airport.Key">@airport.Value (@airport.Key)</option>
+                }
+            </datalist>
+        </div>
+        <div>
+            <label for="date" class="block text-sm font-medium text-gray-700 mb-1">Datum</label>
+            <input id="date" type="date" @bind="DateInput" min="@DateTime.Today.ToString("yyyy-MM-dd")"
+                   class="w-full border border-gray-300 rounded-lg px-3 py-2.5 focus:ring-2 focus:ring-sky-500 focus:border-sky-500 outline-none" />
+        </div>
+        <div class="flex items-end">
+            <button @onclick="DoSearch"
+                    class="w-full bg-sky-500 hover:bg-sky-600 text-white font-semibold py-2.5 rounded-lg transition-colors shadow-md hover:shadow-lg">
+                Sök flyg
+            </button>
+        </div>
+    </div>
+</div>
+
+@code {
+    private string FromInput { get; set; } = "";
+    private string ToInput { get; set; } = "";
+    private DateTime? DateInput { get; set; }
+
+    private void DoSearch()
+    {
+        var from = ExtractIata(FromInput);
+        var to = ExtractIata(ToInput);
+
+        if (string.IsNullOrEmpty(from) || string.IsNullOrEmpty(to)) return;
+
+        var url = $"/sok?from={from}&to={to}";
+        if (DateInput.HasValue)
+            url += $"&date={DateInput.Value:yyyy-MM-dd}";
+
+        Navigation.NavigateTo(url);
+    }
+
+    private static string ExtractIata(string input)
+    {
+        if (string.IsNullOrWhiteSpace(input)) return "";
+        var trimmed = input.Trim().ToUpperInvariant();
+        if (trimmed.Length == 3) return trimmed;
+        // Try to extract from "City (IATA)" format
+        var parenStart = input.LastIndexOf('(');
+        var parenEnd = input.LastIndexOf(')');
+        if (parenStart >= 0 && parenEnd > parenStart)
+        {
+            return input[(parenStart + 1)..parenEnd].Trim().ToUpperInvariant();
+        }
+        return trimmed.Length >= 3 ? trimmed[..3] : trimmed;
+    }
+}

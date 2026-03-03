@@ -1,163 +1,200 @@
 # Flygio.se - Projektplan
 
-## Fas 1: Projektgrund
+## Fas 0: Uppdatera projektfiler
+
+```json
+[
+  {
+    "id": "0.1",
+    "task": "Uppdatera PROMPT.md och plan.md till att reflektera alla beslut (Blazor SSR, .NET 10, ingen Anthropic API, Travelpayouts-first, ADMIN_API_KEY).",
+    "passes": true
+  }
+]
+```
+
+## Fas 1: Foundation
 
 ```json
 [
   {
     "id": "1.1",
-    "task": "Skapa solution-struktur: flygio.sln, src/Flygio/Flygio.csproj (.NET 8 web), tests/Flygio.Tests/Flygio.Tests.csproj. Lägg till .gitignore för .NET. Verifiera att dotnet build fungerar.",
-    "passes": false
+    "task": "Skapa flygio.sln i reporoten. Skapa tests/Flygio.Tests/Flygio.Tests.csproj (xUnit, net10.0, referens till Flygio.csproj, Moq). En smoke-test som passerar. Verifiera: dotnet build flygio.sln + dotnet test.",
+    "passes": true
   },
   {
     "id": "1.2",
-    "task": "Konfigurera Dockerfile för Railway-deploy: multi-stage build (sdk -> aspnet runtime), exponera PORT från miljövariabel. Skapa railway.toml med build/deploy-config.",
-    "passes": false
+    "task": "EF Core + PostgreSQL. NuGet: Npgsql.EntityFrameworkCore.PostgreSQL, Microsoft.EntityFrameworkCore.Design. Modeller: FlightRoute, PricePoint, PriceAlert, Article, AffiliateClick, Subscriber. FlygioDbContext med IDbContextFactory. DATABASE_URL-parsning. Auto-migration. Initial migration.",
+    "passes": true
   },
   {
     "id": "1.3",
-    "task": "Sätt upp Entity Framework Core med PostgreSQL-provider (Npgsql). Skapa FlygioDbContext. Konfigurera anslutningssträng via DATABASE_URL miljövariabel (Railway-format). Skapa alla modeller: FlightRoute, PricePoint, PriceAlert, Subscriber, Article. Skapa initial migration.",
-    "passes": false
+    "task": "Full layout i MainLayout.razor: sticky header med logo + nav, mobil hamburger-meny (CSS-only details/summary), footer med affiliate-disclaimer. Chart.js CDN i App.razor.",
+    "passes": true
   },
   {
     "id": "1.4",
-    "task": "Konfigurera grundläggande Razor Pages med _Layout.cshtml. Inkludera Tailwind CSS via CDN, Chart.js via CDN, Travelpayouts tracking-script (https://emrld.cc/NTAzOTk0.js?t=503994). Skapa responsiv layout med header (logo + nav), main content area, footer (om oss, kontakt, affiliate-disclaimer). Mobil-först design med hamburgermeny.",
-    "passes": false
+    "task": "Konfiguration: TravelpayoutsOptions, ResendOptions, IataData.cs med svenska flygplatser + destinationer, output caching middleware, health check /health, uppdatera railway.toml.",
+    "passes": true
   }
 ]
 ```
 
-## Fas 2: Flyg-API & Prissökning
+## Fas 2: Flyg-API & Sidor
 
 ```json
 [
   {
     "id": "2.1",
-    "task": "Skapa IFlightSearchService-interfacet med metoder: SearchFlightsAsync, GetPriceHistoryAsync, GetPopularRoutesAsync, GetCalendarPricesAsync. Implementera TravelpayoutsService som använder Travelpayouts Flight Data API (base URL: https://api.travelpayouts.com/v2/, auth via X-Access-Token header). Implementera endpoints: /prices/latest, /prices/cheap, /prices/calendar, /city-directions. Cacha svar i 1 timme. Registrera i DI. Skriv enhetstester med mockad HttpClient.",
-    "passes": false
+    "task": "IFlightSearchService interface + TravelpayoutsService: GetLatestPricesAsync, GetCheapestAsync, GetMonthMatrixAsync, GetCalendarPricesAsync, GetPopularRoutesAsync. HttpClient, X-Access-Token, rate limiting, IMemoryCache, DTOs, enhetstester.",
+    "passes": true
   },
   {
     "id": "2.2",
-    "task": "Skapa AmadeusService som implementerar IFlightSearchService (förberett för framtida bruk). OAuth2 client credentials flow med token caching. Registrera villkorligt i DI baserat på FLIGHT_API_PROVIDER miljövariabel (default: travelpayouts). Klassen ska finnas och kompilera men används inte i v1.",
-    "passes": false
+    "task": "AffiliateService: generera Travelpayouts-länkar, generic link utan datum. Enhetstester.",
+    "passes": true
   },
   {
     "id": "2.3",
-    "task": "Bygg Search-sidan (Pages/Search.cshtml): formulär med från/till (svenska städer med IATA-koder), datum. Visa resultat som kort med pris, flygbolag, restid, antal stopp. Varje resultat ska ha en Travelpayouts affiliate-länk (format: https://www.aviasales.com/search/{origin}{destination}{date}?marker=503994). Responsiv grid-layout.",
-    "passes": false
+    "task": "AmadeusService stub: implementerar IFlightSearchService, alla metoder kastar NotImplementedException. Villkorlig DI via FLIGHT_API_PROVIDER.",
+    "passes": true
   },
   {
     "id": "2.4",
-    "task": "Bygg startsidan (Pages/Index.cshtml): hero-sektion med sökruta, sektion med populära rutter från ARN (hämtade via IFlightSearchService.GetPopularRoutesAsync med fallback till hårdkodade: ARN-BCN, ARN-BKK, ARN-LHR, ARN-AGP, ARN-ATH), sektion med senaste artiklar (placeholder). SEO: title, meta description, JSON-LD WebSite schema.",
-    "passes": false
+    "task": "Delade Blazor-komponenter: PriceCard.razor, AffiliateButton.razor, SearchForm.razor (@rendermode InteractiveServer), PriceGraph.razor (Chart.js). Uppdatera _Imports.razor.",
+    "passes": true
   },
   {
     "id": "2.5",
-    "task": "Bygg Route-sidan (Pages/Route.cshtml): visa prishistorik för en specifik rutt som linjegraf (Chart.js via GetCalendarPricesAsync), lägsta/högsta/genomsnittspris, bästa månad att flyga, affiliate-knapp 'Boka flyg' med Travelpayouts-länk. SEO: JSON-LD BreadcrumbList.",
-    "passes": false
+    "task": "Startsidan Home.razor: hero med SearchForm, populära rutter, så funkar det-sektion, senaste artiklar, SEO.",
+    "passes": true
+  },
+  {
+    "id": "2.6",
+    "task": "Söksidan /sok: query params from/to/date, GetLatestPricesAsync + GetCheapestAsync, PriceCard-grid, tom-state, noindex.",
+    "passes": true
+  },
+  {
+    "id": "2.7",
+    "task": "Ruttsidan /flyg/{origin}-{destination}: prishistorik Chart.js, månadsmatris, prissammanfattning, affiliate CTA, SEO.",
+    "passes": true
+  },
+  {
+    "id": "2.8",
+    "task": "Ruttlista /rutter: grid med populära rutter grupperade per avgångsflygplats.",
+    "passes": true
   }
 ]
 ```
 
-## Fas 3: Prisbevakning & Notiser
+## Fas 3: Prisbevakning & Email
 
 ```json
 [
   {
     "id": "3.1",
-    "task": "Implementera PriceTrackingService som IHostedService: kör var 6:e timme, hämtar priser för alla bevakade rutter via IFlightSearchService, sparar PricePoint i db. Logga progress. Hantera API-fel och rate limits (max 200 req/h för Travelpayouts) utan att krascha.",
-    "passes": false
+    "task": "PriceTrackingService (BackgroundService): var 6h, hämtar priser för bevakade rutter, sparar PricePoints. 30s startup-delay, sekventiell med rate limit.",
+    "passes": true
   },
   {
     "id": "3.2",
-    "task": "Implementera EmailService med Resend API: skicka HTML-mail med flygpris-info. Skapa enkel men snygg mailmall med pris, rutt, datum, affiliate-CTA-knapp (Travelpayouts-länk). Hantera fel och retry.",
-    "passes": false
+    "task": "IEmailService + EmailService (Resend): HTTP POST, SendPriceAlertAsync, SendConfirmationEmailAsync. HTML-mallar på svenska med affiliate-CTA. Enhetstester.",
+    "passes": true
   },
   {
     "id": "3.3",
-    "task": "Implementera AlertService som IHostedService: kör efter PriceTrackingService, jämför nya priser mot aktiva bevakningar, skickar mail via EmailService vid prisfall >= 10%. Markera alert som notifierad för att undvika dubbletter.",
-    "passes": false
+    "task": "AlertService (BackgroundService): var 6h, kollar aktiva+bekräftade alerts, skickar mail vid prisfall >=10% eller under MaxPrice. Max 50 mail per körning.",
+    "passes": true
   },
   {
     "id": "3.4",
-    "task": "Bygg Alert/Create-sidan: formulär för att skapa prisbevakning (rutt, maxpris, email). Validering server-side. Bekräftelsesida med info om bevakningen. Ingen inloggning krävs - email-baserat. Double opt-in via bekräftelsemail.",
-    "passes": false
+    "task": "Bevakningssidor: /bevakning (formulär), /bevakning/bekrafta/{token}, /bevakning/avsluta/{token}. Max 5 alerts per email.",
+    "passes": true
+  },
+  {
+    "id": "3.5",
+    "task": "DataSeeder.cs: populerar FlightRoute med populära rutter (ARN->15 dest, GOT->7, MMX->3). Idempotent. Körs efter migration.",
+    "passes": true
   }
 ]
 ```
 
-## Fas 4: SEO-innehåll & Artiklar
+## Fas 4: SEO-innehåll
 
 ```json
 [
   {
     "id": "4.1",
-    "task": "Implementera ContentService: anropa Claude API (Anthropic SDK) för att generera SEO-artiklar. Prompt-template för destinationsguider ('Flyga till {destination} - Guide {år}') och prisanalyser ('Billigaste flygbiljetterna till {destination}'). Spara Article i db med slug, title, content, meta_description, published_at.",
-    "passes": false
+    "task": "Admin-endpoints: POST /admin/articles/import, GET /admin/articles, DELETE /admin/articles/{id}. Skyddat med ADMIN_API_KEY.",
+    "passes": true
   },
   {
     "id": "4.2",
-    "task": "Implementera ContentGenerationService som IHostedService: kör en gång per vecka, genererar artiklar för populära destinationer som saknar uppdaterat innehåll (äldre än 30 dagar). Max 5 artiklar per körning (kostnadskontroll).",
-    "passes": false
+    "task": "Artikelsidor: /guider (grid med paginering), /guider/{slug} (full artikel med relaterade rutter). SEO: JSON-LD Article, OG-tags.",
+    "passes": true
   },
   {
     "id": "4.3",
-    "task": "Bygg Guides/Index.cshtml (artikellistning): grid med artikelkort (bild-placeholder, titel, utdrag, datum). Paginering. Bygg Guides/Article.cshtml: full artikel med innehåll, relaterade rutter med priser, affiliate-CTA. SEO: JSON-LD Article schema, canonical URL, Open Graph.",
-    "passes": false
+    "task": "Seed 12-15 artiklar i ArticleSeedData.cs med riktigt svenskt innehåll (800-1200 ord) för populära destinationer.",
+    "passes": true
   },
   {
     "id": "4.4",
-    "task": "Implementera dynamisk sitemap.xml (endpoint som genererar XML): alla rutter, alla artiklar, startsidan. Skapa robots.txt som tillåter crawling och pekar på sitemap. Lägg till rel=canonical på alla sidor.",
-    "passes": false
+    "task": "SEO-endpoints: GET /sitemap.xml (dynamisk), GET /robots.txt. Disallow /admin/ och /api/.",
+    "passes": true
   }
 ]
 ```
 
-## Fas 5: Affiliate & Monetarisering
+## Fas 5: Affiliate-tracking
 
 ```json
 [
   {
     "id": "5.1",
-    "task": "Implementera AffiliateService: generera Travelpayouts affiliate-länkar baserat på rutt och datum (format: https://www.aviasales.com/search/{origin}{destination}{date}?marker=503994). Stöd för deep links till Kiwi och WayAway via Travelpayouts. Fallback till Skyscanner/Google Flights med UTM. Alla utgående affiliate-länkar ska ha rel='nofollow sponsored'.",
-    "passes": false
+    "task": "Klick-tracking: GET /go?url={}&route={}&dest={}. Validerar URL-domän. Loggar AffiliateClick. 302 redirect. Uppdatera AffiliateButton.",
+    "passes": true
   },
   {
     "id": "5.2",
-    "task": "Integrera affiliate-länkar i alla prisvisningar: Search-sidan, Route-sidan, artiklar, startsidan. Skapa _AffiliateButton.cshtml partial med tydlig CTA ('Se pris & boka', 'Jämför pris'). Lägg till affiliate-disclaimer i footer.",
-    "passes": false
-  },
-  {
-    "id": "5.3",
-    "task": "Implementera klick-tracking: logga affiliate-klick (rutt, destination, timestamp) i db för enkel analys. Endpoint /api/track som redirectar till affiliate-URL efter loggning. Enkel admin-vy (/admin/stats) med klickstatistik per rutt och dag.",
-    "passes": false
+    "task": "Admin-stats /admin/stats?key={}: klick idag/vecka/månad, top 10 destinationer, klick per dag senaste 30 dagar.",
+    "passes": true
   }
 ]
 ```
 
-## Fas 6: Polish & Deploy
+## Fas 6: Polish & Production
 
 ```json
 [
   {
     "id": "6.1",
-    "task": "SEO-granskning: verifiera att alla sidor har unik title (<60 tecken), meta description (<160 tecken), Open Graph-taggar, korrekt heading-hierarki (en H1 per sida), alt-text på bilder, semantisk HTML. Lägg till favicon.",
-    "passes": false
+    "task": "Felsidor på svenska: 404 med sökförslag, 500 med vänligt meddelande.",
+    "passes": true
   },
   {
     "id": "6.2",
-    "task": "Performance: aktivera Response Caching middleware, Output Caching på statiska sidor (1h), cache Travelpayouts-svar i 1 timme (API-data uppdateras sällan). Minifiera CSS/JS eller verifiera CDN-leverans. Verifiera att sidor laddar under 2 sekunder.",
-    "passes": false
+    "task": "Output caching: startsida 10 min, ruttsidor 1h, artiklar 1h, ruttlista 1h.",
+    "passes": true
   },
   {
     "id": "6.3",
-    "task": "Felsidor och edge cases: custom 404-sida med sökförslag, custom 500-sida, hantera tom databas gracefully (visa 'inga resultat' istället för krasch), rate limit på alert-skapande (max 5 per email).",
-    "passes": false
+    "task": "SEO-audit: alla sidor har unik title, meta desc, canonical, OG-tags, H1, JSON-LD, rel=nofollow sponsored.",
+    "passes": true
   },
   {
     "id": "6.4",
-    "task": "Slutgiltig verifiering: dotnet build utan varningar, dotnet test alla tester gröna, alla sidor returnerar 200, kör lighthouse-liknande check på SEO och accessibility. Verifiera Dockerfile bygger korrekt. Skriv kort README.md med setup-instruktioner.",
-    "passes": false
+    "task": "Graceful empty states: alla sidor hanterar tom data med vänliga meddelanden. Ogiltiga IATA -> 404.",
+    "passes": true
+  },
+  {
+    "id": "6.5",
+    "task": "Dockerfile-verifiering: Docker-build fungerar med alla dependencies. Favicon.",
+    "passes": true
+  },
+  {
+    "id": "6.6",
+    "task": "Slutverifiering: dotnet build utan varningar, dotnet test grönt, Dockerfile bygger.",
+    "passes": true
   }
 ]
 ```
