@@ -4,22 +4,26 @@
 
 <PageTitle>Bekräfta bevakning - Flygio.se</PageTitle>
 
-<div class="max-w-lg mx-auto px-4 py-16 text-center">
+<div class="max-w-lg mx-auto px-4 py-16 text-center animate-fade-in">
     @if (_confirmed)
     {
-        <svg class="w-16 h-16 text-green-500 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-        </svg>
-        <h1 class="text-2xl font-bold text-green-800 mb-2">Bevakning aktiverad!</h1>
+        <div class="w-16 h-16 bg-teal-light rounded-2xl flex items-center justify-center mx-auto mb-5 animate-fade-in-up">
+            <svg class="w-8 h-8 text-teal" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+        </div>
+        <h1 class="font-display text-2xl text-teal mb-2">Bevakning aktiverad!</h1>
         <p class="text-gray-600 mb-6">Du kommer att få notiser när priset ändras på din bevakade rutt.</p>
-        <a href="/" class="text-sky-600 hover:text-sky-700 font-medium">Tillbaka till startsidan →</a>
+        <a href="/" class="text-brand-light hover:text-brand font-medium transition-colors">Tillbaka till startsidan →</a>
     }
     else
     {
-        <svg class="w-16 h-16 text-red-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.464 0L4.34 16.5c-.77.833.192 2.5 1.732 2.5z" />
-        </svg>
-        <h1 class="text-2xl font-bold text-gray-800 mb-2">Ogiltig länk</h1>
+        <div class="w-16 h-16 bg-coral/10 rounded-2xl flex items-center justify-center mx-auto mb-5 animate-fade-in-up">
+            <svg class="w-8 h-8 text-coral" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.464 0L4.34 16.5c-.77.833.192 2.5 1.732 2.5z" />
+            </svg>
+        </div>
+        <h1 class="font-display text-2xl text-brand mb-2">Ogiltig länk</h1>
         <p class="text-gray-600">Denna bekräftelselänk är ogiltig eller har redan använts.</p>
     }
 </div>

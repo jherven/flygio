@@ -12,10 +12,59 @@
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://flygio.se" />
     <link rel="icon" type="image/png" href="favicon.png" />
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+
     <ImportMap />
     <HeadOutlet />
+
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: { DEFAULT: '#1e3a5f', light: '#2d5f8a' },
+                        accent: { DEFAULT: '#f59e0b', hover: '#d97706' },
+                        coral: '#ef6461',
+                        teal: { DEFAULT: '#0d9488', light: '#f0fdfa' },
+                        sand: '#faf7f2',
+                        mist: '#e8f0f8',
+                        navy: { deep: '#0f2440' }
+                    },
+                    fontFamily: {
+                        display: ['"DM Serif Display"', 'Georgia', 'serif'],
+                        body: ['Inter', 'system-ui', 'sans-serif']
+                    },
+                    animation: {
+                        'fade-in-up': 'fadeInUp 0.5s ease-out both',
+                        'fade-in': 'fadeIn 0.4s ease-out both',
+                        'pulse-glow': 'pulseGlow 2s ease-in-out infinite'
+                    },
+                    keyframes: {
+                        fadeInUp: {
+                            '0%': { opacity: '0', transform: 'translateY(20px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' }
+                        },
+                        fadeIn: {
+                            '0%': { opacity: '0' },
+                            '100%': { opacity: '1' }
+                        },
+                        pulseGlow: {
+                            '0%, 100%': { boxShadow: '0 0 0 0 rgba(245, 158, 11, 0.4)' },
+                            '50%': { boxShadow: '0 0 20px 4px rgba(245, 158, 11, 0.2)' }
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+    <link rel="stylesheet" href="app.css" />
 
     <!-- Travelpayouts verification -->
     <script data-noptimize="1" data-cfasync="false" data-wpfc-render="false">
@@ -28,7 +77,7 @@
     </script>
 </head>
 
-<body>
+<body class="bg-sand font-body">
     <Routes />
     <script src="@Assets["_framework/blazor.web.js"]"></script>
 </body>

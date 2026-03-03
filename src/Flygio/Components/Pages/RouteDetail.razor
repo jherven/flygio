@@ -21,23 +21,29 @@
     </script>
 </HeadContent>
 
+<!-- Destination Hero -->
+<section class="relative h-64 md:h-80 overflow-hidden">
+    <div class="absolute inset-0 bg-cover bg-center" style="background-image: url('@IataData.GetDestinationImage(_destination)')"></div>
+    <div class="absolute inset-0 bg-gradient-to-t from-brand/90 via-brand/40 to-transparent"></div>
+    <div class="relative z-10 h-full flex flex-col justify-end max-w-7xl mx-auto px-4 pb-8">
+        <!-- Breadcrumb -->
+        <nav class="text-sm text-white/70 mb-3">
+            <a href="/" class="hover:text-white transition-colors">Hem</a>
+            <span class="mx-1">›</span>
+            <a href="/rutter" class="hover:text-white transition-colors">Rutter</a>
+            <span class="mx-1">›</span>
+            <span class="text-white">@OriginCity → @DestCity</span>
+        </nav>
+        <h1 class="font-display text-3xl md:text-4xl text-white animate-fade-in-up">Flyg från @OriginCity till @DestCity</h1>
+        <p class="text-white/70 mt-1">@_origin → @_destination</p>
+    </div>
+</section>
+
 <div class="max-w-7xl mx-auto px-4 py-8">
-    <!-- Breadcrumb -->
-    <nav class="text-sm text-gray-500 mb-6">
-        <a href="/" class="hover:text-sky-600">Hem</a>
-        <span class="mx-1">›</span>
-        <a href="/rutter" class="hover:text-sky-600">Rutter</a>
-        <span class="mx-1">›</span>
-        <span class="text-gray-700">@OriginCity → @DestCity</span>
-    </nav>
-
-    <h1 class="text-3xl font-bold text-sky-900 mb-2">Flyg från @OriginCity till @DestCity</h1>
-    <p class="text-gray-600 mb-8">@_origin → @_destination</p>
-
     @if (_loading)
     {
         <div class="text-center py-12">
-            <div class="inline-block w-8 h-8 border-4 border-sky-200 border-t-sky-500 rounded-full animate-spin"></div>
+            <div class="inline-block w-8 h-8 border-4 border-sand border-t-accent rounded-full animate-spin"></div>
         </div>
     }
     else
@@ -45,18 +51,21 @@
         <!-- Price Summary -->
         @if (_monthMatrix.Count > 0)
         {
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-                <div class="bg-white rounded-xl shadow-md p-5 text-center">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-5 mb-8 -mt-10 relative z-10">
+                <!-- Lowest price -->
+                <div class="bg-white rounded-xl shadow-lg p-6 text-center border-t-4 border-teal animate-fade-in-up animate-delay-1">
                     <div class="text-sm text-gray-500 mb-1">Lägsta pris</div>
-                    <div class="text-3xl font-bold text-green-600">@_monthMatrix.Min(m => m.Price).ToString("N0") SEK</div>
+                    <div class="font-display text-3xl text-teal">@_monthMatrix.Min(m => m.Price).ToString("N0") <span class="text-base font-body text-gray-500">SEK</span></div>
                 </div>
-                <div class="bg-white rounded-xl shadow-md p-5 text-center">
+                <!-- Average -->
+                <div class="bg-white rounded-xl shadow-lg p-6 text-center border-t-4 border-brand animate-fade-in-up animate-delay-2">
                     <div class="text-sm text-gray-500 mb-1">Genomsnittspris</div>
-                    <div class="text-3xl font-bold text-sky-600">@((int)_monthMatrix.Average(m => m.Price)) SEK</div>
+                    <div class="font-display text-3xl text-brand">@((int)_monthMatrix.Average(m => m.Price)) <span class="text-base font-body text-gray-500">SEK</span></div>
                 </div>
-                <div class="bg-white rounded-xl shadow-md p-5 text-center">
+                <!-- Best month -->
+                <div class="bg-white rounded-xl shadow-lg p-6 text-center border-t-4 border-accent animate-fade-in-up animate-delay-3">
                     <div class="text-sm text-gray-500 mb-1">Bästa månad</div>
-                    <div class="text-3xl font-bold text-sky-600">
+                    <div class="font-display text-3xl text-accent">
                         @{
                             var best = _monthMatrix.OrderBy(m => m.Price).First();
                         }
@@ -77,15 +86,15 @@
         <!-- Month Matrix -->
         @if (_monthMatrix.Count > 0)
         {
-            <div class="bg-white rounded-xl shadow-md p-5 mb-8">
-                <h2 class="text-lg font-semibold text-gray-800 mb-4">Billigaste pris per månad</h2>
+            <div class="bg-white rounded-xl shadow-md p-6 mb-8">
+                <h2 class="font-display text-lg text-brand mb-4">Billigaste pris per månad</h2>
                 <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
                     @foreach (var month in _monthMatrix.OrderBy(m => m.Date))
                     {
                         var isLowest = month.Price == _monthMatrix.Min(m => m.Price);
-                        <div class="text-center p-3 rounded-lg @(isLowest ? "bg-green-50 border-2 border-green-200" : "bg-gray-50")">
+                        <div class="text-center p-3 rounded-xl transition-all @(isLowest ? "bg-teal-light border-2 border-teal shadow-sm" : "bg-sand hover:shadow-sm")">
                             <div class="text-sm text-gray-600 capitalize">@month.Date.ToString("MMM yyyy", new System.Globalization.CultureInfo("sv-SE"))</div>
-                            <div class="text-lg font-bold @(isLowest ? "text-green-600" : "text-gray-800")">@month.Price.ToString("N0")</div>
+                            <div class="font-display text-lg @(isLowest ? "text-teal" : "text-brand")">@month.Price.ToString("N0")</div>
                             <div class="text-xs text-gray-400">SEK</div>
                         </div>
                     }

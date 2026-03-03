@@ -27,54 +27,66 @@
     </script>
 </HeadContent>
 
-<!-- Hero -->
-<section class="py-16 md:py-24 px-4">
-    <div class="max-w-4xl mx-auto text-center">
-        <h1 class="text-4xl md:text-6xl font-bold text-sky-900 mb-4">
-            Hitta billiga <span class="text-sky-500">flygbiljetter</span>
+<!-- Hero with background image -->
+<section class="relative min-h-[500px] flex items-center justify-center overflow-hidden">
+    <div class="absolute inset-0 bg-cover bg-center" style="background-image: url('@IataData.HeroImages["default"]')"></div>
+    <div class="absolute inset-0 bg-gradient-to-b from-brand/80 via-brand/60 to-brand/90"></div>
+    <div class="relative z-10 max-w-4xl mx-auto text-center px-4 py-16 md:py-24">
+        <h1 class="font-display text-4xl md:text-6xl text-white mb-4 animate-fade-in-up">
+            Hitta billiga <span class="text-accent">flygbiljetter</span>
         </h1>
-        <p class="text-lg md:text-xl text-gray-600 mb-8">
+        <p class="text-lg md:text-xl text-white/80 mb-10 animate-fade-in-up animate-delay-1">
             Jämför priser, bevaka rutter och få notiser vid prisfall.
         </p>
-        <SearchForm />
+        <div class="animate-fade-in-up animate-delay-2">
+            <SearchForm />
+        </div>
     </div>
 </section>
 
 <!-- Popular Routes -->
-<section class="py-12 px-4 bg-white/50">
+<section class="py-14 px-4">
     <div class="max-w-7xl mx-auto">
-        <h2 class="text-2xl font-bold text-gray-800 mb-6 text-center">Populära rutter från Stockholm</h2>
+        <h2 class="font-display text-2xl md:text-3xl text-brand mb-8 text-center animate-fade-in">Populära rutter från Stockholm</h2>
         @if (_popularRoutes.Count > 0)
         {
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+                @{ var routeIdx = 0; }
                 @foreach (var route in _popularRoutes.Take(8))
                 {
-                    <a href="/flyg/@(route.Origin)-@(route.Destination)" class="bg-white rounded-xl shadow-md hover:shadow-lg transition-shadow p-5 block">
-                        <div class="flex items-center justify-between mb-2">
-                            <span class="font-semibold text-gray-800">@route.DestinationCity</span>
-                            <span class="text-xs bg-sky-100 text-sky-700 px-2 py-1 rounded-full">@route.Origin → @route.Destination</span>
-                        </div>
+                    var img = IataData.GetDestinationImage(route.Destination);
+                    <a href="/flyg/@(route.Origin)-@(route.Destination)"
+                       class="group relative rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-all hover:-translate-y-1 block h-52 animate-fade-in-up animate-delay-@(routeIdx % 6 + 1)">
+                        <img src="@img" alt="@route.DestinationCity" class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" />
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"></div>
                         @if (route.CheapestPrice.HasValue)
                         {
-                            <div>
-                                <span class="text-sm text-gray-500">Från</span>
-                                <span class="text-2xl font-bold text-sky-600 ml-1">@route.CheapestPrice.Value.ToString("N0")</span>
-                                <span class="text-sm text-gray-500 ml-1">SEK</span>
+                            <div class="absolute top-3 right-3 bg-accent text-white text-sm font-bold px-3 py-1 rounded-full shadow-md">
+                                @route.CheapestPrice.Value.ToString("N0") SEK
                             </div>
                         }
+                        <div class="absolute bottom-0 left-0 right-0 p-4">
+                            <span class="font-display text-xl text-white">@route.DestinationCity</span>
+                            <div class="text-white/70 text-xs mt-0.5">@route.Origin → @route.Destination</div>
+                        </div>
                     </a>
+                    routeIdx++;
                 }
             </div>
         }
         else
         {
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
                 @foreach (var dest in _fallbackRoutes)
                 {
-                    <a href="/flyg/ARN-@dest.Key" class="bg-white rounded-xl shadow-md hover:shadow-lg transition-shadow p-5 block">
-                        <div class="flex items-center justify-between mb-2">
-                            <span class="font-semibold text-gray-800">@dest.Value</span>
-                            <span class="text-xs bg-sky-100 text-sky-700 px-2 py-1 rounded-full">ARN → @dest.Key</span>
+                    var img = IataData.GetDestinationImage(dest.Key);
+                    <a href="/flyg/ARN-@dest.Key"
+                       class="group relative rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-all hover:-translate-y-1 block h-52">
+                        <img src="@img" alt="@dest.Value" class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" />
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"></div>
+                        <div class="absolute bottom-0 left-0 right-0 p-4">
+                            <span class="font-display text-xl text-white">@dest.Value</span>
+                            <div class="text-white/70 text-xs mt-0.5">ARN → @dest.Key</div>
                         </div>
                     </a>
                 }
@@ -84,35 +96,47 @@
 </section>
 
 <!-- How it works -->
-<section class="py-16 px-4">
+<section class="py-16 px-4 bg-white/60">
     <div class="max-w-5xl mx-auto">
-        <h2 class="text-2xl font-bold text-gray-800 mb-10 text-center">Så funkar det</h2>
+        <h2 class="font-display text-2xl md:text-3xl text-brand mb-12 text-center">Så funkar det</h2>
         <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div class="text-center">
-                <div class="w-16 h-16 bg-sky-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <svg class="w-8 h-8 text-sky-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                    </svg>
+            <div class="text-center animate-fade-in-up animate-delay-1">
+                <div class="relative w-20 h-20 mx-auto mb-5">
+                    <div class="absolute inset-0 bg-gradient-to-br from-accent to-coral rounded-2xl rotate-6 opacity-20"></div>
+                    <div class="relative w-20 h-20 bg-gradient-to-br from-accent to-coral rounded-2xl flex items-center justify-center">
+                        <svg class="w-9 h-9 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                        </svg>
+                    </div>
+                    <span class="absolute -top-2 -left-2 text-5xl font-bold text-brand/10 font-display">1</span>
                 </div>
-                <h3 class="text-lg font-semibold text-gray-800 mb-2">1. Sök</h3>
+                <h3 class="font-display text-lg text-brand mb-2">Sök</h3>
                 <p class="text-gray-600">Sök bland tusentals flyg och hitta de bästa priserna till ditt resmål.</p>
             </div>
-            <div class="text-center">
-                <div class="w-16 h-16 bg-sky-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <svg class="w-8 h-8 text-sky-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-                    </svg>
+            <div class="text-center animate-fade-in-up animate-delay-2">
+                <div class="relative w-20 h-20 mx-auto mb-5">
+                    <div class="absolute inset-0 bg-gradient-to-br from-brand to-brand-light rounded-2xl rotate-6 opacity-20"></div>
+                    <div class="relative w-20 h-20 bg-gradient-to-br from-brand to-brand-light rounded-2xl flex items-center justify-center">
+                        <svg class="w-9 h-9 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                        </svg>
+                    </div>
+                    <span class="absolute -top-2 -left-2 text-5xl font-bold text-brand/10 font-display">2</span>
                 </div>
-                <h3 class="text-lg font-semibold text-gray-800 mb-2">2. Bevaka</h3>
+                <h3 class="font-display text-lg text-brand mb-2">Bevaka</h3>
                 <p class="text-gray-600">Skapa en prisbevakning och få notiser direkt när priserna sjunker.</p>
             </div>
-            <div class="text-center">
-                <div class="w-16 h-16 bg-sky-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <svg class="w-8 h-8 text-sky-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
-                    </svg>
+            <div class="text-center animate-fade-in-up animate-delay-3">
+                <div class="relative w-20 h-20 mx-auto mb-5">
+                    <div class="absolute inset-0 bg-gradient-to-br from-teal to-brand rounded-2xl rotate-6 opacity-20"></div>
+                    <div class="relative w-20 h-20 bg-gradient-to-br from-teal to-brand rounded-2xl flex items-center justify-center">
+                        <svg class="w-9 h-9 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                        </svg>
+                    </div>
+                    <span class="absolute -top-2 -left-2 text-5xl font-bold text-brand/10 font-display">3</span>
                 </div>
-                <h3 class="text-lg font-semibold text-gray-800 mb-2">3. Boka</h3>
+                <h3 class="font-display text-lg text-brand mb-2">Boka</h3>
                 <p class="text-gray-600">Boka ditt flyg till bästa pris via våra partners.</p>
             </div>
         </div>
@@ -122,20 +146,39 @@
 <!-- Latest Articles -->
 @if (_articles.Count > 0)
 {
-    <section class="py-12 px-4 bg-white/50">
+    <section class="py-14 px-4">
         <div class="max-w-7xl mx-auto">
-            <h2 class="text-2xl font-bold text-gray-800 mb-6 text-center">Reseguider</h2>
+            <h2 class="font-display text-2xl md:text-3xl text-brand mb-8 text-center">Reseguider</h2>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                @{ var accentColors = new[] { "bg-accent", "bg-coral", "bg-teal" }; var artIdx = 0; }
                 @foreach (var article in _articles.Take(3))
                 {
-                    <a href="/guider/@article.Slug" class="bg-white rounded-xl shadow-md hover:shadow-lg transition-shadow p-5 block">
-                        <h3 class="font-semibold text-gray-800 mb-2">@article.Title</h3>
-                        <p class="text-sm text-gray-600 line-clamp-2">@article.MetaDescription</p>
+                    var accentColor = accentColors[artIdx % 3];
+                    var destImg = !string.IsNullOrEmpty(article.DestinationIata)
+                        ? IataData.GetDestinationImage(article.DestinationIata)
+                        : "";
+                    <a href="/guider/@article.Slug"
+                       class="bg-white rounded-xl shadow-md hover:shadow-xl transition-all hover:-translate-y-1 overflow-hidden block animate-fade-in-up animate-delay-@(artIdx + 1)">
+                        @if (!string.IsNullOrEmpty(destImg))
+                        {
+                            <div class="h-40 overflow-hidden">
+                                <img src="@destImg" alt="@article.Title" class="w-full h-full object-cover" loading="lazy" />
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="h-2 @accentColor"></div>
+                        }
+                        <div class="p-5">
+                            <h3 class="font-display text-brand mb-2">@article.Title</h3>
+                            <p class="text-sm text-gray-600 line-clamp-2">@article.MetaDescription</p>
+                        </div>
                     </a>
+                    artIdx++;
                 }
             </div>
-            <div class="text-center mt-6">
-                <a href="/guider" class="text-sky-600 hover:text-sky-700 font-medium">Visa alla guider →</a>
+            <div class="text-center mt-8">
+                <a href="/guider" class="text-brand-light hover:text-brand font-medium transition-colors">Visa alla guider →</a>
             </div>
         </div>
     </section>

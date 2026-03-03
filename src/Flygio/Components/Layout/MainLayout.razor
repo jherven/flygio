@@ -1,43 +1,43 @@
 @inherits LayoutComponentBase
 
-<div class="min-h-screen flex flex-col bg-gradient-to-br from-sky-50 to-blue-100">
+<div class="min-h-screen flex flex-col bg-sand">
     <!-- Sticky Header -->
-    <header class="sticky top-0 z-50 bg-white/95 backdrop-blur shadow-sm">
+    <header class="sticky top-0 z-50 bg-brand shadow-lg">
         <nav class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between h-16">
                 <!-- Logo -->
-                <a href="/" class="flex items-center gap-2 text-xl font-bold text-sky-900 hover:text-sky-700 transition-colors">
-                    <svg class="w-8 h-8 text-sky-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <a href="/" class="flex items-center gap-2 text-xl font-display text-white hover:text-gray-200 transition-colors">
+                    <svg class="w-8 h-8 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
                     </svg>
-                    flygio<span class="text-sky-500">.se</span>
+                    flygio<span class="text-accent">.se</span>
                 </a>
 
                 <!-- Desktop Nav -->
                 <div class="hidden md:flex items-center gap-6">
-                    <a href="/" class="text-gray-700 hover:text-sky-600 font-medium transition-colors">Hem</a>
-                    <a href="/sok" class="text-gray-700 hover:text-sky-600 font-medium transition-colors">Sök flyg</a>
-                    <a href="/rutter" class="text-gray-700 hover:text-sky-600 font-medium transition-colors">Rutter</a>
-                    <a href="/guider" class="text-gray-700 hover:text-sky-600 font-medium transition-colors">Guider</a>
-                    <a href="/bevakning" class="bg-sky-500 hover:bg-sky-600 text-white px-4 py-2 rounded-lg font-medium transition-colors">
+                    <a href="/" class="text-white/80 hover:text-white font-medium transition-colors">Hem</a>
+                    <a href="/sok" class="text-white/80 hover:text-white font-medium transition-colors">Sök flyg</a>
+                    <a href="/rutter" class="text-white/80 hover:text-white font-medium transition-colors">Rutter</a>
+                    <a href="/guider" class="text-white/80 hover:text-white font-medium transition-colors">Guider</a>
+                    <a href="/bevakning" class="bg-accent hover:bg-accent-hover text-white px-4 py-2 rounded-lg font-medium transition-colors">
                         Prisbevakning
                     </a>
                 </div>
 
                 <!-- Mobile Hamburger (CSS-only) -->
                 <details class="md:hidden relative">
-                    <summary class="list-none cursor-pointer p-2 rounded-lg hover:bg-gray-100 transition-colors">
-                        <svg class="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <summary class="list-none cursor-pointer p-2 rounded-lg hover:bg-white/10 transition-colors">
+                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
                         </svg>
                     </summary>
                     <div class="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-lg border border-gray-100 py-2 z-50">
-                        <a href="/" class="block px-4 py-3 text-gray-700 hover:bg-sky-50 hover:text-sky-600 transition-colors">Hem</a>
-                        <a href="/sok" class="block px-4 py-3 text-gray-700 hover:bg-sky-50 hover:text-sky-600 transition-colors">Sök flyg</a>
-                        <a href="/rutter" class="block px-4 py-3 text-gray-700 hover:bg-sky-50 hover:text-sky-600 transition-colors">Rutter</a>
-                        <a href="/guider" class="block px-4 py-3 text-gray-700 hover:bg-sky-50 hover:text-sky-600 transition-colors">Guider</a>
+                        <a href="/" class="block px-4 py-3 text-gray-700 hover:bg-sand hover:text-brand transition-colors">Hem</a>
+                        <a href="/sok" class="block px-4 py-3 text-gray-700 hover:bg-sand hover:text-brand transition-colors">Sök flyg</a>
+                        <a href="/rutter" class="block px-4 py-3 text-gray-700 hover:bg-sand hover:text-brand transition-colors">Rutter</a>
+                        <a href="/guider" class="block px-4 py-3 text-gray-700 hover:bg-sand hover:text-brand transition-colors">Guider</a>
                         <hr class="my-1 border-gray-100" />
-                        <a href="/bevakning" class="block px-4 py-3 text-sky-600 font-medium hover:bg-sky-50 transition-colors">Prisbevakning</a>
+                        <a href="/bevakning" class="block px-4 py-3 text-accent font-medium hover:bg-sand transition-colors">Prisbevakning</a>
                     </div>
                 </details>
             </div>
@@ -50,12 +50,26 @@
     </main>
 
     <!-- Footer -->
-    <footer class="bg-gray-900 text-gray-300">
+    <footer class="bg-navy-deep text-gray-300">
+        <!-- CTA Section -->
+        <div class="bg-brand">
+            <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10 text-center">
+                <h2 class="font-display text-2xl text-white mb-3">Missa aldrig ett bra flygpris</h2>
+                <p class="text-white/70 mb-5">Skapa en prisbevakning och få notiser direkt när priserna sjunker.</p>
+                <a href="/bevakning" class="inline-flex items-center gap-2 bg-accent hover:bg-accent-hover text-white font-semibold px-6 py-3 rounded-xl transition-all hover:shadow-lg">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                    </svg>
+                    Skapa prisbevakning
+                </a>
+            </div>
+        </div>
+
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
             <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
                 <!-- About -->
                 <div>
-                    <h3 class="text-white font-bold text-lg mb-3">flygio.se</h3>
+                    <h3 class="font-display text-white text-lg mb-3">flygio<span class="text-accent">.se</span></h3>
                     <p class="text-sm text-gray-400">
                         Sveriges smartaste flygpris-tracker. Hitta billiga flygbiljetter, bevaka priser och få notiser vid prisfall.
                     </p>
@@ -63,28 +77,28 @@
 
                 <!-- Links -->
                 <div>
-                    <h3 class="text-white font-bold text-lg mb-3">Snabblänkar</h3>
+                    <h3 class="font-display text-white text-lg mb-3">Snabblänkar</h3>
                     <ul class="space-y-2 text-sm">
-                        <li><a href="/sok" class="hover:text-white transition-colors">Sök flyg</a></li>
-                        <li><a href="/rutter" class="hover:text-white transition-colors">Populära rutter</a></li>
-                        <li><a href="/guider" class="hover:text-white transition-colors">Reseguider</a></li>
-                        <li><a href="/bevakning" class="hover:text-white transition-colors">Prisbevakning</a></li>
+                        <li><a href="/sok" class="hover:text-accent transition-colors">Sök flyg</a></li>
+                        <li><a href="/rutter" class="hover:text-accent transition-colors">Populära rutter</a></li>
+                        <li><a href="/guider" class="hover:text-accent transition-colors">Reseguider</a></li>
+                        <li><a href="/bevakning" class="hover:text-accent transition-colors">Prisbevakning</a></li>
                     </ul>
                 </div>
 
                 <!-- Popular -->
                 <div>
-                    <h3 class="text-white font-bold text-lg mb-3">Populära rutter</h3>
+                    <h3 class="font-display text-white text-lg mb-3">Populära rutter</h3>
                     <ul class="space-y-2 text-sm">
-                        <li><a href="/flyg/ARN-BCN" class="hover:text-white transition-colors">Stockholm → Barcelona</a></li>
-                        <li><a href="/flyg/ARN-BKK" class="hover:text-white transition-colors">Stockholm → Bangkok</a></li>
-                        <li><a href="/flyg/ARN-LHR" class="hover:text-white transition-colors">Stockholm → London</a></li>
-                        <li><a href="/flyg/ARN-AGP" class="hover:text-white transition-colors">Stockholm → Malaga</a></li>
+                        <li><a href="/flyg/ARN-BCN" class="hover:text-accent transition-colors">Stockholm → Barcelona</a></li>
+                        <li><a href="/flyg/ARN-BKK" class="hover:text-accent transition-colors">Stockholm → Bangkok</a></li>
+                        <li><a href="/flyg/ARN-LHR" class="hover:text-accent transition-colors">Stockholm → London</a></li>
+                        <li><a href="/flyg/ARN-AGP" class="hover:text-accent transition-colors">Stockholm → Malaga</a></li>
                     </ul>
                 </div>
             </div>
 
-            <hr class="my-8 border-gray-700" />
+            <hr class="my-8 border-white/10" />
 
             <!-- Affiliate Disclaimer -->
             <div class="text-xs text-gray-500 space-y-2">

@@ -14,39 +14,58 @@
 </HeadContent>
 
 <div class="max-w-7xl mx-auto px-4 py-8">
-    <h1 class="text-3xl font-bold text-sky-900 mb-2">Reseguider</h1>
-    <p class="text-gray-600 mb-8">Tips och guider för populära resmål från Sverige.</p>
+    <div class="mb-10 animate-fade-in">
+        <h1 class="font-display text-3xl md:text-4xl text-brand mb-2">Reseguider</h1>
+        <p class="text-gray-600">Tips och guider för populära resmål från Sverige.</p>
+    </div>
 
     @if (_articles.Count > 0)
     {
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            @{ var artIdx = 0; }
             @foreach (var article in _articles)
             {
-                <a href="/guider/@article.Slug" class="bg-white rounded-xl shadow-md hover:shadow-lg transition-shadow overflow-hidden block">
-                    <div class="bg-gradient-to-r from-sky-400 to-blue-500 h-32 flex items-center justify-center">
-                        <span class="text-white text-4xl font-bold opacity-30">@(article.DestinationCity ?? article.Title[..1])</span>
-                    </div>
+                var destImg = !string.IsNullOrEmpty(article.DestinationIata)
+                    ? IataData.GetDestinationImage(article.DestinationIata)
+                    : "";
+                <a href="/guider/@article.Slug"
+                   class="group bg-white rounded-xl shadow-md hover:shadow-xl transition-all hover:-translate-y-1 overflow-hidden block animate-fade-in-up animate-delay-@(artIdx % 6 + 1)">
+                    @if (!string.IsNullOrEmpty(destImg))
+                    {
+                        <div class="h-44 overflow-hidden">
+                            <img src="@destImg" alt="@article.Title" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" />
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="h-44 bg-gradient-to-br from-brand to-brand-light flex items-center justify-center">
+                            <span class="text-white/20 text-5xl font-display">@(article.DestinationCity ?? article.Title[..1])</span>
+                        </div>
+                    }
                     <div class="p-5">
-                        <h2 class="font-semibold text-gray-800 mb-2 line-clamp-2">@article.Title</h2>
+                        <h2 class="font-display text-brand mb-2 line-clamp-2 group-hover:text-brand-light transition-colors">@article.Title</h2>
                         <p class="text-sm text-gray-600 line-clamp-2 mb-3">@article.MetaDescription</p>
                         @if (!string.IsNullOrEmpty(article.DestinationCity))
                         {
-                            <span class="text-xs bg-sky-100 text-sky-700 px-2 py-1 rounded-full">@article.DestinationCity</span>
+                            <span class="text-xs bg-mist text-brand-light px-2 py-1 rounded-full font-medium">@article.DestinationCity</span>
                         }
                     </div>
                 </a>
+                artIdx++;
             }
         </div>
 
         <!-- Pagination -->
         @if (_totalPages > 1)
         {
-            <nav class="flex justify-center gap-2 mt-8">
+            <nav class="flex justify-center gap-2 mt-10">
                 @for (var i = 1; i <= _totalPages; i++)
                 {
                     var pageNum = i;
                     <a href="@($"/guider/sida/{pageNum}")"
-                       class="@(pageNum == _currentPage ? "px-4 py-2 rounded-lg bg-sky-500 text-white shadow-sm transition-colors" : "px-4 py-2 rounded-lg bg-white text-gray-700 hover:bg-gray-100 shadow-sm transition-colors")">
+                       class="@(pageNum == _currentPage
+                           ? "px-4 py-2 rounded-lg bg-brand text-white shadow-sm font-medium transition-colors"
+                           : "px-4 py-2 rounded-lg bg-white text-gray-700 hover:bg-sand shadow-sm font-medium transition-colors")">
                         @pageNum
                     </a>
                 }
@@ -56,6 +75,9 @@
     else
     {
         <div class="text-center py-12 text-gray-500">
+            <svg class="w-16 h-16 text-gray-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+            </svg>
             <p>Inga guider tillgängliga ännu. Kom tillbaka snart!</p>
         </div>
     }
