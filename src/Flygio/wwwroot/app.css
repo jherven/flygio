@@ -154,6 +154,20 @@ a, .btn-link {
     flex-shrink: 0;
 }
 
+/* === Service Card (Kortio-style) === */
+.service-card {
+    background: #fff;
+    border-radius: 20px;
+    box-shadow: 0 10px 15px rgba(169, 177, 200, .25);
+    transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1),
+                box-shadow 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.service-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 20px 30px rgba(169, 177, 200, .35);
+}
+
 /* === Card Hover Lift === */
 .card-lift {
     transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1),

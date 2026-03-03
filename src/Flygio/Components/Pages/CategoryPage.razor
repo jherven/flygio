@@ -2,7 +2,7 @@
 @using Microsoft.EntityFrameworkCore
 @inject IDbContextFactory<FlygioDbContext> DbFactory
 
-<div class="max-w-7xl mx-auto px-4 py-8">
+<div class="max-w-4xl mx-auto px-4 py-8">
     @if (_category is not null)
     {
         <PageTitle>@_category.Name — Jämför tjänster | Flygio.se</PageTitle>
@@ -32,20 +32,18 @@
         </nav>
 
         <div class="mb-10 animate-fade-in">
-            <h1 class="font-display text-3xl md:text-4xl text-brand mb-2">@_category.Name</h1>
-            <p class="text-gray-600 max-w-2xl">@_category.Description</p>
+            <h1 class="font-display text-3xl md:text-4xl text-brand mb-3">@_category.Name</h1>
+            <p class="text-gray-600 text-lg leading-relaxed">@_category.Description</p>
         </div>
 
         @if (_services.Count > 0)
         {
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                @{ var idx = 0; }
-                @foreach (var service in _services)
+            <div class="flex flex-col gap-6">
+                @for (var i = 0; i < _services.Count; i++)
                 {
-                    <div class="animate-fade-in-up animate-delay-@(idx % 6 + 1)">
-                        <ServiceCard Service="service" />
+                    <div class="animate-fade-in-up animate-delay-@(i % 6 + 1)">
+                        <ServiceCard Service="_services[i]" Rank="i + 1" />
                     </div>
-                    idx++;
                 }
             </div>
         }

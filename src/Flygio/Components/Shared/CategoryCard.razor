@@ -12,16 +12,16 @@
 }
 
 <a href="/kategori/@Category.Slug"
-   class="group bg-white rounded-2xl shadow-md hover:shadow-xl transition-all hover:-translate-y-1 p-6 text-center block card-lift">
-    <div class="w-14 h-14 mx-auto mb-4 bg-gradient-to-br from-brand to-brand-light rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-        <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+   class="group bg-white rounded-2xl shadow-md hover:shadow-xl transition-all hover:-translate-y-1 p-8 text-center block card-lift">
+    <div class="w-16 h-16 mx-auto mb-5 bg-gradient-to-br from-brand to-brand-light rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+        <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             @((MarkupString)iconSvg)
         </svg>
     </div>
-    <h3 class="font-display text-lg text-brand group-hover:text-brand-light transition-colors mb-1">@Category.Name</h3>
+    <h3 class="font-display text-lg text-brand group-hover:text-brand-light transition-colors mb-2">@Category.Name</h3>
     @if (ServiceCount > 0)
     {
-        <p class="text-xs text-gray-400">@ServiceCount tjänster</p>
+        <p class="text-sm text-gray-500 font-medium">@ServiceCount tjänster</p>
     }
 </a>
 

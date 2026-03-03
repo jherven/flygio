@@ -50,40 +50,50 @@
         </nav>
 
         <!-- Header -->
-        <div class="bg-white rounded-2xl shadow-md p-8 mb-8 animate-fade-in-up">
-            <div class="flex items-start gap-6">
-                @if (!string.IsNullOrEmpty(_service.LogoUrl))
-                {
-                    <img src="@_service.LogoUrl" alt="@_service.Name" class="w-20 h-20 rounded-2xl object-contain bg-gray-50 p-2 shrink-0" />
-                }
-                else
-                {
-                    <div class="w-20 h-20 rounded-2xl bg-gradient-to-br from-brand to-brand-light flex items-center justify-center text-white font-display text-3xl shrink-0">
-                        @_service.Name[0]
+        <div class="service-card relative mb-8 animate-fade-in-up">
+            @if (_service.IsFeatured)
+            {
+                <span class="absolute -top-3 left-6 bg-teal text-white text-xs font-semibold px-3 py-1 rounded-full shadow-md z-10">
+                    Redakt&ouml;rens val
+                </span>
+            }
+            <div class="p-8">
+                <div class="flex items-start gap-6">
+                    @if (!string.IsNullOrEmpty(_service.LogoUrl))
+                    {
+                        <img src="@_service.LogoUrl" alt="@_service.Name" class="w-20 h-20 rounded-2xl object-contain bg-gray-50 p-2 shrink-0" />
+                    }
+                    else
+                    {
+                        <div class="w-20 h-20 rounded-2xl bg-gradient-to-br from-brand to-brand-light flex items-center justify-center text-white font-display text-3xl shrink-0">
+                            @_service.Name[0]
+                        </div>
+                    }
+                    <div class="flex-1">
+                        <h1 class="font-display text-3xl md:text-4xl text-brand mb-2">@_service.Name</h1>
+                        <StarRating Rating="@_service.Rating" />
+                        <p class="text-gray-600 mt-3 leading-relaxed">@_service.Description</p>
                     </div>
-                }
-                <div class="flex-1">
-                    <h1 class="font-display text-3xl md:text-4xl text-brand mb-2">@_service.Name</h1>
-                    <StarRating Rating="@_service.Rating" />
-                    <p class="text-gray-600 mt-3 leading-relaxed">@_service.Description</p>
                 </div>
-            </div>
-            <div class="mt-6">
-                <AffiliateButton
-                    Url="@(_service.AffiliateUrl ?? _service.WebsiteUrl)"
-                    Text="@($"Besök {_service.Name}")"
-                    ServiceId="@_service.Id"
-                    ServiceName="@_service.Name" />
+                <div class="mt-6">
+                    <AffiliateButton
+                        Url="@(_service.AffiliateUrl ?? _service.WebsiteUrl)"
+                        Text="@($"Besök {_service.Name}")"
+                        ServiceId="@_service.Id"
+                        ServiceName="@_service.Name" />
+                </div>
             </div>
         </div>
 
         <!-- Full Review -->
         @if (!string.IsNullOrEmpty(_service.LongDescription))
         {
-            <div class="bg-white rounded-2xl shadow-md p-8 mb-8 animate-fade-in-up animate-delay-1">
-                <h2 class="font-display text-2xl text-brand mb-4">Recension</h2>
-                <div class="prose prose-lg max-w-none text-gray-700 leading-relaxed">
-                    <p>@_service.LongDescription</p>
+            <div class="service-card mb-8 animate-fade-in-up animate-delay-1">
+                <div class="p-8">
+                    <h2 class="font-display text-2xl text-brand mb-4">Recension</h2>
+                    <div class="prose prose-lg max-w-none text-gray-700 leading-relaxed">
+                        <p>@_service.LongDescription</p>
+                    </div>
                 </div>
             </div>
         }
@@ -97,24 +107,26 @@
                     var pros = JsonSerializer.Deserialize<List<string>>(_service.Pros);
                     if (pros?.Count > 0)
                     {
-                        <div class="bg-white rounded-2xl shadow-md p-6">
-                            <h3 class="font-display text-lg text-teal mb-4 flex items-center gap-2">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                                </svg>
-                                Fördelar
-                            </h3>
-                            <ul class="space-y-3">
-                                @foreach (var pro in pros)
-                                {
-                                    <li class="flex items-start gap-2 text-gray-700">
-                                        <svg class="w-5 h-5 text-teal shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                                        </svg>
-                                        @pro
-                                    </li>
-                                }
-                            </ul>
+                        <div class="service-card">
+                            <div class="p-6">
+                                <h3 class="font-display text-lg text-teal mb-4 flex items-center gap-2">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                    </svg>
+                                    Fördelar
+                                </h3>
+                                <ul class="space-y-3">
+                                    @foreach (var pro in pros)
+                                    {
+                                        <li class="flex items-start gap-2 text-gray-700">
+                                            <svg class="w-5 h-5 text-teal shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                            </svg>
+                                            @pro
+                                        </li>
+                                    }
+                                </ul>
+                            </div>
                         </div>
                     }
                 }
@@ -123,24 +135,26 @@
                     var cons = JsonSerializer.Deserialize<List<string>>(_service.Cons);
                     if (cons?.Count > 0)
                     {
-                        <div class="bg-white rounded-2xl shadow-md p-6">
-                            <h3 class="font-display text-lg text-coral mb-4 flex items-center gap-2">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                                </svg>
-                                Nackdelar
-                            </h3>
-                            <ul class="space-y-3">
-                                @foreach (var con in cons)
-                                {
-                                    <li class="flex items-start gap-2 text-gray-700">
-                                        <svg class="w-5 h-5 text-coral shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                                        </svg>
-                                        @con
-                                    </li>
-                                }
-                            </ul>
+                        <div class="service-card">
+                            <div class="p-6">
+                                <h3 class="font-display text-lg text-coral mb-4 flex items-center gap-2">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                    Nackdelar
+                                </h3>
+                                <ul class="space-y-3">
+                                    @foreach (var con in cons)
+                                    {
+                                        <li class="flex items-start gap-2 text-gray-700">
+                                            <svg class="w-5 h-5 text-coral shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                            </svg>
+                                            @con
+                                        </li>
+                                    }
+                                </ul>
+                            </div>
                         </div>
                     }
                 }
@@ -148,7 +162,7 @@
         }
 
         <!-- CTA -->
-        <div class="bg-gradient-to-r from-brand to-brand-light rounded-2xl p-8 text-center mb-8 animate-fade-in-up animate-delay-3">
+        <div class="bg-gradient-to-r from-brand to-brand-light rounded-[20px] p-8 text-center mb-8 animate-fade-in-up animate-delay-3">
             <h2 class="font-display text-2xl text-white mb-3">Redo att prova @_service.Name?</h2>
             <p class="text-white/70 mb-5">Klicka nedan för att besöka tjänsten direkt.</p>
             <AffiliateButton
@@ -163,10 +177,10 @@
         {
             <div class="animate-fade-in-up animate-delay-4">
                 <h2 class="font-display text-2xl text-brand mb-6">Relaterade tjänster</h2>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    @foreach (var related in _relatedServices)
+                <div class="flex flex-col gap-6">
+                    @for (var i = 0; i < _relatedServices.Count; i++)
                     {
-                        <ServiceCard Service="related" />
+                        <ServiceCard Service="_relatedServices[i]" Rank="i + 1" />
                     }
                 </div>
             </div>

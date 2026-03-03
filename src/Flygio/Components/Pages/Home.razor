@@ -21,8 +21,8 @@
     </script>
 </HeadContent>
 
-<!-- Hero with noise/gradient -->
-<section class="relative min-h-[500px] flex items-center justify-center overflow-hidden noise">
+<!-- Hero -->
+<section class="relative min-h-[460px] flex items-center justify-center overflow-hidden">
     <div class="absolute inset-0 bg-gradient-to-b from-navy-deep via-brand to-brand-light"></div>
     <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(245,158,11,0.15),transparent_50%)]"></div>
     <div class="relative z-10 max-w-5xl mx-auto text-center px-4 py-20 md:py-28">
@@ -42,18 +42,7 @@
             </a>
         </div>
     </div>
-    <!-- Decorative floating elements -->
-    <div class="absolute top-20 left-10 w-3 h-3 bg-accent/30 rounded-full animate-float hidden lg:block"></div>
-    <div class="absolute top-40 right-20 w-2 h-2 bg-teal/40 rounded-full animate-float animate-delay-3 hidden lg:block"></div>
-    <div class="absolute bottom-32 left-1/4 w-2 h-2 bg-coral/30 rounded-full animate-float animate-delay-5 hidden lg:block"></div>
 </section>
-
-<!-- Wave divider: hero → categories -->
-<div class="wave-divider bg-sand">
-    <svg viewBox="0 0 1440 60" fill="none" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
-        <path d="M0 60L1440 60L1440 20C1320 40 1200 50 1080 40C960 30 840 0 720 0C600 0 480 30 360 40C240 50 120 40 0 20L0 60Z" fill="#2d5f8a"/>
-    </svg>
-</div>
 
 <!-- Categories Grid -->
 <section class="py-16 px-4">
@@ -79,30 +68,25 @@
 @if (_featuredServices.Count > 0)
 {
     <section class="py-16 px-4 bg-mist/30">
-        <div class="max-w-7xl mx-auto">
+        <div class="max-w-4xl mx-auto">
             <div class="text-center mb-10">
-                <p class="text-accent font-semibold text-sm tracking-widest uppercase mb-2">Utvalda</p>
+                <p class="text-accent font-semibold text-sm tracking-widest uppercase mb-2">Topplaceringar</p>
                 <h2 class="font-display text-3xl md:text-4xl text-brand">Populära resetjänster</h2>
             </div>
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                @{ var svcIdx = 0; }
-                @foreach (var service in _featuredServices)
+            <div class="flex flex-col gap-6">
+                @for (var i = 0; i < _featuredServices.Count; i++)
                 {
-                    <div class="animate-fade-in-up animate-delay-@(svcIdx % 6 + 1)">
-                        <ServiceCard Service="service" />
+                    <div class="animate-fade-in-up animate-delay-@(i % 6 + 1)">
+                        <ServiceCard Service="_featuredServices[i]" Rank="i + 1" />
                     </div>
-                    svcIdx++;
                 }
             </div>
         </div>
     </section>
 }
 
-<!-- How it works — Dark section -->
-<section class="relative py-20 px-4 bg-navy-deep overflow-hidden noise">
-    <div class="absolute top-0 left-1/4 w-96 h-96 bg-accent/5 rounded-full blur-3xl"></div>
-    <div class="absolute bottom-0 right-1/4 w-96 h-96 bg-teal/5 rounded-full blur-3xl"></div>
-
+<!-- How it works -->
+<section class="relative py-20 px-4 bg-navy-deep overflow-hidden">
     <div class="relative z-10 max-w-5xl mx-auto">
         <div class="text-center mb-14">
             <p class="text-accent font-semibold text-sm tracking-widest uppercase mb-2 animate-fade-in">Enkelt & oberoende</p>
@@ -110,40 +94,28 @@
         </div>
         <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div class="text-center animate-fade-in-up animate-delay-1">
-                <div class="relative w-20 h-20 mx-auto mb-6 animate-float">
-                    <div class="absolute inset-0 bg-gradient-to-br from-accent to-coral rounded-2xl opacity-20 blur-lg"></div>
-                    <div class="relative w-20 h-20 bg-gradient-to-br from-accent to-coral rounded-2xl flex items-center justify-center shadow-lg shadow-accent/20">
-                        <svg class="w-9 h-9 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                        </svg>
-                    </div>
-                    <span class="absolute -top-3 -left-3 text-6xl font-bold text-white/5 font-display">1</span>
+                <div class="w-16 h-16 mx-auto mb-5 bg-gradient-to-br from-accent to-coral rounded-2xl flex items-center justify-center shadow-lg shadow-accent/20">
+                    <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
                 </div>
                 <h3 class="font-display text-xl text-white mb-3">Utforska</h3>
                 <p class="text-white/50 leading-relaxed">Bläddra bland kategorier och hitta rätt typ av resetjänst för dina behov.</p>
             </div>
             <div class="text-center animate-fade-in-up animate-delay-2">
-                <div class="relative w-20 h-20 mx-auto mb-6 animate-float animate-delay-2">
-                    <div class="absolute inset-0 bg-gradient-to-br from-brand-light to-teal rounded-2xl opacity-20 blur-lg"></div>
-                    <div class="relative w-20 h-20 bg-gradient-to-br from-brand-light to-teal rounded-2xl flex items-center justify-center shadow-lg shadow-teal/20">
-                        <svg class="w-9 h-9 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                        </svg>
-                    </div>
-                    <span class="absolute -top-3 -left-3 text-6xl font-bold text-white/5 font-display">2</span>
+                <div class="w-16 h-16 mx-auto mb-5 bg-gradient-to-br from-brand-light to-teal rounded-2xl flex items-center justify-center shadow-lg shadow-teal/20">
+                    <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                    </svg>
                 </div>
                 <h3 class="font-display text-xl text-white mb-3">Jämför</h3>
                 <p class="text-white/50 leading-relaxed">Läs recensioner, jämför för- och nackdelar och se betyg från oss.</p>
             </div>
             <div class="text-center animate-fade-in-up animate-delay-3">
-                <div class="relative w-20 h-20 mx-auto mb-6 animate-float animate-delay-4">
-                    <div class="absolute inset-0 bg-gradient-to-br from-teal to-accent rounded-2xl opacity-20 blur-lg"></div>
-                    <div class="relative w-20 h-20 bg-gradient-to-br from-teal to-accent rounded-2xl flex items-center justify-center shadow-lg shadow-accent/20">
-                        <svg class="w-9 h-9 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
-                        </svg>
-                    </div>
-                    <span class="absolute -top-3 -left-3 text-6xl font-bold text-white/5 font-display">3</span>
+                <div class="w-16 h-16 mx-auto mb-5 bg-gradient-to-br from-teal to-accent rounded-2xl flex items-center justify-center shadow-lg shadow-accent/20">
+                    <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                    </svg>
                 </div>
                 <h3 class="font-display text-xl text-white mb-3">Boka</h3>
                 <p class="text-white/50 leading-relaxed">Gå direkt till den tjänst som passar dig bäst och boka din resa.</p>
@@ -151,13 +123,6 @@
         </div>
     </div>
 </section>
-
-<!-- Wave divider: dark → articles -->
-<div class="wave-divider bg-sand">
-    <svg viewBox="0 0 1440 60" fill="none" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
-        <path d="M0 60L1440 60L1440 20C1320 40 1200 50 1080 40C960 30 840 0 720 0C600 0 480 30 360 40C240 50 120 40 0 20L0 60Z" fill="#0f2440"/>
-    </svg>
-</div>
 
 <!-- Latest Articles -->
 @if (_articles.Count > 0)
@@ -217,7 +182,7 @@
             _featuredServices = await db.TravelServices
                 .Where(s => s.IsPublished && s.IsFeatured)
                 .OrderByDescending(s => s.Rating)
-                .Take(6)
+                .Take(4)
                 .AsNoTracking()
                 .ToListAsync();
 
