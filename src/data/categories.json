@@ -1,0 +1,8 @@
+[
+  { "id": "flyg", "name": "Flyg", "slug": "flyg", "description": "Jämför flygsökmotorer och flygbolag för att hitta de billigaste flygbiljetterna.", "icon": "plane", "sortOrder": 1 },
+  { "id": "hotell", "name": "Hotell", "slug": "hotell", "description": "Hitta de bästa hotellbokningssajterna och jämför priser på boende världen över.", "icon": "hotel", "sortOrder": 2 },
+  { "id": "hyrbil", "name": "Hyrbil", "slug": "hyrbil", "description": "Jämför hyrbilstjänster och hitta bästa pris på biluthyrning.", "icon": "car", "sortOrder": 3 },
+  { "id": "reseforsakring", "name": "Reseförsäkring", "slug": "reseforsakring", "description": "Jämför reseförsäkringar och hitta rätt skydd för din resa.", "icon": "shield", "sortOrder": 4 },
+  { "id": "paketresor", "name": "Paketresor", "slug": "paketresor", "description": "Jämför researrangörer och hitta de bästa paketresorna från Sverige.", "icon": "package", "sortOrder": 5 },
+  { "id": "aktiviteter", "name": "Aktiviteter", "slug": "aktiviteter", "description": "Boka upplevelser, turer och aktiviteter på ditt resmål.", "icon": "compass", "sortOrder": 6 }
+]

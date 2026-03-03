@@ -1,0 +1,317 @@
+[
+  {
+    "id": "skyscanner", "name": "Skyscanner", "slug": "skyscanner",
+    "description": "En av världens största flygsökmotorer med priser från hundratals flygbolag och resebyråer.",
+    "longDescription": "Skyscanner är en av de mest populära sökmotorerna för flygbiljetter i världen. Tjänsten jämför priser från hundratals flygbolag och onlineresebyråer för att hjälpa dig hitta den billigaste biljetten. Med funktioner som \"Hela månaden\" och \"Billigaste månaden\" kan du enkelt hitta de mest prisvärda tiderna att flyga. Skyscanner erbjuder också sökning efter hotell och hyrbil.",
+    "websiteUrl": "https://www.skyscanner.se", "rating": 9.2, "isFeatured": true, "isPopular": true,
+    "pros": ["Mycket brett utbud av flygbolag", "Flexibel datumssökning", "Prisvarningar", "Även hotell och hyrbil"],
+    "cons": ["Vidarebefordrar till tredjepartssajter", "Priset kan ändras vid bokning"],
+    "categories": ["flyg"]
+  },
+  {
+    "id": "momondo", "name": "Momondo", "slug": "momondo",
+    "description": "Flygprisjämförare känd för att ofta hitta de lägsta priserna genom djup sökning.",
+    "longDescription": "Momondo är en metasökmotor för flygresor som jämför priser från flygbolag, resebyråer och andra bokningssajter. Tjänsten är känd för sin \"prisinsikt\"-funktion som visar om det aktuella priset är bra eller om det kan löna sig att vänta. Momondo tillhör samma koncern som Kayak (Booking Holdings).",
+    "websiteUrl": "https://www.momondo.se", "rating": 8.8, "isFeatured": false, "isPopular": true,
+    "pros": ["Ofta lägsta pris", "Bra prisinsikt-funktion", "Ren och enkel design"],
+    "cons": ["Begränsad kundservice", "Bokar inte direkt"],
+    "categories": ["flyg"]
+  },
+  {
+    "id": "google-flights", "name": "Google Flights", "slug": "google-flights",
+    "description": "Googles egna flygssökmotor med snabb sökning och smarta funktioner.",
+    "longDescription": "Google Flights är Googles inbyggda flygssöktjänst som erbjuder snabb och kraftfull sökning bland flygbolag världen över. Med funktioner som priskarta, flexibla datum och prishistorik är det ett utmärkt verktyg för att planera resor. Google Flights visar också koldioxidutsläpp per flyg.",
+    "websiteUrl": "https://www.google.com/travel/flights", "rating": 9.0, "isFeatured": true, "isPopular": true,
+    "pros": ["Extremt snabb sökning", "Priskarta", "Prishistorik och prognoser", "CO2-information"],
+    "cons": ["Visar inte alltid alla lågprisbolag", "Inget lojalitetsprogram"],
+    "categories": ["flyg"]
+  },
+  {
+    "id": "kayak", "name": "Kayak", "slug": "kayak",
+    "description": "Kraftfull metasökmotor för flyg, hotell och hyrbil med avancerade filter.",
+    "longDescription": "Kayak är en stor metasökmotor som jämför priser från hundratals resebokningstjänster. Med funktioner som prisprognoser, flexibla sökningar och \"Explore\"-kartan kan du hitta inspiration och de bästa priserna. Kayak tillhör Booking Holdings och integrerar med flera andra resetjänster.",
+    "websiteUrl": "https://www.kayak.se", "rating": 8.7, "isFeatured": false, "isPopular": true,
+    "pros": ["Avancerade filter", "Prisprognoser", "Explore-funktion", "Jämför många källor"],
+    "cons": ["Kan vara överväldigande", "Annonser blandat med resultat"],
+    "categories": ["flyg", "hotell", "hyrbil"]
+  },
+  {
+    "id": "kiwi-com", "name": "Kiwi.com", "slug": "kiwi-com",
+    "description": "Innovativ tjänst som kombinerar flyg från olika bolag till unika rutter.",
+    "longDescription": "Kiwi.com skiljer sig från andra flygssökmotorer genom att kombinera flygningar från olika flygbolag som normalt inte samarbetar. Detta kan ge unika och billiga rutter som du inte hittar någon annanstans. Tjänsten erbjuder också en \"Kiwi Guarantee\" som skyddar dig vid missade anslutningar.",
+    "websiteUrl": "https://www.kiwi.com", "rating": 7.8, "isFeatured": false, "isPopular": false,
+    "pros": ["Unika kombinationsrutter", "Kiwi Guarantee-skydd", "Ofta lägre priser"],
+    "cons": ["Komplexa bokningar", "Separat incheckning vid byte", "Kundservice kan vara långsam"],
+    "categories": ["flyg"]
+  },
+  {
+    "id": "norwegian", "name": "Norwegian", "slug": "norwegian",
+    "description": "Skandinaviens största lågprisflygbolag med bra utbud från Sverige.",
+    "longDescription": "Norwegian är ett av Europas ledande lågprisflygbolag med bas i Norge. Från Sverige erbjuder de ett brett nätverk av direktflyg till populära destinationer i Europa och Thailand. Norwegian har ett modernt flygplansflotta och erbjuder olika biljettyper från LowFare till PremiumFlex.",
+    "websiteUrl": "https://www.norwegian.com", "rating": 7.5, "isFeatured": false, "isPopular": false,
+    "pros": ["Många direktflyg från Sverige", "Bra grundpris", "Modern flotta", "CashPoints-program"],
+    "cons": ["Tillägg för bagage och mat", "Begränsad flexibilitet på billigaste biljetter"],
+    "categories": ["flyg"]
+  },
+  {
+    "id": "sas", "name": "SAS", "slug": "sas",
+    "description": "Skandinaviens flaggbärare med brett ruttnät och EuroBonus-program.",
+    "longDescription": "SAS (Scandinavian Airlines) är Skandinaviens största flygbolag med ett omfattande ruttnät från Sverige till Europa, Nordamerika och Asien. Som medlem i Star Alliance erbjuder SAS sömlösa anslutningar världen över. EuroBonus-programmet ger möjlighet att samla poäng på flyg och partnerköp.",
+    "websiteUrl": "https://www.flysas.com", "rating": 7.8, "isFeatured": false, "isPopular": false,
+    "pros": ["Stort ruttnät", "EuroBonus-program", "Star Alliance-medlem", "Bra service"],
+    "cons": ["Generellt dyrare än lågpris", "Ibland krånglig bokning"],
+    "categories": ["flyg"]
+  },
+  {
+    "id": "wizzair", "name": "WizzAir", "slug": "wizzair",
+    "description": "Ungersk lågprisflygbolag med billiga flyg till Östeuropa och bortom.",
+    "longDescription": "Wizz Air är ett europeiskt ultralågprisflygbolag med baser i flera länder. Från Sverige (främst Skavsta) erbjuder de billiga flyg till destinationer i Östeuropa, Medelhavet och Mellanöstern. Wizz Air har en av Europas yngsta och mest bränsleeffektiva flygplansflottor.",
+    "websiteUrl": "https://www.wizzair.com", "rating": 6.8, "isFeatured": false, "isPopular": false,
+    "pros": ["Mycket låga grundpriser", "Ung flotta", "Wizz Discount Club"],
+    "cons": ["Dyra tillägg", "Begränsat handbagage", "Ofta perifera flygplatser"],
+    "categories": ["flyg"]
+  },
+  {
+    "id": "booking-com", "name": "Booking.com", "slug": "booking-com",
+    "description": "Världens största hotellbokningssajt med miljontals boenden i alla prisklasser.",
+    "longDescription": "Booking.com är den dominerande plattformen för hotellbokning globalt med över 28 miljoner boendealternativ i 228 länder. Från lyxhotell till vandrarhem och lägenheter hittar du allt här. Genius-lojalitetsprogrammet ger rabatter och förmåner, och många boenden erbjuder gratis avbokning.",
+    "websiteUrl": "https://www.booking.com", "rating": 9.0, "isFeatured": true, "isPopular": true,
+    "pros": ["Enormt utbud", "Gratis avbokning ofta", "Genius-rabatter", "Bra filter och kartsökning"],
+    "cons": ["Inte alltid billigast", "Priserna exkluderar ibland skatter"],
+    "categories": ["hotell"]
+  },
+  {
+    "id": "hotels-com", "name": "Hotels.com", "slug": "hotels-com",
+    "description": "Populär hotellsajt med \"samla 10 nätter, få 1 gratis\"-program.",
+    "longDescription": "Hotels.com är en av de största hotellbokningssajterna med boenden i över 200 länder. Deras unika belöningsprogram ger dig var 10:e natt gratis (baserat på snittpriser). Sajten är del av Expedia Group och erbjuder ett brett utbud med bra prisgaranti.",
+    "websiteUrl": "https://www.hotels.com", "rating": 8.3, "isFeatured": false, "isPopular": false,
+    "pros": ["Samla nätter-program", "Bra app", "Prisgaranti", "Secret Prices för medlemmar"],
+    "cons": ["Belöningsprogrammet har ändrats", "Färre filter än Booking.com"],
+    "categories": ["hotell"]
+  },
+  {
+    "id": "agoda", "name": "Agoda", "slug": "agoda",
+    "description": "Ledande i Asien med ofta lägst priser på hotell i Thailand, Japan m.fl.",
+    "longDescription": "Agoda är en hotellbokningssajt som är särskilt stark i Asien-Stillahavsregionen. Tillhör Booking Holdings (samma koncern som Booking.com) men har ofta egna, konkurrenskraftiga priser. Agoda erbjuder också lägenheter och villor, och har ett PointsMAX-program.",
+    "websiteUrl": "https://www.agoda.com", "rating": 8.0, "isFeatured": false, "isPopular": false,
+    "pros": ["Ofta bäst pris i Asien", "Bra mobilapp", "Insider Deals", "Många betalningsalternativ"],
+    "cons": ["Svårare att navigera", "Avbokningsregler kan vara strikta"],
+    "categories": ["hotell"]
+  },
+  {
+    "id": "trivago", "name": "Trivago", "slug": "trivago",
+    "description": "Hotellprisjämförare som söker bland hundratals bokningssajter.",
+    "longDescription": "Trivago är en metasökmotor för hotell som jämför priser från över 400 bokningssajter. Istället för att boka direkt visar Trivago var du hittar det bästa priset och skickar dig vidare till den bokningssajten. Det gör det enkelt att se om du verkligen får bästa deal.",
+    "websiteUrl": "https://www.trivago.se", "rating": 7.5, "isFeatured": false, "isPopular": false,
+    "pros": ["Jämför många sajter samtidigt", "Enkelt gränssnitt", "Bra filter"],
+    "cons": ["Bokar inte direkt", "Inte alltid uppdaterade priser"],
+    "categories": ["hotell"]
+  },
+  {
+    "id": "hostelworld", "name": "Hostelworld", "slug": "hostelworld",
+    "description": "Världens ledande plattform för vandrarhem och budgetboende.",
+    "longDescription": "Hostelworld är den största bokningsplattformen för vandrarhem med över 17 000 hostels i 178 länder. Perfekt för budgetresenärer och backpackers. Sajten har detaljerade recensioner, foton och rating-system specifikt för vandrarhemskvaliteter som atmosfär, renlighet och läge.",
+    "websiteUrl": "https://www.hostelworld.com", "rating": 7.8, "isFeatured": false, "isPopular": false,
+    "pros": ["Störst utbud av vandrarhem", "Detaljerade recensioner", "Bra för solobackpackers"],
+    "cons": ["Begränsat till budgetboenden", "Bokningsavgift"],
+    "categories": ["hotell"]
+  },
+  {
+    "id": "airbnb", "name": "Airbnb", "slug": "airbnb",
+    "description": "Världens största plattform för privatuthyrning av lägenheter och unika boenden.",
+    "longDescription": "Airbnb har revolutionerat resebranschen genom att göra det möjligt för privatpersoner att hyra ut sina hem till resenärer. Med allt från rum i delade lägenheter till hela villor, slott och trädkojor erbjuder Airbnb unika boenden du inte hittar på traditionella hotellsajter. Plattformen erbjuder också upplevelser (Airbnb Experiences).",
+    "websiteUrl": "https://www.airbnb.se", "rating": 8.5, "isFeatured": false, "isPopular": true,
+    "pros": ["Unika boenden", "Ofta billigare för grupper", "Lokalt boende", "Airbnb Experiences"],
+    "cons": ["Varierande kvalitet", "Städavgifter", "Mindre konsumentskydd"],
+    "categories": ["hotell", "aktiviteter"]
+  },
+  {
+    "id": "expedia", "name": "Expedia", "slug": "expedia",
+    "description": "En av världens största onlineresebyråer med flyg, hotell och paket.",
+    "longDescription": "Expedia är en av de största onlineresebyråerna i världen och erbjuder flyg, hotell, hyrbil, paketresor och aktiviteter. Genom att boka paket (flyg + hotell) kan du ofta spara pengar. One Key-lojalitetsprogrammet ger förmåner och poäng på alla bokningar.",
+    "websiteUrl": "https://www.expedia.se", "rating": 8.2, "isFeatured": false, "isPopular": true,
+    "pros": ["Allt-i-ett-plattform", "Bra paketpriser", "One Key-program", "Prisgaranti"],
+    "cons": ["Kundservice kan vara svår att nå", "Inte alltid billigast på enstaka produkter"],
+    "categories": ["flyg", "hotell", "hyrbil"]
+  },
+  {
+    "id": "rentalcars-com", "name": "Rentalcars.com", "slug": "rentalcars-com",
+    "description": "Världens största hyrbilsjämförare med priser från alla stora uthyrare.",
+    "longDescription": "Rentalcars.com (del av Booking Holdings) är den ledande jämförelsesajten för hyrbil och söker bland över 900 uthyrningsföretag på 60 000 platser världen över. Med deras \"Full Protection\" försäkring kan du slippa uthyrarens dyra tilläggsförsäkringar.",
+    "websiteUrl": "https://www.rentalcars.com", "rating": 8.5, "isFeatured": true, "isPopular": true,
+    "pros": ["Jämför alla stora uthyrare", "Full Protection-försäkring", "Gratis avbokning", "Bra kundservice"],
+    "cons": ["Inte alltid billigast vid direktbokning", "Tilläggsförsäkring kostar extra"],
+    "categories": ["hyrbil"]
+  },
+  {
+    "id": "autoeurope", "name": "AutoEurope", "slug": "autoeurope",
+    "description": "Hyrbilsjämförare med över 20 000 uthämtningsplatser och prisgaranti.",
+    "longDescription": "AutoEurope har i över 60 år hjälpt resenärer att hitta de bästa hyrbilspriserna. De samarbetar med alla stora uthyrningskedjor och erbjuder prisgaranti - hittar du ett lägre pris matchar de det. AutoEurope har bra kundservice på svenska.",
+    "websiteUrl": "https://www.autoeurope.se", "rating": 8.2, "isFeatured": false, "isPopular": false,
+    "pros": ["Prisgaranti", "Svensk kundservice", "Lång erfarenhet", "Gratis avbokning"],
+    "cons": ["Webbsidan kan vara daterad", "Inte alltid lägst pris"],
+    "categories": ["hyrbil"]
+  },
+  {
+    "id": "sixt", "name": "Sixt", "slug": "sixt",
+    "description": "Premium hyrbilsuthyrare med modern flotta och bra service.",
+    "longDescription": "Sixt är en tysk hyrbilskoncern med verksamhet i över 100 länder. Känd för sin moderna bilflotta med premiumbilar och bra kundservice. Sixt erbjuder även bildelning (Sixt Share) och prenumerationstjänster. Sixt+-appen ger tillgång till hela deras ekosystem.",
+    "websiteUrl": "https://www.sixt.se", "rating": 8.0, "isFeatured": false, "isPopular": false,
+    "pros": ["Modern bilflotta", "Premium upplevelse", "Bra app", "Sixt+-program"],
+    "cons": ["Kan vara dyrare", "Försäkringstillägg"],
+    "categories": ["hyrbil"]
+  },
+  {
+    "id": "europcar", "name": "Europcar", "slug": "europcar",
+    "description": "En av Europas största biluthyrare med brett utbud och många stationer.",
+    "longDescription": "Europcar är en av de ledande biluthyrarna i Europa med kontor i över 140 länder. De erbjuder allt från småbilar till skåpbilar och lyxbilar. Privilege-lojalitetsprogrammet ger rabatter och förmåner vid återkommande hyror.",
+    "websiteUrl": "https://www.europcar.se", "rating": 7.3, "isFeatured": false, "isPopular": false,
+    "pros": ["Stort nätverk i Europa", "Bred fordonsflotta", "Privilege-program"],
+    "cons": ["Priserna kan vara höga", "Tillägg för utrustning"],
+    "categories": ["hyrbil"]
+  },
+  {
+    "id": "hertz", "name": "Hertz", "slug": "hertz",
+    "description": "Världens äldsta och en av de största biluthyrningskedjorna.",
+    "longDescription": "Hertz är en av världens mest kända biluthyrare med verksamhet i 150 länder. Med Gold Plus Rewards-programmet kan du hoppa över kön och gå direkt till bilen. Hertz erbjuder också premiumbilar genom Hertz Dream Cars-programmet.",
+    "websiteUrl": "https://www.hertz.se", "rating": 7.5, "isFeatured": false, "isPopular": false,
+    "pros": ["Global närvaro", "Gold Plus Rewards", "Premiumbilar tillgängliga"],
+    "cons": ["Ofta dyrare vid direktbokning", "Försäkringsalternativ kan vara förvirrande"],
+    "categories": ["hyrbil"]
+  },
+  {
+    "id": "erv", "name": "ERV", "slug": "erv",
+    "description": "Europas ledande reseförsäkringsbolag med brett utbud av reseskydd.",
+    "longDescription": "ERV (Europäische Reiseversicherung) är ett av Europas största reseförsäkringsbolag med över 100 års erfarenhet. De erbjuder allt från grundläggande avbeställningsskydd till omfattande reseförsäkringar med sjukvård, bagage och ansvarsskydd. ERV har bra rykte för snabb skadehantering.",
+    "websiteUrl": "https://www.erv.se", "rating": 8.5, "isFeatured": true, "isPopular": true,
+    "pros": ["Lång erfarenhet", "Brett utbud av försäkringar", "Bra skadehantering", "Tydliga villkor"],
+    "cons": ["Kan vara dyrare än konkurrenter", "Begränsad digital upplevelse"],
+    "categories": ["reseforsakring"]
+  },
+  {
+    "id": "europeiska", "name": "Europeiska", "slug": "europeiska",
+    "description": "Välkänt svenskt reseförsäkringsbolag med enkla och prisvärda försäkringar.",
+    "longDescription": "Europeiska ERV är det svenska varumärket för ERV och erbjuder reseförsäkringar anpassade för den svenska marknaden. Med enkla och tydliga produkter som grund- och premiumförsäkring är det lätt att hitta rätt skydd. Många svenska resenärer känner igen varumärket från resebyrån.",
+    "websiteUrl": "https://www.europeiska.se", "rating": 8.2, "isFeatured": false, "isPopular": false,
+    "pros": ["Svenskt bolag", "Enkla produkter", "Bra kundservice", "Prisvärt"],
+    "cons": ["Begränsat utbud jämfört med storbolagen"],
+    "categories": ["reseforsakring"]
+  },
+  {
+    "id": "gouda", "name": "Gouda", "slug": "gouda",
+    "description": "Prisvärda reseförsäkringar med bra skydd och enkel onlinebokning.",
+    "longDescription": "Gouda Reseförsäkring erbjuder prisvärda reseförsäkringar för alla typer av resor. Med enkel onlinebokning och tydliga villkor är det lätt att teckna rätt försäkring. Gouda erbjuder även årsförsäkringar för dem som reser ofta.",
+    "websiteUrl": "https://www.gouda.se", "rating": 7.8, "isFeatured": false, "isPopular": false,
+    "pros": ["Prisvärt", "Enkel bokning", "Årsförsäkring tillgänglig"],
+    "cons": ["Begränsad kundservice kvällar/helger"],
+    "categories": ["reseforsakring"]
+  },
+  {
+    "id": "if-forsakring", "name": "IF", "slug": "if-forsakring",
+    "description": "Nordens största försäkringsbolag med reseförsäkring som del av hemförsäkringen.",
+    "longDescription": "IF Skadeförsäkring är ett av Nordens största försäkringsbolag. Deras hemförsäkring inkluderar ofta grundläggande reseskydd, men de erbjuder även utökade reseförsäkringar för längre resor och specialbehov. Som befintlig IF-kund kan du enkelt lägga till reseskydd.",
+    "websiteUrl": "https://www.if.se", "rating": 7.5, "isFeatured": false, "isPopular": false,
+    "pros": ["Ingår ofta i hemförsäkring", "Enkelt för befintliga kunder", "Stort bolag med resurser"],
+    "cons": ["Reseskyddet i hemförsäkringen kan vara begränsat", "Dyrare separat"],
+    "categories": ["reseforsakring"]
+  },
+  {
+    "id": "hedvig", "name": "Hedvig", "slug": "hedvig",
+    "description": "Modern digital försäkring med enkel app och snabb skadehantering.",
+    "longDescription": "Hedvig är ett svenskt insurtech-bolag som erbjuder försäkringar via sin app. Deras hemförsäkring inkluderar reseskydd och allt hanteras digitalt. Hedvig utmärker sig med sin transparenta prismodell och snabba AI-drivna skadehantering.",
+    "websiteUrl": "https://www.hedvig.com", "rating": 8.0, "isFeatured": false, "isPopular": false,
+    "pros": ["Modern digital upplevelse", "Snabb skadehantering via app", "Transparent prissättning"],
+    "cons": ["Begränsat till hemförsäkring + reseskydd", "Relativt nytt bolag"],
+    "categories": ["reseforsakring"]
+  },
+  {
+    "id": "tui", "name": "TUI", "slug": "tui",
+    "description": "Världens största researrangör med charter och paketresor från Sverige.",
+    "longDescription": "TUI är världens största rese- och turistkoncern med ett brett utbud av paketresor, hotell och upplevelser. Från Sverige erbjuder TUI charter till populära sol- och baddestinationer med egna flygplan (TUI fly). TUI har egna hotellkedjor och erbjuder allt-i-ett-paket.",
+    "websiteUrl": "https://www.tui.se", "rating": 8.0, "isFeatured": true, "isPopular": true,
+    "pros": ["Stort utbud av charterresor", "Egna flyg och hotell", "Bra barnrabatter", "Svenska reseledare"],
+    "cons": ["Begränsat till paketresor", "Kan vara dyrare än att boka separat"],
+    "categories": ["paketresor"]
+  },
+  {
+    "id": "ving", "name": "Ving", "slug": "ving",
+    "description": "Sveriges mest kända researrangör med sol- och badresor sedan 1956.",
+    "longDescription": "Ving är en av Sveriges äldsta och mest kända researrangörer med paketresor sedan 1956. De erbjuder sol- och badresor, stadsresor och skidresor till destinationer i Europa, Asien och Karibien. Ving har egna hotellkoncept som Sunwing och Ocean Beach Club.",
+    "websiteUrl": "https://www.ving.se", "rating": 7.8, "isFeatured": false, "isPopular": true,
+    "pros": ["Lång erfarenhet", "Egna hotellkoncept", "Bra familjeerbjudanden"],
+    "cons": ["Begränsat till paketresor", "Priserna kan vara höga i högsäsong"],
+    "categories": ["paketresor"]
+  },
+  {
+    "id": "apollo", "name": "Apollo", "slug": "apollo",
+    "description": "Stor nordisk researrangör med brett utbud av charter och paketresor.",
+    "longDescription": "Apollo är en av Nordens ledande researrangörer och tillhör DER Touristik Group. De erbjuder charter och paketresor till populära destinationer i Medelhavet, Kanarieöarna, Nordafrika och Asien. Apollo har egna hotellkoncept och erbjuder både familje- och vuxenresor.",
+    "websiteUrl": "https://www.apollo.se", "rating": 7.8, "isFeatured": false, "isPopular": false,
+    "pros": ["Brett destinationsutbud", "Egna hotellkoncept", "Bra priser", "Flexibla avbokningsvillkor"],
+    "cons": ["Hemsidan kan vara långsam", "Begränsade flygtider ibland"],
+    "categories": ["paketresor"]
+  },
+  {
+    "id": "sts-alpresor", "name": "STS Alpresor", "slug": "sts-alpresor",
+    "description": "Sveriges ledande skidresearrangör med resor till Alperna.",
+    "longDescription": "STS Alpresor är specialiserade på skidresor till de franska, österrikiska och italienska Alperna. Med lång erfarenhet erbjuder de paketresor med flyg, transfer, boende och liftkort. STS Alpresor har även sommarresor till Alperna med vandring och cykling.",
+    "websiteUrl": "https://www.stsalpresor.se", "rating": 7.5, "isFeatured": false, "isPopular": false,
+    "pros": ["Specialister på skidresor", "Allt-i-ett-paket", "Bra destinationskunskap"],
+    "cons": ["Begränsat till Alperna", "Säsongsbaserat"],
+    "categories": ["paketresor"]
+  },
+  {
+    "id": "fritidsresor", "name": "Fritidsresor", "slug": "fritidsresor",
+    "description": "TUI-ägd researrangör med populära charterresor från Sverige.",
+    "longDescription": "Fritidsresor är ett TUI-varumärke och en av Sveriges mest kända researrangörer. De erbjuder charterresor till populära sol- och baddestinationer runt Medelhavet, Kanarieöarna och långväga mål. Fritidsresor är kända för sina koncepthotell och familjevänliga upplägg.",
+    "websiteUrl": "https://www.fritidsresor.se", "rating": 7.5, "isFeatured": false, "isPopular": false,
+    "pros": ["Etablerat varumärke", "Bra koncepthotell", "Familjevänligt"],
+    "cons": ["Begränsat till paketresor", "Del av TUI (överlappar)"],
+    "categories": ["paketresor"]
+  },
+  {
+    "id": "ticket", "name": "Ticket", "slug": "ticket",
+    "description": "Nordisk researrangör med fokus på flexibla resor och god service.",
+    "longDescription": "Ticket är en nordisk researrangör som erbjuder både paketresor och skräddarsydda resor. Med kontor och butiker runt om i Norden erbjuder de personlig service och rådgivning. Ticket har ett brett utbud av destinationer och erbjuder allt från charterflyg till lyxresor.",
+    "websiteUrl": "https://www.ticket.se", "rating": 7.3, "isFeatured": false, "isPopular": false,
+    "pros": ["Personlig service", "Fysiska butiker", "Flexibla resor"],
+    "cons": ["Kan vara dyrare", "Begränsat onlineutbud"],
+    "categories": ["paketresor"]
+  },
+  {
+    "id": "getyourguide", "name": "GetYourGuide", "slug": "getyourguide",
+    "description": "Världens största plattform för turer, aktiviteter och upplevelser.",
+    "longDescription": "GetYourGuide är en av världens ledande plattformar för att boka turer, aktiviteter och upplevelser på resmålet. Med över 100 000 aktiviteter i tusentals städer kan du boka allt från guidade stadsvandringar och matupplevelser till äventyrsaktiviteter och inträdesbiljetter till sevärdheter.",
+    "websiteUrl": "https://www.getyourguide.com", "rating": 8.8, "isFeatured": true, "isPopular": true,
+    "pros": ["Enormt utbud", "Enkel bokning", "Gratis avbokning ofta", "Verifierade recensioner"],
+    "cons": ["Priserna kan vara högre än att boka direkt", "Inte alltid lokala guider"],
+    "categories": ["aktiviteter"]
+  },
+  {
+    "id": "viator", "name": "Viator", "slug": "viator",
+    "description": "Stor aktivitetsplattform (Tripadvisor) med turer och upplevelser världen över.",
+    "longDescription": "Viator, som ägs av Tripadvisor, är en av de största plattformarna för att boka aktiviteter och upplevelser på resan. Med miljontals recensioner och ett brett utbud av turer, entréer och upplevelser i över 300 destinationer är Viator ett go-to för resaktiviteter.",
+    "websiteUrl": "https://www.viator.com", "rating": 8.3, "isFeatured": false, "isPopular": false,
+    "pros": ["Kopplat till Tripadvisor-recensioner", "Brett utbud", "Bra filter", "Prisgaranti"],
+    "cons": ["Kan vara dyrare än att boka direkt", "Vissa aktiviteter har begränsad info"],
+    "categories": ["aktiviteter"]
+  },
+  {
+    "id": "klook", "name": "Klook", "slug": "klook",
+    "description": "Asien-specialist med aktiviteter, transport och upplevelser.",
+    "longDescription": "Klook är en reseteknologiplattform som startade i Hongkong och är särskilt stark i Asien-Stillahavsregionen. De erbjuder aktiviteter, entréer, transport (tåg, SIM-kort, flygplatstransfer) och upplevelser. Klook har ofta bättre priser än att boka på plats i Asien.",
+    "websiteUrl": "https://www.klook.com", "rating": 8.0, "isFeatured": false, "isPopular": false,
+    "pros": ["Bäst i Asien", "Ofta lägre pris än på plats", "Mobilbiljetter", "Snabb bekräftelse"],
+    "cons": ["Begränsat utbud i Europa", "Kundservice kan vara långsam"],
+    "categories": ["aktiviteter"]
+  },
+  {
+    "id": "tiqets", "name": "Tiqets", "slug": "tiqets",
+    "description": "Specialiserad på museumbiljetter och sevärdheter med snabb inpassering.",
+    "longDescription": "Tiqets är specialiserade på att sälja inträdesbiljetter till museer, sevärdheter och attraktioner världen över. Deras fokus ligger på att erbjuda skip-the-line-biljetter så att du slipper köa. Tiqets erbjuder mobilbiljetter med QR-kod för smidig inpassering.",
+    "websiteUrl": "https://www.tiqets.com", "rating": 8.2, "isFeatured": false, "isPopular": false,
+    "pros": ["Skip-the-line-biljetter", "Mobilbiljetter", "Sista-minuten-bokning", "Enkel avbokning"],
+    "cons": ["Begränsat till sevärdheter/museer", "Ibland dyrare än att köpa på plats"],
+    "categories": ["aktiviteter"]
+  }
+]

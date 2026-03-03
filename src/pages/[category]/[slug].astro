@@ -1,0 +1,125 @@
+---
+import BaseLayout from '@/components/layout/BaseLayout.astro';
+import Breadcrumbs from '@/components/ui/Breadcrumbs.astro';
+import StarRating from '@/components/ui/StarRating.astro';
+import AffiliateButton from '@/components/ui/AffiliateButton.astro';
+import ProsConsList from '@/components/ui/ProsConsList.astro';
+import ServiceCard from '@/components/ui/ServiceCard.astro';
+import { getCategories, getAllServices, getRelatedServices } from '@/utils/data-helpers';
+import type { Category, Service } from '@/utils/data-helpers';
+import type { GetStaticPaths } from 'astro';
+
+export const getStaticPaths: GetStaticPaths = () => {
+  const categories = getCategories();
+  const services = getAllServices();
+  const paths: { params: { category: string; slug: string }; props: { service: Service; category: Category } }[] = [];
+
+  for (const service of services) {
+    const primaryCat = categories.find((c) => c.slug === service.categories[0]);
+    if (!primaryCat) continue;
+    paths.push({
+      params: { category: primaryCat.slug, slug: service.slug },
+      props: { service, category: primaryCat },
+    });
+  }
+  return paths;
+};
+
+const { service, category } = Astro.props;
+const related = getRelatedServices(service.id, category.slug, 3);
+
+const schema = {
+  '@context': 'https://schema.org',
+  '@type': 'Product',
+  name: service.name,
+  description: service.description,
+  url: `https://flygio.se/${category.slug}/${service.slug}/`,
+  review: {
+    '@type': 'Review',
+    author: { '@type': 'Organization', name: 'Flygio.se' },
+    reviewRating: {
+      '@type': 'Rating',
+      ratingValue: service.rating,
+      bestRating: 10,
+      worstRating: 0,
+    },
+    reviewBody: service.longDescription,
+  },
+};
+---
+
+<BaseLayout
+  title={`${service.name} — Recension | Flygio.se`}
+  description={service.description}
+  canonical={`/${category.slug}/${service.slug}/`}
+  schema={schema}
+>
+  <div class="max-w-4xl mx-auto px-4 py-10">
+    <Breadcrumbs items={[
+      { label: 'Hem', href: '/' },
+      { label: category.name, href: `/${category.slug}/` },
+      { label: service.name },
+    ]} />
+
+    <!-- Header -->
+    <div class="bg-white rounded-xl border border-gray-100 p-6 md:p-8 mb-8">
+      <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div>
+          <div class="flex items-center gap-3 flex-wrap">
+            <h1 class="font-heading text-3xl md:text-4xl text-brand">{service.name}</h1>
+            {service.isFeatured && (
+              <span class="text-xs font-semibold bg-accent/10 text-accent px-3 py-1 rounded-full">
+                Redaktörens val
+              </span>
+            )}
+          </div>
+          <div class="mt-2">
+            <StarRating rating={service.rating} />
+          </div>
+          <p class="text-gray-600 mt-3">{service.description}</p>
+        </div>
+        <div class="shrink-0">
+          <AffiliateButton url={service.websiteUrl} size="lg" />
+        </div>
+      </div>
+    </div>
+
+    <!-- Recension -->
+    <section class="mb-8">
+      <h2 class="font-heading text-2xl text-brand mb-4">Recension</h2>
+      <p class="text-gray-700 leading-relaxed">{service.longDescription}</p>
+    </section>
+
+    <!-- Fördelar / Nackdelar -->
+    <section class="mb-8">
+      <ProsConsList pros={service.pros} cons={service.cons} />
+    </section>
+
+    <!-- CTA -->
+    <section class="bg-mist rounded-xl p-6 text-center mb-12">
+      <h2 class="font-heading text-xl text-brand mb-2">Redo att prova {service.name}?</h2>
+      <p class="text-gray-600 text-sm mb-4">Besök {service.name} och kom igång direkt.</p>
+      <AffiliateButton url={service.websiteUrl} label={`Besök ${service.name}`} size="lg" />
+    </section>
+
+    <!-- Relaterade -->
+    {related.length > 0 && (
+      <section>
+        <h2 class="font-heading text-2xl text-brand mb-4">Liknande tjänster</h2>
+        <div class="grid gap-4">
+          {related.map((s, i) => (
+            <ServiceCard
+              rank={i + 1}
+              name={s.name}
+              slug={s.slug}
+              description={s.description}
+              rating={s.rating}
+              websiteUrl={s.websiteUrl}
+              categorySlug={category.slug}
+            />
+          ))}
+        </div>
+      </section>
+    )}
+  </div>
+</BaseLayout>

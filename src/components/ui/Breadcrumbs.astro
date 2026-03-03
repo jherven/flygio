@@ -1,0 +1,42 @@
+---
+interface Crumb {
+  label: string;
+  href?: string;
+}
+
+interface Props {
+  items: Crumb[];
+}
+
+const { items } = Astro.props;
+const siteUrl = 'https://flygio.se';
+
+const schemaItems = items.map((item, i) => ({
+  '@type': 'ListItem',
+  position: i + 1,
+  name: item.label,
+  ...(item.href ? { item: `${siteUrl}${item.href}` } : {}),
+}));
+
+const schema = {
+  '@context': 'https://schema.org',
+  '@type': 'BreadcrumbList',
+  itemListElement: schemaItems,
+};
+---
+
+<nav aria-label="Brödsmulor" class="text-sm text-brand/60 mb-6">
+  <ol class="flex flex-wrap items-center gap-1.5">
+    {items.map((item, i) => (
+      <li class="flex items-center gap-1.5">
+        {i > 0 && <span class="text-brand/30">/</span>}
+        {item.href ? (
+          <a href={item.href} class="hover:text-brand transition-colors">{item.label}</a>
+        ) : (
+          <span class="text-brand/80">{item.label}</span>
+        )}
+      </li>
+    ))}
+  </ol>
+</nav>
+<script type="application/ld+json" set:html={JSON.stringify(schema)} />

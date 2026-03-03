@@ -1,0 +1,68 @@
+---
+import BaseLayout from '@/components/layout/BaseLayout.astro';
+import Breadcrumbs from '@/components/ui/Breadcrumbs.astro';
+import ServiceCard from '@/components/ui/ServiceCard.astro';
+import { getCategories, getServicesByCategory } from '@/utils/data-helpers';
+import type { GetStaticPaths } from 'astro';
+
+export const getStaticPaths: GetStaticPaths = () => {
+  const categories = getCategories();
+  return categories.map((cat) => ({
+    params: { category: cat.slug },
+    props: { category: cat },
+  }));
+};
+
+const { category } = Astro.props;
+const services = getServicesByCategory(category.slug);
+
+const schema = {
+  '@context': 'https://schema.org',
+  '@type': 'ItemList',
+  name: `${category.name} — Jämför tjänster`,
+  description: category.description,
+  numberOfItems: services.length,
+  itemListElement: services.map((s, i) => ({
+    '@type': 'ListItem',
+    position: i + 1,
+    name: s.name,
+    url: `https://flygio.se/${category.slug}/${s.slug}/`,
+  })),
+};
+---
+
+<BaseLayout
+  title={`${category.name} — Jämför tjänster | Flygio.se`}
+  description={category.description}
+  canonical={`/${category.slug}/`}
+  schema={schema}
+>
+  <div class="max-w-4xl mx-auto px-4 py-10">
+    <Breadcrumbs items={[
+      { label: 'Hem', href: '/' },
+      { label: category.name },
+    ]} />
+
+    <h1 class="font-heading text-4xl text-brand mb-3">{category.name}</h1>
+    <p class="text-gray-600 text-lg mb-8">{category.description}</p>
+
+    <div class="grid gap-4">
+      {services.map((service, i) => (
+        <ServiceCard
+          rank={i + 1}
+          name={service.name}
+          slug={service.slug}
+          description={service.description}
+          rating={service.rating}
+          websiteUrl={service.websiteUrl}
+          isFeatured={service.isFeatured}
+          categorySlug={category.slug}
+        />
+      ))}
+    </div>
+
+    {services.length === 0 && (
+      <p class="text-gray-500 text-center py-12">Inga tjänster hittades i denna kategori.</p>
+    )}
+  </div>
+</BaseLayout>

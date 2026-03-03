@@ -1,0 +1,83 @@
+---
+import BaseLayout from '@/components/layout/BaseLayout.astro';
+import Breadcrumbs from '@/components/ui/Breadcrumbs.astro';
+import { getCollection, render } from 'astro:content';
+import { getCategoryBySlug, getServicesByCategory } from '@/utils/data-helpers';
+import type { GetStaticPaths } from 'astro';
+
+export const getStaticPaths: GetStaticPaths = async () => {
+  const articles = await getCollection('articles');
+  return articles.map((article) => ({
+    params: { slug: article.id.replace(/\.md$/, '') },
+    props: { article },
+  }));
+};
+
+const { article } = Astro.props;
+const slug = article.id.replace(/\.md$/, '');
+const { Content } = await render(article);
+const category = article.data.categorySlug ? getCategoryBySlug(article.data.categorySlug) : undefined;
+const relatedServices = category ? getServicesByCategory(category.slug).slice(0, 3) : [];
+
+const schema = {
+  '@context': 'https://schema.org',
+  '@type': 'Article',
+  headline: article.data.title,
+  description: article.data.metaDescription,
+  dateModified: article.data.updatedAt,
+  author: { '@type': 'Organization', name: 'Flygio.se' },
+  publisher: { '@type': 'Organization', name: 'Flygio.se', url: 'https://flygio.se' },
+};
+---
+
+<BaseLayout
+  title={`${article.data.title} | Flygio.se`}
+  description={article.data.metaDescription}
+  canonical={`/guider/${slug}/`}
+  schema={schema}
+>
+  <div class="max-w-4xl mx-auto px-4 py-10">
+    <Breadcrumbs items={[
+      { label: 'Hem', href: '/' },
+      { label: 'Guider', href: '/guider/' },
+      { label: article.data.title },
+    ]} />
+
+    <article>
+      <h1 class="font-heading text-3xl md:text-4xl text-brand mb-3">{article.data.title}</h1>
+      <time datetime={article.data.updatedAt} class="text-sm text-gray-400 block mb-8">Uppdaterad {article.data.updatedAt}</time>
+
+      <div class="prose max-w-none">
+        <Content />
+      </div>
+    </article>
+
+    <!-- Kategori-CTA -->
+    {category && (
+      <section class="bg-mist rounded-xl p-6 mt-12">
+        <h2 class="font-heading text-xl text-brand mb-2">Jämför {category.name.toLowerCase()}</h2>
+        <p class="text-gray-600 text-sm mb-4">Se vår rankade lista över de bästa tjänsterna inom {category.name.toLowerCase()}.</p>
+        <a
+          href={`/${category.slug}/`}
+          class="inline-flex items-center gap-1.5 font-semibold text-sm text-brand-light hover:text-brand transition-colors"
+        >
+          Jämför {category.name.toLowerCase()} &rarr;
+        </a>
+
+        {relatedServices.length > 0 && (
+          <div class="mt-4 grid gap-2">
+            {relatedServices.map((s) => (
+              <a
+                href={`/${category.slug}/${s.slug}/`}
+                class="flex items-center justify-between bg-white rounded-lg px-4 py-2.5 text-sm border border-gray-100 hover:border-brand/20 transition-colors"
+              >
+                <span class="font-medium text-brand">{s.name}</span>
+                <span class="text-teal font-semibold">{s.rating.toFixed(1)}</span>
+              </a>
+            ))}
+          </div>
+        )}
+      </section>
+    )}
+  </div>
+</BaseLayout>

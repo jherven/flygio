@@ -1,0 +1,50 @@
+---
+import BaseLayout from '@/components/layout/BaseLayout.astro';
+import Breadcrumbs from '@/components/ui/Breadcrumbs.astro';
+import { getCollection } from 'astro:content';
+import { getCategoryBySlug } from '@/utils/data-helpers';
+
+const articles = await getCollection('articles');
+---
+
+<BaseLayout
+  title="Reseguider — Flygio.se"
+  description="Läs våra reseguider om flyg, hotell, hyrbil och mer. Tips och råd för att resa smartare och billigare."
+  canonical="/guider/"
+>
+  <div class="max-w-4xl mx-auto px-4 py-10">
+    <Breadcrumbs items={[
+      { label: 'Hem', href: '/' },
+      { label: 'Guider' },
+    ]} />
+
+    <h1 class="font-heading text-4xl text-brand mb-3">Reseguider</h1>
+    <p class="text-gray-600 text-lg mb-8">Tips, råd och guider för att resa smartare och billigare.</p>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      {articles.map((article) => {
+        const cat = article.data.categorySlug ? getCategoryBySlug(article.data.categorySlug) : undefined;
+        return (
+          <a
+            href={`/guider/${article.id.replace(/\.md$/, '')}/`}
+            class="group bg-white rounded-xl overflow-hidden border border-gray-100 hover:border-brand/20 hover:shadow-lg transition-all"
+          >
+            <div class="h-2 bg-gradient-to-r from-brand to-brand-light" />
+            <div class="p-5">
+              {cat && (
+                <span class="text-xs font-semibold text-brand-light bg-mist px-2 py-0.5 rounded-full">
+                  {cat.name}
+                </span>
+              )}
+              <h2 class="font-heading text-lg text-brand mt-2 group-hover:text-brand-light transition-colors">
+                {article.data.title}
+              </h2>
+              <p class="text-sm text-gray-500 mt-2 line-clamp-2">{article.data.metaDescription}</p>
+              <time datetime={article.data.updatedAt} class="text-xs text-gray-400 mt-3 block">{article.data.updatedAt}</time>
+            </div>
+          </a>
+        );
+      })}
+    </div>
+  </div>
+</BaseLayout>

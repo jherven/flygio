@@ -1,0 +1,134 @@
+---
+import BaseLayout from '@/components/layout/BaseLayout.astro';
+import CategoryCard from '@/components/ui/CategoryCard.astro';
+import ServiceCard from '@/components/ui/ServiceCard.astro';
+import { getCategories, getFeaturedServices } from '@/utils/data-helpers';
+import { getCollection } from 'astro:content';
+
+const categories = getCategories();
+const featured = getFeaturedServices(4);
+const articles = await getCollection('articles');
+const latestArticles = articles
+  .sort((a, b) => b.data.updatedAt.localeCompare(a.data.updatedAt))
+  .slice(0, 3);
+
+const schema = {
+  '@context': 'https://schema.org',
+  '@type': 'WebSite',
+  name: 'Flygio.se',
+  url: 'https://flygio.se',
+  description: 'Sveriges oberoende jämförelsesajt för resetjänster.',
+};
+---
+
+<BaseLayout
+  title="Flygio.se — Jämför resetjänster | Hitta bästa flyg, hotell & hyrbil"
+  description="Jämför flygsökmotorer, hotellsajter, hyrbilstjänster och mer. Flygio hjälper dig hitta bästa pris på din resa."
+  canonical="/"
+  schema={schema}
+>
+  <!-- Hero -->
+  <section class="bg-navy-deep text-white py-16 md:py-24">
+    <div class="max-w-7xl mx-auto px-4 text-center">
+      <h1 class="font-heading text-4xl md:text-5xl lg:text-6xl mb-4 animate-fade-in">
+        Jämför resetjänster.<br />
+        <span class="text-accent">Hitta bästa priset.</span>
+      </h1>
+      <p class="text-lg md:text-xl text-white/70 max-w-2xl mx-auto animate-fade-in-up stagger-1">
+        Vi granskar och rankar Sveriges mest populära resetjänster — från flygsökmotorer till hotellsajter och hyrbilstjänster.
+      </p>
+    </div>
+  </section>
+
+  <!-- Kategorier -->
+  <section class="max-w-7xl mx-auto px-4 -mt-8">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      {categories.map((cat, i) => (
+        <div class={`animate-fade-in-up stagger-${i + 1}`}>
+          <CategoryCard
+            name={cat.name}
+            slug={cat.slug}
+            description={cat.description}
+            icon={cat.icon}
+          />
+        </div>
+      ))}
+    </div>
+  </section>
+
+  <!-- Featured -->
+  <section class="max-w-7xl mx-auto px-4 mt-16">
+    <h2 class="font-heading text-3xl text-brand mb-6">Redaktörens val</h2>
+    <div class="grid gap-4">
+      {featured.map((service) => (
+        <ServiceCard
+          name={service.name}
+          slug={service.slug}
+          description={service.description}
+          rating={service.rating}
+          websiteUrl={service.websiteUrl}
+          isFeatured={true}
+          categorySlug={service.categories[0]}
+        />
+      ))}
+    </div>
+  </section>
+
+  <!-- Så funkar det -->
+  <section class="bg-navy-deep text-white py-16 mt-16">
+    <div class="max-w-7xl mx-auto px-4 text-center">
+      <h2 class="font-heading text-3xl mb-10">Så funkar det</h2>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div>
+          <div class="w-14 h-14 bg-accent/20 rounded-full flex items-center justify-center mx-auto mb-4">
+            <span class="text-accent text-2xl font-bold">1</span>
+          </div>
+          <h3 class="font-semibold text-lg mb-2">Välj kategori</h3>
+          <p class="text-white/60 text-sm">Flyg, hotell, hyrbil, reseförsäkring — vi täcker alla delar av din resa.</p>
+        </div>
+        <div>
+          <div class="w-14 h-14 bg-accent/20 rounded-full flex items-center justify-center mx-auto mb-4">
+            <span class="text-accent text-2xl font-bold">2</span>
+          </div>
+          <h3 class="font-semibold text-lg mb-2">Jämför tjänster</h3>
+          <p class="text-white/60 text-sm">Vi rankar och recenserar varje tjänst baserat på pris, utbud, användarvänlighet och support.</p>
+        </div>
+        <div>
+          <div class="w-14 h-14 bg-accent/20 rounded-full flex items-center justify-center mx-auto mb-4">
+            <span class="text-accent text-2xl font-bold">3</span>
+          </div>
+          <h3 class="font-semibold text-lg mb-2">Boka direkt</h3>
+          <p class="text-white/60 text-sm">Klicka dig vidare till den tjänst som passar dig bäst och boka till bästa pris.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Senaste guider -->
+  {latestArticles.length > 0 && (
+    <section class="max-w-7xl mx-auto px-4 mt-16 mb-8">
+      <div class="flex items-center justify-between mb-6">
+        <h2 class="font-heading text-3xl text-brand">Reseguider</h2>
+        <a href="/guider/" class="text-sm font-medium text-brand-light hover:text-brand transition-colors">
+          Alla guider &rarr;
+        </a>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {latestArticles.map((article) => (
+          <a
+            href={`/guider/${article.id.replace(/\.md$/, '')}/`}
+            class="group bg-white rounded-xl overflow-hidden border border-gray-100 hover:border-brand/20 hover:shadow-lg transition-all"
+          >
+            <div class="h-2 bg-gradient-to-r from-brand to-brand-light" />
+            <div class="p-5">
+              <h3 class="font-heading text-lg text-brand group-hover:text-brand-light transition-colors">
+                {article.data.title}
+              </h3>
+              <p class="text-sm text-gray-500 mt-2 line-clamp-2">{article.data.metaDescription}</p>
+            </div>
+          </a>
+        ))}
+      </div>
+    </section>
+  )}
+</BaseLayout>

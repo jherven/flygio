@@ -1,0 +1,20 @@
+---
+interface Props {
+  rating: number;
+  max?: number;
+}
+
+const { rating, max = 10 } = Astro.props;
+const percentage = (rating / max) * 100;
+const displayRating = rating.toFixed(1);
+---
+
+<div class="flex items-center gap-2" role="img" aria-label={`Betyg: ${displayRating} av ${max}`}>
+  <div class="relative w-24 h-2 bg-gray-200 rounded-full overflow-hidden">
+    <div
+      class="absolute inset-y-0 left-0 rounded-full"
+      style={`width: ${percentage}%; background-color: ${percentage >= 80 ? 'var(--color-teal)' : percentage >= 60 ? 'var(--color-accent)' : 'var(--color-coral)'}`}
+    />
+  </div>
+  <span class="text-sm font-semibold text-brand">{displayRating}</span>
+</div>

@@ -1,32 +1,21 @@
-## .NET
-bin/
-obj/
-*.user
-*.suo
-*.userosscache
-*.sln.docstates
-*.vs/
+# Node
+node_modules/
 
-## Build results
-[Dd]ebug/
-[Rr]elease/
-x64/
-x86/
+# Build output
+dist/
 
-## NuGet
-**/[Pp]ackages/*
-*.nupkg
-**/packages/
+# Astro
+.astro/
 
-## IDE
+# Planning docs
+.planning/
+
+# IDE
 .idea/
 .vscode/
 *.swp
 *~
 
-## OS
+# OS
 Thumbs.db
 .DS_Store
-
-## Project specific
-appsettings.Development.json

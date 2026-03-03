@@ -1,8 +1,0 @@
-<Solution>
-  <Folder Name="/src/">
-    <Project Path="src/Flygio/Flygio.csproj" />
-  </Folder>
-  <Folder Name="/tests/">
-    <Project Path="tests/Flygio.Tests/Flygio.Tests.csproj" />
-  </Folder>
-</Solution>

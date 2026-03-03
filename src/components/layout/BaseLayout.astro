@@ -1,0 +1,48 @@
+---
+import Header from './Header.astro';
+import Footer from './Footer.astro';
+import '@/styles/global.css';
+
+interface Props {
+  title: string;
+  description?: string;
+  canonical?: string;
+  schema?: object;
+}
+
+const { title, description, canonical, schema } = Astro.props;
+const siteUrl = 'https://flygio.se';
+const fullCanonical = canonical ? `${siteUrl}${canonical}` : Astro.url.href;
+---
+
+<!doctype html>
+<html lang="sv">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{title}</title>
+    {description && <meta name="description" content={description} />}
+    <link rel="canonical" href={fullCanonical} />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Flygio.se" />
+    <meta property="og:title" content={title} />
+    {description && <meta property="og:description" content={description} />}
+    <meta property="og:url" content={fullCanonical} />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content={title} />
+    {description && <meta name="twitter:description" content={description} />}
+    {schema && (
+      <script type="application/ld+json" set:html={JSON.stringify(schema)} />
+    )}
+  </head>
+  <body class="min-h-screen flex flex-col">
+    <Header />
+    <main class="flex-1">
+      <slot />
+    </main>
+    <Footer />
+  </body>
+</html>

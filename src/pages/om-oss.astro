@@ -1,0 +1,40 @@
+---
+import BaseLayout from '@/components/layout/BaseLayout.astro';
+import Breadcrumbs from '@/components/ui/Breadcrumbs.astro';
+---
+
+<BaseLayout
+  title="Om oss — Flygio.se"
+  description="Lär dig mer om Flygio.se, vår metodik och hur vi finansierar sajten."
+  canonical="/om-oss/"
+>
+  <div class="max-w-4xl mx-auto px-4 py-10">
+    <Breadcrumbs items={[
+      { label: 'Hem', href: '/' },
+      { label: 'Om oss' },
+    ]} />
+
+    <h1 class="font-heading text-4xl text-brand mb-6">Om Flygio.se</h1>
+
+    <div class="prose max-w-none">
+      <h2>Vår mission</h2>
+      <p>Flygio.se är Sveriges oberoende jämförelsesajt för resetjänster. Vi hjälper svenska resenärer att hitta rätt tjänst till rätt pris — oavsett om det gäller flyg, hotell, hyrbil, reseförsäkring, paketresor eller aktiviteter.</p>
+
+      <h2>Hur vi testar och rankar</h2>
+      <p>Varje tjänst på Flygio granskas utifrån flera kriterier:</p>
+      <ul>
+        <li><strong>Utbud</strong> — Hur brett är sortimentet? Hur många alternativ erbjuds?</li>
+        <li><strong>Pris</strong> — Hittar tjänsten konkurrenskraftiga priser?</li>
+        <li><strong>Användarvänlighet</strong> — Hur enkelt är det att söka, jämföra och boka?</li>
+        <li><strong>Funktioner</strong> — Erbjuds prisvarningar, flexibel sökning, lojalitetsprogram?</li>
+        <li><strong>Kundservice</strong> — Finns support tillgänglig om något går fel?</li>
+      </ul>
+      <p>Betyget sätts på en skala 0–10 baserat på en sammanvägning av alla kriterier. Vi uppdaterar regelbundet våra recensioner för att spegla förändringar i tjänsterna.</p>
+
+      <h2>Hur vi finansieras</h2>
+      <p>Flygio.se finansieras genom affiliate-marknadsföring. Det innebär att vi kan få ersättning när du klickar på en länk och genomför en bokning hos en av våra listade tjänster.</p>
+      <p><strong>Viktigt:</strong> Denna ersättning påverkar aldrig våra betyg eller rankningar. Vår trovärdighet bygger på ärliga och objektiva omdömen. Tjänster som betalar provision kan inte köpa sig till ett högre betyg.</p>
+      <p>I enlighet med Marknadsföringslagen (2008:486) informerar vi alltid tydligt om att sajten innehåller affiliate-länkar. Alla externa länkar till tjänsteleverantörer är markerade med <code>rel="sponsored nofollow"</code>.</p>
+    </div>
+  </div>
+</BaseLayout>

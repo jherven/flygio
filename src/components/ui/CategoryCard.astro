@@ -1,0 +1,43 @@
+---
+import { getCategoryServiceCount } from '@/utils/data-helpers';
+
+interface Props {
+  name: string;
+  slug: string;
+  description: string;
+  icon: string;
+  serviceCount?: number;
+}
+
+const { name, slug, description, icon } = Astro.props;
+const serviceCount = getCategoryServiceCount(slug);
+
+const icons: Record<string, string> = {
+  plane: 'M12 19l-7-7 1.41-1.41L11 15.17V2h2v13.17l4.59-4.58L19 12l-7 7z',
+  hotel: 'M7 13c1.66 0 3-1.34 3-3S8.66 7 7 7s-3 1.34-3 3 1.34 3 3 3zm12-6h-8v7H3V5H1v15h2v-3h18v3h2v-9c0-2.21-1.79-4-4-4z',
+  car: 'M18.92 6.01C18.72 5.42 18.16 5 17.5 5h-11c-.66 0-1.21.42-1.42 1.01L3 12v8c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h12v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-8l-2.08-5.99zM6.5 16c-.83 0-1.5-.67-1.5-1.5S5.67 13 6.5 13s1.5.67 1.5 1.5S7.33 16 6.5 16zm11 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zM5 11l1.5-4.5h11L19 11H5z',
+  shield: 'M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-2 16l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z',
+  package: 'M20 8h-3V4H3c-1.1 0-2 .9-2 2v11h2c0 1.66 1.34 3 3 3s3-1.34 3-3h6c0 1.66 1.34 3 3 3s3-1.34 3-3h2v-5l-3-4zM6 18.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm13.5-9l1.96 2.5H17V9.5h2.5zm-1.5 9c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z',
+  compass: 'M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-5.5-2.5l7.51-3.49L17.5 6.5 9.99 9.99 6.5 17.5zm5.5-6.6c.61 0 1.1.49 1.1 1.1s-.49 1.1-1.1 1.1-1.1-.49-1.1-1.1.49-1.1 1.1-1.1z',
+};
+
+const iconPath = icons[icon] || icons.compass;
+---
+
+<a
+  href={`/${slug}/`}
+  class="group block bg-white rounded-xl p-5 border border-gray-100 hover:border-brand/20 hover:shadow-lg transition-all"
+>
+  <div class="flex items-start gap-4">
+    <div class="w-10 h-10 bg-mist rounded-lg flex items-center justify-center shrink-0 group-hover:bg-brand/10 transition-colors">
+      <svg class="w-5 h-5 text-brand" fill="currentColor" viewBox="0 0 24 24">
+        <path d={iconPath} />
+      </svg>
+    </div>
+    <div>
+      <h3 class="font-heading text-lg text-brand group-hover:text-brand-light transition-colors">{name}</h3>
+      <p class="text-sm text-gray-500 mt-1">{description}</p>
+      <span class="text-xs text-brand/50 mt-2 inline-block">{serviceCount} tjänster</span>
+    </div>
+  </div>
+</a>

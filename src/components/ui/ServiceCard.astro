@@ -1,0 +1,44 @@
+---
+import StarRating from './StarRating.astro';
+import AffiliateButton from './AffiliateButton.astro';
+
+interface Props {
+  rank?: number;
+  name: string;
+  slug: string;
+  description: string;
+  rating: number;
+  websiteUrl: string;
+  isFeatured?: boolean;
+  categorySlug: string;
+}
+
+const { rank, name, slug, description, rating, websiteUrl, isFeatured, categorySlug } = Astro.props;
+---
+
+<article class="group bg-white rounded-xl border border-gray-100 hover:border-brand/20 hover:shadow-lg transition-all overflow-hidden">
+  <div class="flex flex-col sm:flex-row items-start gap-4 p-5">
+    {rank && (
+      <div class="w-10 h-10 rounded-full bg-brand text-white flex items-center justify-center font-bold text-lg shrink-0">
+        {rank}
+      </div>
+    )}
+    <div class="flex-1 min-w-0">
+      <div class="flex items-center gap-2 flex-wrap">
+        <a href={`/${categorySlug}/${slug}/`} class="font-heading text-xl text-brand hover:text-brand-light transition-colors">
+          {name}
+        </a>
+        {isFeatured && (
+          <span class="text-xs font-semibold bg-accent/10 text-accent px-2 py-0.5 rounded-full">
+            Redaktörens val
+          </span>
+        )}
+      </div>
+      <StarRating rating={rating} />
+      <p class="text-sm text-gray-600 mt-2 line-clamp-2">{description}</p>
+    </div>
+    <div class="sm:self-center shrink-0">
+      <AffiliateButton url={websiteUrl} size="sm" />
+    </div>
+  </div>
+</article>

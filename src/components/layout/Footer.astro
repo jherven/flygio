@@ -1,0 +1,41 @@
+---
+import { getCategories } from '@/utils/data-helpers';
+const categories = getCategories();
+const year = new Date().getFullYear();
+---
+
+<footer class="bg-navy-deep text-white/70 mt-16">
+  <div class="max-w-7xl mx-auto px-4 py-12">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+      <div>
+        <a href="/" class="text-xl font-heading font-bold text-white">
+          Flygio<span class="text-accent">.se</span>
+        </a>
+        <p class="mt-3 text-sm leading-relaxed">
+          Sveriges oberoende jämförelsesajt för resetjänster. Vi hjälper dig hitta bästa flyg, hotell, hyrbil och mer.
+        </p>
+      </div>
+      <div>
+        <h3 class="text-white font-semibold text-sm uppercase tracking-wider mb-3">Kategorier</h3>
+        <ul class="space-y-2 text-sm">
+          {categories.map((cat) => (
+            <li>
+              <a href={`/${cat.slug}/`} class="hover:text-white transition-colors">{cat.name}</a>
+            </li>
+          ))}
+        </ul>
+      </div>
+      <div>
+        <h3 class="text-white font-semibold text-sm uppercase tracking-wider mb-3">Information</h3>
+        <ul class="space-y-2 text-sm">
+          <li><a href="/guider/" class="hover:text-white transition-colors">Reseguider</a></li>
+          <li><a href="/om-oss/" class="hover:text-white transition-colors">Om oss</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="border-t border-white/10 mt-10 pt-6 text-sm text-center text-white/50">
+      <p>&copy; {year} Flygio.se — Alla rättigheter förbehållna</p>
+      <p class="mt-1">Flygio kan få ersättning från företagen som listas på sidan. <a href="/om-oss/" class="underline hover:text-white">Läs mer</a></p>
+    </div>
+  </div>
+</footer>
