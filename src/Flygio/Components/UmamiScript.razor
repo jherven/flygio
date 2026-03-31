@@ -1,0 +1,8 @@
+@using Flygio.Services
+@using Microsoft.Extensions.Options
+@inject IOptions<UmamiSettings> UmamiOptions
+
+@if (!string.IsNullOrEmpty(UmamiOptions.Value.ScriptUrl) && !string.IsNullOrEmpty(UmamiOptions.Value.WebsiteId))
+{
+    <script defer src="@UmamiOptions.Value.ScriptUrl" data-website-id="@UmamiOptions.Value.WebsiteId"></script>
+}

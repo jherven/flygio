@@ -8,6 +8,8 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
       - ConnectionStrings__DefaultConnection=${DATABASE_URL}
+      - Umami__ScriptUrl=${UMAMI_SCRIPT_URL}
+      - Umami__WebsiteId=${UMAMI_WEBSITE_ID}
     depends_on:
       postgres:
         condition: service_healthy
@@ -19,6 +21,18 @@ services:
       start_period: 15s
     restart: unless-stopped
 
+  umami:
+    image: ghcr.io/umami-software/umami:postgresql-latest
+    ports:
+      - "3000:3000"
+    environment:
+      DATABASE_URL: postgresql://${UMAMI_DB_USER:-umami}:${UMAMI_DB_PASSWORD}@postgres:5432/${UMAMI_DB_NAME:-umami}
+      APP_SECRET: ${UMAMI_APP_SECRET}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+
   postgres:
     image: postgres:17-alpine
     environment:
@@ -27,6 +41,7 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     volumes:
       - pgdata:/var/lib/postgresql/data
+      - ./init-umami-db.sql:/docker-entrypoint-initdb.d/init-umami-db.sql
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-flygio}"]
       interval: 5s

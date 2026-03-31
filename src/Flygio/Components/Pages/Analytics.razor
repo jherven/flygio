@@ -1,0 +1,198 @@
+@page "/admin/analytics"
+@using Flygio.Data
+@using Microsoft.EntityFrameworkCore
+@inject FlygioDbContext Db
+@rendermode InteractiveServer
+
+<PageTitle>Flygio - Analysöversikt</PageTitle>
+
+<section class="analytics-page">
+    <h1>Analysöversikt</h1>
+
+    <div class="analytics-grid">
+        <div class="stat-card">
+            <span class="stat-value">@TotalClicks</span>
+            <span class="stat-label">Totala klick</span>
+        </div>
+        <div class="stat-card">
+            <span class="stat-value">@TotalSearches</span>
+            <span class="stat-label">Totala sökningar</span>
+        </div>
+        <div class="stat-card">
+            <span class="stat-value">@ConversionRate.ToString("F1")%</span>
+            <span class="stat-label">Konvertering (sök → klick)</span>
+        </div>
+        <div class="stat-card">
+            <span class="stat-value">@TodayClicks</span>
+            <span class="stat-label">Klick idag</span>
+        </div>
+    </div>
+
+    <div class="analytics-section">
+        <h2>Klick per leverantör</h2>
+        <table class="analytics-table">
+            <thead>
+                <tr>
+                    <th>Leverantör</th>
+                    <th>Klick</th>
+                    <th>Andel</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var provider in ClicksByProvider)
+                {
+                    <tr>
+                        <td>@provider.Name</td>
+                        <td>@provider.Count</td>
+                        <td>@(TotalClicks > 0 ? (provider.Count * 100.0 / TotalClicks).ToString("F1") : "0")%</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <div class="analytics-section">
+        <h2>Populäraste rutter (klick)</h2>
+        <table class="analytics-table">
+            <thead>
+                <tr>
+                    <th>Rutt</th>
+                    <th>Klick</th>
+                    <th>Senaste klick</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var route in TopRoutes)
+                {
+                    <tr>
+                        <td>@route.Origin → @route.Destination</td>
+                        <td>@route.Count</td>
+                        <td>@route.LastClick.ToString("yyyy-MM-dd HH:mm")</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <div class="analytics-section">
+        <h2>Klick per dag (senaste 14 dagar)</h2>
+        <table class="analytics-table">
+            <thead>
+                <tr>
+                    <th>Datum</th>
+                    <th>Klick</th>
+                    <th>Sökningar</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var day in DailyStats)
+                {
+                    <tr>
+                        <td>@day.Date.ToString("yyyy-MM-dd")</td>
+                        <td>@day.Clicks</td>
+                        <td>@day.Searches</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <div class="analytics-section">
+        <h2>Senaste sökningar</h2>
+        <table class="analytics-table">
+            <thead>
+                <tr>
+                    <th>Rutt</th>
+                    <th>Datum</th>
+                    <th>Passagerare</th>
+                    <th>Resultat</th>
+                    <th>Sökt</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var search in RecentSearches)
+                {
+                    <tr>
+                        <td>@search.OriginCode → @search.DestinationCode</td>
+                        <td>@search.DepartureDate.ToString("yyyy-MM-dd")</td>
+                        <td>@search.Passengers</td>
+                        <td>@search.ResultCount</td>
+                        <td>@search.SearchedAt.ToString("yyyy-MM-dd HH:mm")</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</section>
+
+@code {
+    private int TotalClicks;
+    private int TotalSearches;
+    private int TodayClicks;
+    private double ConversionRate;
+    private List<ProviderStat> ClicksByProvider = [];
+    private List<RouteStat> TopRoutes = [];
+    private List<DailyStat> DailyStats = [];
+    private List<Data.Models.SearchEvent> RecentSearches = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        var today = DateTime.UtcNow.Date;
+        var twoWeeksAgo = today.AddDays(-14);
+
+        TotalClicks = await Db.AffiliateClicks.CountAsync();
+        TotalSearches = await Db.SearchEvents.CountAsync();
+        TodayClicks = await Db.AffiliateClicks.CountAsync(c => c.ClickedAt >= today);
+        ConversionRate = TotalSearches > 0 ? (double)TotalClicks / TotalSearches * 100 : 0;
+
+        ClicksByProvider = await Db.AffiliateClicks
+            .GroupBy(c => c.Provider)
+            .Select(g => new ProviderStat { Name = g.Key, Count = g.Count() })
+            .OrderByDescending(p => p.Count)
+            .ToListAsync();
+
+        TopRoutes = await Db.AffiliateClicks
+            .GroupBy(c => new { c.OriginCode, c.DestinationCode })
+            .Select(g => new RouteStat
+            {
+                Origin = g.Key.OriginCode,
+                Destination = g.Key.DestinationCode,
+                Count = g.Count(),
+                LastClick = g.Max(c => c.ClickedAt)
+            })
+            .OrderByDescending(r => r.Count)
+            .Take(10)
+            .ToListAsync();
+
+        var clicksByDay = await Db.AffiliateClicks
+            .Where(c => c.ClickedAt >= twoWeeksAgo)
+            .GroupBy(c => c.ClickedAt.Date)
+            .Select(g => new { Date = g.Key, Count = g.Count() })
+            .ToListAsync();
+
+        var searchesByDay = await Db.SearchEvents
+            .Where(s => s.SearchedAt >= twoWeeksAgo)
+            .GroupBy(s => s.SearchedAt.Date)
+            .Select(g => new { Date = g.Key, Count = g.Count() })
+            .ToListAsync();
+
+        DailyStats = Enumerable.Range(0, 14)
+            .Select(i => today.AddDays(-i))
+            .Select(date => new DailyStat
+            {
+                Date = date,
+                Clicks = clicksByDay.FirstOrDefault(c => c.Date == date)?.Count ?? 0,
+                Searches = searchesByDay.FirstOrDefault(s => s.Date == date)?.Count ?? 0
+            })
+            .ToList();
+
+        RecentSearches = await Db.SearchEvents
+            .OrderByDescending(s => s.SearchedAt)
+            .Take(20)
+            .ToListAsync();
+    }
+
+    private class ProviderStat { public string Name { get; set; } = ""; public int Count { get; set; } }
+    private class RouteStat { public string Origin { get; set; } = ""; public string Destination { get; set; } = ""; public int Count { get; set; } public DateTime LastClick { get; set; } }
+    private class DailyStat { public DateTime Date { get; set; } public int Clicks { get; set; } public int Searches { get; set; } }
+}

@@ -27,6 +27,9 @@ builder.Services.AddScoped<AmadeusFlightSearchService>();
 builder.Services.Configure<TravelpayoutsSettings>(builder.Configuration.GetSection(TravelpayoutsSettings.SectionName));
 builder.Services.AddSingleton<TravelpayoutsAffiliateLinkService>();
 
+// Umami analytics
+builder.Services.Configure<UmamiSettings>(builder.Configuration.GetSection(UmamiSettings.SectionName));
+
 var app = builder.Build();
 
 // Auto-migrate in production

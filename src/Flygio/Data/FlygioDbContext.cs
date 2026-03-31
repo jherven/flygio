@@ -9,6 +9,7 @@ public class FlygioDbContext(DbContextOptions<FlygioDbContext> options) : DbCont
     public DbSet<PricePoint> PricePoints => Set<PricePoint>();
     public DbSet<Article> Articles => Set<Article>();
     public DbSet<AffiliateClick> AffiliateClicks => Set<AffiliateClick>();
+    public DbSet<SearchEvent> SearchEvents => Set<SearchEvent>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -36,6 +37,12 @@ public class FlygioDbContext(DbContextOptions<FlygioDbContext> options) : DbCont
         {
             entity.HasIndex(e => e.ClickedAt);
             entity.HasIndex(e => new { e.Provider, e.SubId });
+        });
+
+        modelBuilder.Entity<SearchEvent>(entity =>
+        {
+            entity.HasIndex(e => e.SearchedAt);
+            entity.HasIndex(e => new { e.OriginCode, e.DestinationCode });
         });
     }
 }

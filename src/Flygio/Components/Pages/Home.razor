@@ -1,6 +1,10 @@
 @page "/"
+@using Flygio.Data
+@using Flygio.Data.Models
 @using Flygio.Services
 @inject AmadeusFlightSearchService FlightSearch
+@inject FlygioDbContext Db
+@inject IJSRuntime JS
 @rendermode InteractiveServer
 
 <PageTitle>Flygio - Hitta billiga flyg från Sverige</PageTitle>
@@ -169,7 +173,8 @@ else if (SearchResult is not null)
                     </div>
                     @if (!string.IsNullOrEmpty(offer.BookingUrl))
                     {
-                        <a href="@offer.BookingUrl" target="_blank" rel="noopener" class="btn-book">Boka</a>
+                        <a href="@offer.BookingUrl" target="_blank" rel="noopener" class="btn-book"
+                           @onclick="() => TrackAffiliateClick(offer.Provider, offer.Price)">Boka</a>
                     }
                 </div>
             }
@@ -325,6 +330,26 @@ else if (SearchResult is not null)
                 DepartureDate,
                 IsRoundTrip ? ReturnDate : null,
                 Passengers);
+
+            // Log search event to database
+            var searchEvent = new SearchEvent
+            {
+                OriginCode = SelectedOriginCode,
+                DestinationCode = SelectedDestinationCode,
+                DepartureDate = DepartureDate,
+                ReturnDate = IsRoundTrip ? ReturnDate : null,
+                Passengers = Passengers,
+                ResultCount = SearchResult?.Offers.Count ?? 0
+            };
+            Db.SearchEvents.Add(searchEvent);
+            await Db.SaveChangesAsync();
+
+            // Track in Umami
+            await JS.InvokeVoidAsync("flygio.trackSearch",
+                SelectedOriginCode, SelectedDestinationCode,
+                DepartureDate.ToString("yyyy-MM-dd"),
+                IsRoundTrip && ReturnDate.HasValue ? ReturnDate.Value.ToString("yyyy-MM-dd") : null,
+                Passengers, SearchResult?.Offers.Count ?? 0);
         }
         catch (HttpRequestException ex)
         {
@@ -374,4 +399,11 @@ else if (SearchResult is not null)
         1 => "1 mellanlandning",
         _ => $"{stops} mellanlandningar"
     };
+
+    private async Task TrackAffiliateClick(string provider, decimal price)
+    {
+        if (SearchResult is null) return;
+        await JS.InvokeVoidAsync("flygio.trackAffiliateClick",
+            provider, SearchResult.OriginCode, SearchResult.DestinationCode, price);
+    }
 }
