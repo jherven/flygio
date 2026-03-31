@@ -1,0 +1,74 @@
+@page "/artiklar"
+@using Flygio.Data
+@using Flygio.Data.Models
+@using Microsoft.EntityFrameworkCore
+@inject FlygioDbContext Db
+
+<PageTitle>Flygguider och resetips – Flygio</PageTitle>
+<HeadContent>
+    <meta name="description" content="Guider, tips och inspiration för att hitta billiga flyg från Sverige. Läs våra artiklar om flygbokningar, destinationer och resetips." />
+    <meta property="og:title" content="Flygguider och resetips – Flygio" />
+    <meta property="og:description" content="Guider, tips och inspiration för att hitta billiga flyg från Sverige." />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://flygio.se/artiklar" />
+    <link rel="canonical" href="https://flygio.se/artiklar" />
+</HeadContent>
+
+<section class="articles-hero">
+    <h1>Flygguider & resetips</h1>
+    <p>Tips och inspiration för att hitta billiga flyg från Sverige</p>
+</section>
+
+<section class="articles-list">
+    @if (articles is null)
+    {
+        <div class="loading-state">
+            <div class="spinner"></div>
+            <p>Laddar artiklar...</p>
+        </div>
+    }
+    else if (!articles.Any())
+    {
+        <p>Inga artiklar ännu.</p>
+    }
+    else
+    {
+        @foreach (var group in articles.GroupBy(a => a.CategorySlug ?? "övrigt"))
+        {
+            <div class="article-category">
+                <h2>@FormatCategory(group.Key)</h2>
+                <div class="article-grid">
+                    @foreach (var article in group)
+                    {
+                        <a href="/artiklar/@article.Slug" class="article-card">
+                            <h3>@article.Title</h3>
+                            <p>@article.MetaDescription</p>
+                            <span class="article-read-more">Läs mer &rarr;</span>
+                        </a>
+                    }
+                </div>
+            </div>
+        }
+    }
+</section>
+
+@code {
+    private List<Article>? articles;
+
+    protected override async Task OnInitializedAsync()
+    {
+        articles = await Db.Articles
+            .Where(a => a.IsPublished)
+            .OrderBy(a => a.CategorySlug)
+            .ThenBy(a => a.CreatedAt)
+            .ToListAsync();
+    }
+
+    private static string FormatCategory(string slug) => slug switch
+    {
+        "tips" => "Tips & guider",
+        "destinationer" => "Destinationer",
+        "inspiration" => "Inspiration",
+        _ => slug[..1].ToUpper() + slug[1..]
+    };
+}

@@ -1,0 +1,96 @@
+@page "/artiklar/{Slug}"
+@using Flygio.Data
+@using Flygio.Data.Models
+@using Microsoft.EntityFrameworkCore
+@inject FlygioDbContext Db
+@inject NavigationManager Nav
+
+@if (article is not null)
+{
+    <PageTitle>@article.Title – Flygio</PageTitle>
+    <HeadContent>
+        <meta name="description" content="@article.MetaDescription" />
+        <meta property="og:title" content="@article.Title – Flygio" />
+        <meta property="og:description" content="@article.MetaDescription" />
+        <meta property="og:type" content="article" />
+        <meta property="og:url" content="https://flygio.se/artiklar/@article.Slug" />
+        <link rel="canonical" href="https://flygio.se/artiklar/@article.Slug" />
+        <script type="application/ld+json">
+        {
+            "@@context": "https://schema.org",
+            "@@type": "Article",
+            "headline": "@article.Title",
+            "description": "@article.MetaDescription",
+            "url": "https://flygio.se/artiklar/@article.Slug",
+            "publisher": {
+                "@@type": "Organization",
+                "name": "Flygio",
+                "url": "https://flygio.se"
+            },
+            "datePublished": "@article.CreatedAt.ToString("yyyy-MM-dd")",
+            "dateModified": "@article.UpdatedAt.ToString("yyyy-MM-dd")"
+        }
+        </script>
+    </HeadContent>
+}
+
+<section class="article-page">
+    @if (article is null)
+    {
+        @if (notFound)
+        {
+            <div class="article-not-found">
+                <h1>Artikeln hittades inte</h1>
+                <p>Sidan du letar efter finns inte.</p>
+                <a href="/artiklar" class="btn-back">Tillbaka till alla artiklar</a>
+            </div>
+        }
+        else
+        {
+            <div class="loading-state">
+                <div class="spinner"></div>
+                <p>Laddar artikel...</p>
+            </div>
+        }
+    }
+    else
+    {
+        <nav class="article-breadcrumb">
+            <a href="/">Hem</a> &rsaquo;
+            <a href="/artiklar">Artiklar</a> &rsaquo;
+            <span>@article.Title</span>
+        </nav>
+
+        <article class="article-content">
+            <h1>@article.Title</h1>
+            @((MarkupString)article.Body)
+        </article>
+
+        <div class="article-cta">
+            <h3>Redo att boka?</h3>
+            <p>Sök flygpriser direkt och jämför de bästa erbjudandena.</p>
+            <a href="/" class="btn-search-cta">Sök flyg nu</a>
+        </div>
+
+        <div class="article-nav">
+            <a href="/artiklar" class="btn-back">&larr; Alla artiklar</a>
+        </div>
+    }
+</section>
+
+@code {
+    [Parameter]
+    public string Slug { get; set; } = "";
+
+    private Article? article;
+    private bool notFound;
+
+    protected override async Task OnInitializedAsync()
+    {
+        article = await Db.Articles
+            .FirstOrDefaultAsync(a => a.Slug == Slug && a.IsPublished);
+
+        if (article is null)
+            notFound = true;
+    }
+}
