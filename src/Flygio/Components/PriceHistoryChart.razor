@@ -1,0 +1,124 @@
+@using System.Net.Http.Json
+@inject IJSRuntime JS
+@inject NavigationManager Nav
+@implements IAsyncDisposable
+
+<div class="bg-white border border-gray-200 rounded-xl p-6 mb-8">
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 gap-3">
+        <h2 class="text-xl font-semibold text-gray-800">Prishistorik</h2>
+        <div class="flex gap-2">
+            @foreach (var option in dayOptions)
+            {
+                <button @onclick="() => LoadData(option)"
+                        class="@(selectedDays == option
+                            ? "bg-blue-600 text-white"
+                            : "bg-gray-100 text-gray-600 hover:bg-gray-200")
+                            px-3 py-1.5 rounded-lg text-sm font-medium transition-colors">
+                    @option dagar
+                </button>
+            }
+        </div>
+    </div>
+
+    @if (isLoading)
+    {
+        <div class="flex items-center justify-center h-56">
+            <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+        </div>
+    }
+    else if (hasData)
+    {
+        <div class="h-64 sm:h-72">
+            <canvas id="priceHistoryCanvas"></canvas>
+        </div>
+        @if (lowestDate is not null)
+        {
+            <p class="text-sm text-green-600 mt-3 font-medium">
+                Lägsta pris: @lowestMin?.ToString("N0") kr den @lowestDate
+            </p>
+        }
+    }
+    else
+    {
+        <div class="flex items-center justify-center h-56 text-gray-400">
+            <p>Ingen prisdata tillgänglig för denna period.</p>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter, EditorRequired]
+    public string AirportCode { get; set; } = "";
+
+    private readonly int[] dayOptions = [30, 60, 90];
+    private int selectedDays = 30;
+    private bool isLoading = true;
+    private bool hasData;
+    private decimal? lowestMin;
+    private string? lowestDate;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await LoadData(30);
+        }
+    }
+
+    private async Task LoadData(int days)
+    {
+        selectedDays = days;
+        isLoading = true;
+        hasData = false;
+        StateHasChanged();
+
+        try
+        {
+            using var http = new HttpClient { BaseAddress = new Uri(Nav.BaseUri) };
+            var points = await http.GetFromJsonAsync<List<PriceDataPoint>>($"api/price-history/{AirportCode}?days={days}");
+
+            if (points is not null && points.Count > 0)
+            {
+                hasData = true;
+                var labels = points.Select(p => FormatDate(p.Date)).ToArray();
+                var minPrices = points.Select(p => p.MinPrice).ToArray();
+                var avgPrices = points.Select(p => p.AvgPrice).ToArray();
+
+                var lowestIdx = 0;
+                for (var i = 1; i < minPrices.Length; i++)
+                {
+                    if (minPrices[i] < minPrices[lowestIdx]) lowestIdx = i;
+                }
+                lowestMin = minPrices[lowestIdx];
+                lowestDate = labels[lowestIdx];
+
+                StateHasChanged();
+                await Task.Delay(50); // allow canvas to render
+                await JS.InvokeVoidAsync("PriceChart.render", "priceHistoryCanvas", labels, minPrices, avgPrices, lowestIdx);
+            }
+        }
+        catch
+        {
+            hasData = false;
+        }
+        finally
+        {
+            isLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private static string FormatDate(string isoDate)
+    {
+        if (DateTime.TryParse(isoDate, out var dt))
+            return dt.ToString("d MMM", new System.Globalization.CultureInfo("sv-SE"));
+        return isoDate;
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        try { await JS.InvokeVoidAsync("PriceChart.destroy"); } catch { }
+    }
+
+    private record PriceDataPoint(string Date, decimal MinPrice, decimal AvgPrice, decimal MaxPrice, int Count);
+}

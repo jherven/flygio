@@ -1,4 +1,5 @@
 @page "/flyg-till/{Slug}"
+@rendermode InteractiveServer
 @using Flygio.Data
 @using Flygio.Data.Models
 @using Flygio.Services
@@ -122,6 +123,8 @@
                 <p class="text-xs text-gray-400 mt-3">Baserat på @pricePointCount prispunkter de senaste 30 dagarna</p>
             </div>
         }
+
+        <PriceHistoryChart AirportCode="@destination.AirportCode" />
 
         <div class="bg-amber-50 border border-amber-200 rounded-xl p-6 mb-8">
             <h2 class="text-lg font-semibold text-gray-800 mb-3">Boka flyg till @destination.City</h2>

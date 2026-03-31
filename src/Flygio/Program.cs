@@ -66,6 +66,38 @@ app.MapStaticAssets();
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
 
+// Price history API endpoint
+app.MapGet("/api/price-history/{airportCode}", async (
+    string airportCode,
+    int? days,
+    FlygioDbContext db) =>
+{
+    var lookback = days switch
+    {
+        60 => 60,
+        90 => 90,
+        _ => 30
+    };
+    var since = DateTime.UtcNow.AddDays(-lookback);
+
+    var points = await db.PricePoints
+        .Where(p => p.FlightRoute.DestinationCode == airportCode
+                    && p.ScrapedAt >= since)
+        .GroupBy(p => p.ScrapedAt.Date)
+        .OrderBy(g => g.Key)
+        .Select(g => new
+        {
+            Date = g.Key.ToString("yyyy-MM-dd"),
+            MinPrice = g.Min(p => p.Price),
+            AvgPrice = Math.Round(g.Average(p => p.Price), 0),
+            MaxPrice = g.Max(p => p.Price),
+            Count = g.Count()
+        })
+        .ToListAsync();
+
+    return Results.Json(points);
+});
+
 // Affiliate click redirect endpoint
 app.MapGet("/go/{provider}", async (
     string provider,
