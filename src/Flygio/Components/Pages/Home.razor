@@ -179,6 +179,10 @@ else if (SearchResult is not null)
                 </div>
             }
         }
+
+        <PriceAlertForm OriginCode="@SelectedOriginCode"
+                        DestinationCode="@SelectedDestinationCode"
+                        SuggestedPrice="@SearchResult.Offers.Select(o => o.Price).DefaultIfEmpty(0).Min()" />
     </section>
 }
 

@@ -1,0 +1,115 @@
+@using Flygio.Data
+@using Flygio.Data.Models
+@using Microsoft.EntityFrameworkCore
+@inject FlygioDbContext Db
+
+<div class="price-alert-form">
+    @if (submitted)
+    {
+        <div class="alert-success">
+            <span class="alert-icon">&#10003;</span>
+            <div>
+                <strong>Prisvarning aktiverad!</strong>
+                <p>Vi mejlar dig när priset för @OriginCode &rarr; @DestinationCode sjunker under @targetPrice SEK.</p>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="alert-subscribe">
+            <h3>Bevaka pris</h3>
+            <p>Få mejl när priset sjunker under ditt målpris.</p>
+
+            @if (errorMessage is not null)
+            {
+                <div class="alert-error">@errorMessage</div>
+            }
+
+            <div class="alert-form-fields">
+                <input type="email" placeholder="Din e-postadress" @bind="email" @bind:event="oninput" />
+                <input type="number" placeholder="Målpris (SEK)" @bind="targetPrice" min="1" step="100" />
+                <button @onclick="SubmitAlert" disabled="@isSubmitting" class="btn-alert">
+                    @(isSubmitting ? "Sparar..." : "Bevaka")
+                </button>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter] public string OriginCode { get; set; } = "";
+    [Parameter] public string DestinationCode { get; set; } = "";
+    [Parameter] public decimal? SuggestedPrice { get; set; }
+
+    private string email = "";
+    private decimal targetPrice;
+    private bool isSubmitting;
+    private bool submitted;
+    private string? errorMessage;
+
+    protected override void OnParametersSet()
+    {
+        if (SuggestedPrice.HasValue && targetPrice == 0)
+            targetPrice = Math.Floor(SuggestedPrice.Value * 0.9m / 100) * 100; // 10% below, rounded to nearest 100
+    }
+
+    private async Task SubmitAlert()
+    {
+        errorMessage = null;
+
+        if (string.IsNullOrWhiteSpace(email) || !email.Contains('@') || !email.Contains('.'))
+        {
+            errorMessage = "Ange en giltig e-postadress.";
+            return;
+        }
+
+        if (targetPrice <= 0)
+        {
+            errorMessage = "Ange ett målpris större än 0.";
+            return;
+        }
+
+        if (string.IsNullOrEmpty(OriginCode) || string.IsNullOrEmpty(DestinationCode))
+        {
+            errorMessage = "Sök efter en rutt först.";
+            return;
+        }
+
+        // Check for duplicate active alert
+        var exists = await Db.PriceAlerts.AnyAsync(a =>
+            a.Email == email &&
+            a.OriginCode == OriginCode &&
+            a.DestinationCode == DestinationCode &&
+            a.IsActive);
+
+        if (exists)
+        {
+            errorMessage = "Du har redan en aktiv prisvarning för denna rutt.";
+            return;
+        }
+
+        isSubmitting = true;
+
+        try
+        {
+            Db.PriceAlerts.Add(new PriceAlert
+            {
+                Email = email,
+                OriginCode = OriginCode,
+                DestinationCode = DestinationCode,
+                TargetPrice = targetPrice,
+                Currency = "SEK"
+            });
+            await Db.SaveChangesAsync();
+            submitted = true;
+        }
+        catch
+        {
+            errorMessage = "Något gick fel. Försök igen.";
+        }
+        finally
+        {
+            isSubmitting = false;
+        }
+    }
+}

@@ -10,6 +10,7 @@ public class FlygioDbContext(DbContextOptions<FlygioDbContext> options) : DbCont
     public DbSet<Article> Articles => Set<Article>();
     public DbSet<AffiliateClick> AffiliateClicks => Set<AffiliateClick>();
     public DbSet<SearchEvent> SearchEvents => Set<SearchEvent>();
+    public DbSet<PriceAlert> PriceAlerts => Set<PriceAlert>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -43,6 +44,14 @@ public class FlygioDbContext(DbContextOptions<FlygioDbContext> options) : DbCont
         {
             entity.HasIndex(e => e.SearchedAt);
             entity.HasIndex(e => new { e.OriginCode, e.DestinationCode });
+        });
+
+        modelBuilder.Entity<PriceAlert>(entity =>
+        {
+            entity.HasIndex(e => new { e.OriginCode, e.DestinationCode });
+            entity.HasIndex(e => e.UnsubscribeToken).IsUnique();
+            entity.HasIndex(e => e.Email);
+            entity.Property(e => e.TargetPrice).HasPrecision(10, 2);
         });
     }
 }

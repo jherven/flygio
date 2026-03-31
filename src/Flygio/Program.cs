@@ -34,6 +34,10 @@ builder.Services.Configure<UmamiSettings>(builder.Configuration.GetSection(Umami
 builder.Services.Configure<PriceTrackingSettings>(builder.Configuration.GetSection(PriceTrackingSettings.SectionName));
 builder.Services.AddHostedService<PriceTrackingService>();
 
+// Price alerts via email (Resend)
+builder.Services.Configure<ResendSettings>(builder.Configuration.GetSection(ResendSettings.SectionName));
+builder.Services.AddHostedService<PriceAlertService>();
+
 var app = builder.Build();
 
 // Auto-migrate and seed in production

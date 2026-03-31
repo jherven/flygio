@@ -1,0 +1,63 @@
+@page "/alerts/unsubscribe"
+@using Flygio.Data
+@using Microsoft.EntityFrameworkCore
+@inject FlygioDbContext Db
+
+<PageTitle>Avsluta prisvarning - Flygio</PageTitle>
+
+<section class="unsubscribe-page">
+    @if (success)
+    {
+        <div class="unsub-card">
+            <h1>Prenumeration avslutad</h1>
+            <p>Du kommer inte längre få prisvarningar för <strong>@route</strong>.</p>
+            <a href="/" class="btn-back">Tillbaka till Flygio</a>
+        </div>
+    }
+    else if (errorMessage is not null)
+    {
+        <div class="unsub-card unsub-error">
+            <h1>Något gick fel</h1>
+            <p>@errorMessage</p>
+            <a href="/" class="btn-back">Tillbaka till Flygio</a>
+        </div>
+    }
+    else
+    {
+        <div class="unsub-card">
+            <div class="spinner"></div>
+            <p>Avslutar prenumeration...</p>
+        </div>
+    }
+</section>
+
+@code {
+    [SupplyParameterFromQuery] public string? Token { get; set; }
+
+    private bool success;
+    private string? errorMessage;
+    private string route = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (string.IsNullOrEmpty(Token))
+        {
+            errorMessage = "Ogiltig avprenumerationslänk.";
+            return;
+        }
+
+        var alert = await Db.PriceAlerts
+            .FirstOrDefaultAsync(a => a.UnsubscribeToken == Token);
+
+        if (alert is null)
+        {
+            errorMessage = "Prisvarningen hittades inte eller har redan avslutats.";
+            return;
+        }
+
+        route = $"{alert.OriginCode} → {alert.DestinationCode}";
+        alert.IsActive = false;
+        await Db.SaveChangesAsync();
+        success = true;
+    }
+}
