@@ -1,0 +1,280 @@
+@page "/flyg-till/{Slug}"
+@using Flygio.Data
+@using Flygio.Data.Models
+@using Flygio.Services
+@using Microsoft.EntityFrameworkCore
+@inject FlygioDbContext Db
+@inject TravelpayoutsAffiliateLinkService AffiliateService
+@inject NavigationManager Nav
+
+@if (destination is not null)
+{
+    <PageTitle>Flyg till @destination.City – Billiga flygbiljetter | Flygio</PageTitle>
+    <HeadContent>
+        <meta name="description" content="@destination.MetaDescription" />
+        <meta property="og:title" content="Flyg till @destination.City – Billiga flygbiljetter | Flygio" />
+        <meta property="og:description" content="@destination.MetaDescription" />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://flygio.se/flyg-till/@destination.Slug" />
+        <link rel="canonical" href="https://flygio.se/flyg-till/@destination.Slug" />
+        <script type="application/ld+json">
+        {
+            "@@context": "https://schema.org",
+            "@@type": "FAQPage",
+            "mainEntity": [
+                {
+                    "@@type": "Question",
+                    "name": "Vad kostar flyg till @destination.City?",
+                    "acceptedAnswer": {
+                        "@@type": "Answer",
+                        "text": "@GetPriceAnswerText()"
+                    }
+                },
+                {
+                    "@@type": "Question",
+                    "name": "Vilken flygplats flyger man till i @destination.City?",
+                    "acceptedAnswer": {
+                        "@@type": "Answer",
+                        "text": "Den huvudsakliga flygplatsen i @destination.City har IATA-koden @destination.AirportCode."
+                    }
+                },
+                {
+                    "@@type": "Question",
+                    "name": "När är det billigast att flyga till @destination.City?",
+                    "acceptedAnswer": {
+                        "@@type": "Answer",
+                        "text": "Priserna varierar beroende på säsong. Använd Flygio för att jämföra aktuella priser och hitta de bästa erbjudandena."
+                    }
+                }
+            ]
+        }
+        </script>
+        @if (lowestPrice.HasValue)
+        {
+            <script type="application/ld+json">
+            {
+                "@@context": "https://schema.org",
+                "@@type": "Product",
+                "name": "Flyg till @destination.City",
+                "description": "Flygbiljetter från Sverige till @destination.City (@destination.AirportCode)",
+                "offers": {
+                    "@@type": "AggregateOffer",
+                    "lowPrice": "@lowestPrice.Value.ToString("F0")",
+                    "highPrice": "@(highestPrice?.ToString("F0") ?? lowestPrice.Value.ToString("F0"))",
+                    "priceCurrency": "SEK",
+                    "offerCount": "@pricePointCount",
+                    "availability": "https://schema.org/InStock"
+                }
+            }
+            </script>
+        }
+    </HeadContent>
+}
+
+<section class="max-w-4xl mx-auto px-4 py-8">
+    @if (destination is null)
+    {
+        @if (notFound)
+        {
+            <div class="text-center py-16">
+                <h1 class="text-3xl font-bold text-gray-800 mb-4">Destinationen hittades inte</h1>
+                <p class="text-gray-600 mb-6">Sidan du letar efter finns inte.</p>
+                <a href="/flyg-till" class="inline-block bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors">Alla destinationer</a>
+            </div>
+        }
+        else
+        {
+            <div class="text-center py-16">
+                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                <p class="text-gray-600">Laddar destination...</p>
+            </div>
+        }
+    }
+    else
+    {
+        <nav class="text-sm text-gray-500 mb-6">
+            <a href="/" class="hover:text-blue-600">Hem</a> &rsaquo;
+            <a href="/flyg-till" class="hover:text-blue-600">Destinationer</a> &rsaquo;
+            <span class="text-gray-800">Flyg till @destination.City</span>
+        </nav>
+
+        <h1 class="text-4xl font-bold text-gray-900 mb-2">Flyg till @destination.City</h1>
+        <p class="text-lg text-gray-500 mb-8">@destination.Country &middot; Flygplats: @destination.AirportCode</p>
+
+        @if (lowestPrice.HasValue)
+        {
+            <div class="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-6 mb-8 border border-blue-100">
+                <h2 class="text-lg font-semibold text-gray-800 mb-4">Aktuella priser från Sverige</h2>
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div class="bg-white rounded-lg p-4 shadow-sm">
+                        <p class="text-sm text-gray-500 mb-1">Lägsta pris</p>
+                        <p class="text-2xl font-bold text-green-600">@lowestPrice.Value.ToString("N0") kr</p>
+                    </div>
+                    <div class="bg-white rounded-lg p-4 shadow-sm">
+                        <p class="text-sm text-gray-500 mb-1">Snittpris</p>
+                        <p class="text-2xl font-bold text-blue-600">@averagePrice?.ToString("N0") kr</p>
+                    </div>
+                    <div class="bg-white rounded-lg p-4 shadow-sm">
+                        <p class="text-sm text-gray-500 mb-1">Högsta pris</p>
+                        <p class="text-2xl font-bold text-gray-600">@highestPrice?.ToString("N0") kr</p>
+                    </div>
+                </div>
+                <p class="text-xs text-gray-400 mt-3">Baserat på @pricePointCount prispunkter de senaste 30 dagarna</p>
+            </div>
+        }
+
+        <div class="bg-amber-50 border border-amber-200 rounded-xl p-6 mb-8">
+            <h2 class="text-lg font-semibold text-gray-800 mb-3">Boka flyg till @destination.City</h2>
+            <p class="text-gray-600 mb-4">Jämför priser från flera flygbolag och hitta det bästa erbjudandet.</p>
+            <div class="flex flex-wrap gap-3">
+                <a href="@AffiliateService.GetRedirectUrl("aviasales", "ARN", destination.AirportCode, DateTime.UtcNow.AddDays(14), DateTime.UtcNow.AddDays(21))"
+                   target="_blank" rel="noopener sponsored"
+                   class="inline-flex items-center bg-blue-600 text-white px-5 py-2.5 rounded-lg hover:bg-blue-700 transition-colors font-medium">
+                    Sök på Aviasales &rarr;
+                </a>
+                <a href="@AffiliateService.GetRedirectUrl("kiwi", "ARN", destination.AirportCode, DateTime.UtcNow.AddDays(14), DateTime.UtcNow.AddDays(21))"
+                   target="_blank" rel="noopener sponsored"
+                   class="inline-flex items-center bg-white text-blue-600 border border-blue-600 px-5 py-2.5 rounded-lg hover:bg-blue-50 transition-colors font-medium">
+                    Sök på Kiwi.com &rarr;
+                </a>
+                <a href="/"
+                   class="inline-flex items-center bg-white text-gray-700 border border-gray-300 px-5 py-2.5 rounded-lg hover:bg-gray-50 transition-colors font-medium">
+                    Sök med Flygio &rarr;
+                </a>
+            </div>
+        </div>
+
+        @if (originPrices.Count > 0)
+        {
+            <div class="mb-8">
+                <h2 class="text-xl font-semibold text-gray-800 mb-4">Priser per avgångsort</h2>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    @foreach (var op in originPrices)
+                    {
+                        <div class="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                            <div class="flex justify-between items-center">
+                                <div>
+                                    <p class="font-medium text-gray-800">@op.Origin</p>
+                                    <p class="text-sm text-gray-500">@op.OriginCode &rarr; @destination.AirportCode</p>
+                                </div>
+                                <div class="text-right">
+                                    <p class="text-lg font-bold text-green-600">från @op.LowestPrice.ToString("N0") kr</p>
+                                    <a href="@AffiliateService.GetRedirectUrl("aviasales", op.OriginCode, destination.AirportCode, DateTime.UtcNow.AddDays(14), DateTime.UtcNow.AddDays(21))"
+                                       target="_blank" rel="noopener sponsored"
+                                       class="text-sm text-blue-600 hover:underline">Sök flyg &rarr;</a>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+
+        <article class="prose prose-lg max-w-none mb-8">
+            @((MarkupString)destination.Description)
+        </article>
+
+        @if (relatedDestinations.Count > 0)
+        {
+            <div class="border-t border-gray-200 pt-8 mb-8">
+                <h2 class="text-xl font-semibold text-gray-800 mb-4">Fler populära destinationer</h2>
+                <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                    @foreach (var rd in relatedDestinations)
+                    {
+                        <a href="/flyg-till/@rd.Slug" class="bg-white border border-gray-200 rounded-lg p-3 hover:shadow-md hover:border-blue-300 transition-all text-center">
+                            <p class="font-medium text-gray-800">@rd.City</p>
+                            <p class="text-xs text-gray-500">@rd.Country</p>
+                        </a>
+                    }
+                </div>
+            </div>
+        }
+
+        <div class="flex gap-4">
+            <a href="/flyg-till" class="text-blue-600 hover:underline">&larr; Alla destinationer</a>
+            <a href="/" class="text-blue-600 hover:underline">Sök flyg</a>
+        </div>
+    }
+</section>
+
+@code {
+    [Parameter]
+    public string Slug { get; set; } = "";
+
+    private Destination? destination;
+    private bool notFound;
+    private decimal? lowestPrice;
+    private decimal? highestPrice;
+    private decimal? averagePrice;
+    private int pricePointCount;
+    private List<OriginPrice> originPrices = [];
+    private List<Destination> relatedDestinations = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        destination = await Db.Destinations
+            .FirstOrDefaultAsync(d => d.Slug == Slug && d.IsPublished);
+
+        if (destination is null)
+        {
+            notFound = true;
+            return;
+        }
+
+        var thirtyDaysAgo = DateTime.UtcNow.AddDays(-30);
+
+        var priceStats = await Db.PricePoints
+            .Where(p => p.FlightRoute.DestinationCode == destination.AirportCode
+                        && p.ScrapedAt >= thirtyDaysAgo)
+            .GroupBy(p => 1)
+            .Select(g => new
+            {
+                Min = g.Min(p => p.Price),
+                Max = g.Max(p => p.Price),
+                Avg = g.Average(p => p.Price),
+                Count = g.Count()
+            })
+            .FirstOrDefaultAsync();
+
+        if (priceStats is not null && priceStats.Count > 0)
+        {
+            lowestPrice = priceStats.Min;
+            highestPrice = priceStats.Max;
+            averagePrice = priceStats.Avg;
+            pricePointCount = priceStats.Count;
+        }
+
+        originPrices = await Db.PricePoints
+            .Where(p => p.FlightRoute.DestinationCode == destination.AirportCode
+                        && p.ScrapedAt >= thirtyDaysAgo)
+            .GroupBy(p => new { p.FlightRoute.OriginCode, p.FlightRoute.Origin })
+            .Select(g => new OriginPrice
+            {
+                OriginCode = g.Key.OriginCode,
+                Origin = g.Key.Origin,
+                LowestPrice = g.Min(p => p.Price)
+            })
+            .OrderBy(o => o.LowestPrice)
+            .ToListAsync();
+
+        relatedDestinations = await Db.Destinations
+            .Where(d => d.IsPublished && d.Id != destination.Id)
+            .OrderBy(d => d.City)
+            .Take(8)
+            .ToListAsync();
+    }
+
+    private string GetPriceAnswerText()
+    {
+        if (lowestPrice.HasValue)
+            return $"Flygpriser till {destination!.City} från Sverige börjar från {lowestPrice.Value:N0} kr baserat på senaste 30 dagarnas data. Snittpriset ligger på ca {averagePrice?.ToString("N0")} kr.";
+        return $"Använd Flygio för att söka aktuella flygpriser till {destination!.City} från Sverige.";
+    }
+
+    private class OriginPrice
+    {
+        public string OriginCode { get; set; } = "";
+        public string Origin { get; set; } = "";
+        public decimal LowestPrice { get; set; }
+    }
+}

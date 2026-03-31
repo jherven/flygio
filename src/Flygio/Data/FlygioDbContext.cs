@@ -11,6 +11,7 @@ public class FlygioDbContext(DbContextOptions<FlygioDbContext> options) : DbCont
     public DbSet<AffiliateClick> AffiliateClicks => Set<AffiliateClick>();
     public DbSet<SearchEvent> SearchEvents => Set<SearchEvent>();
     public DbSet<PriceAlert> PriceAlerts => Set<PriceAlert>();
+    public DbSet<Destination> Destinations => Set<Destination>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -52,6 +53,12 @@ public class FlygioDbContext(DbContextOptions<FlygioDbContext> options) : DbCont
             entity.HasIndex(e => e.UnsubscribeToken).IsUnique();
             entity.HasIndex(e => e.Email);
             entity.Property(e => e.TargetPrice).HasPrecision(10, 2);
+        });
+
+        modelBuilder.Entity<Destination>(entity =>
+        {
+            entity.HasIndex(e => e.Slug).IsUnique();
+            entity.HasIndex(e => e.AirportCode);
         });
     }
 }

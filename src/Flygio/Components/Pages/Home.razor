@@ -186,6 +186,21 @@ else if (SearchResult is not null)
     </section>
 }
 
+<section class="max-w-5xl mx-auto px-4 py-12">
+    <h2 class="text-2xl font-bold text-gray-800 mb-6 text-center">Populära destinationer från Sverige</h2>
+    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+        @foreach (var dest in PopularDestinations)
+        {
+            <a href="/flyg-till/@dest.Slug" class="bg-white border border-gray-200 rounded-lg p-3 hover:shadow-md hover:border-blue-300 transition-all text-center">
+                <span class="font-medium text-gray-800">@dest.City</span>
+            </a>
+        }
+    </div>
+    <div class="text-center mt-4">
+        <a href="/flyg-till" class="text-blue-600 hover:underline">Se alla destinationer &rarr;</a>
+    </div>
+</section>
+
 @code {
     private string OriginInput { get; set; } = "";
     private string DestinationInput { get; set; } = "";
@@ -203,6 +218,17 @@ else if (SearchResult is not null)
     private string? ErrorMessage { get; set; }
     private FlightSearchResult? SearchResult { get; set; }
     private bool showValidation;
+
+    private record DestLink(string City, string Slug);
+
+    private static readonly DestLink[] PopularDestinations =
+    [
+        new("Barcelona", "barcelona"), new("London", "london"), new("Bangkok", "bangkok"),
+        new("Málaga", "malaga"), new("Aten", "aten"), new("Palma de Mallorca", "palma-de-mallorca"),
+        new("Paris", "paris"), new("Rom", "rom"), new("Amsterdam", "amsterdam"),
+        new("Istanbul", "istanbul"), new("Alicante", "alicante"), new("Berlin", "berlin"),
+        new("Prag", "prag"), new("Budapest", "budapest"), new("New York", "new-york"),
+    ];
 
     private record Airport(string Code, string Name, string City, string Country);
 

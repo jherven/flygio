@@ -1,0 +1,93 @@
+@page "/flyg-till"
+@using Flygio.Data
+@using Flygio.Data.Models
+@using Microsoft.EntityFrameworkCore
+@inject FlygioDbContext Db
+
+<PageTitle>Flyg till populära destinationer från Sverige – Flygio</PageTitle>
+<HeadContent>
+    <meta name="description" content="Hitta billiga flyg från Sverige till populära destinationer. Jämför priser till Barcelona, London, Bangkok, Málaga och fler städer." />
+    <meta property="og:title" content="Flyg till populära destinationer från Sverige – Flygio" />
+    <meta property="og:description" content="Hitta billiga flyg från Sverige till populära destinationer. Jämför priser till Barcelona, London, Bangkok och fler." />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://flygio.se/flyg-till" />
+    <link rel="canonical" href="https://flygio.se/flyg-till" />
+</HeadContent>
+
+<section class="max-w-5xl mx-auto px-4 py-8">
+    <div class="text-center mb-10">
+        <h1 class="text-4xl font-bold text-gray-900 mb-3">Flyg till populära destinationer</h1>
+        <p class="text-lg text-gray-600">Hitta billiga flygbiljetter från Sverige till de mest populära resmålen</p>
+    </div>
+
+    @if (destinations is null)
+    {
+        <div class="text-center py-16">
+            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+            <p class="text-gray-600">Laddar destinationer...</p>
+        </div>
+    }
+    else if (!destinations.Any())
+    {
+        <p class="text-center text-gray-600">Inga destinationer ännu.</p>
+    }
+    else
+    {
+        @foreach (var group in destinations.GroupBy(d => d.Country).OrderBy(g => g.Key))
+        {
+            <div class="mb-8">
+                <h2 class="text-2xl font-semibold text-gray-800 mb-4">@group.Key</h2>
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                    @foreach (var dest in group.OrderBy(d => d.City))
+                    {
+                        var price = lowestPrices.GetValueOrDefault(dest.AirportCode);
+                        <a href="/flyg-till/@dest.Slug" class="group bg-white border border-gray-200 rounded-xl p-5 hover:shadow-lg hover:border-blue-300 transition-all">
+                            <h3 class="text-lg font-semibold text-gray-800 group-hover:text-blue-600 transition-colors">
+                                Flyg till @dest.City
+                            </h3>
+                            <p class="text-sm text-gray-500 mt-1">@dest.AirportCode &middot; @dest.Country</p>
+                            @if (price > 0)
+                            {
+                                <p class="text-green-600 font-bold mt-2">från @price.ToString("N0") kr</p>
+                            }
+                            <span class="text-sm text-blue-600 mt-2 inline-block group-hover:underline">Se priser &rarr;</span>
+                        </a>
+                    }
+                </div>
+            </div>
+        }
+    }
+
+    <div class="text-center mt-8 bg-blue-50 rounded-xl p-8">
+        <h2 class="text-xl font-semibold text-gray-800 mb-3">Hittar du inte din destination?</h2>
+        <p class="text-gray-600 mb-4">Sök bland hundratals flygplatser världen över med vår söktjänst.</p>
+        <a href="/" class="inline-block bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors font-medium">
+            Sök flyg nu &rarr;
+        </a>
+    </div>
+</section>
+
+@code {
+    private List<Destination>? destinations;
+    private Dictionary<string, decimal> lowestPrices = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        destinations = await Db.Destinations
+            .Where(d => d.IsPublished)
+            .OrderBy(d => d.City)
+            .ToListAsync();
+
+        if (destinations.Count == 0) return;
+
+        var airportCodes = destinations.Select(d => d.AirportCode).ToList();
+        var thirtyDaysAgo = DateTime.UtcNow.AddDays(-30);
+
+        lowestPrices = await Db.PricePoints
+            .Where(p => airportCodes.Contains(p.FlightRoute.DestinationCode)
+                        && p.ScrapedAt >= thirtyDaysAgo)
+            .GroupBy(p => p.FlightRoute.DestinationCode)
+            .Select(g => new { Code = g.Key, MinPrice = g.Min(p => p.Price) })
+            .ToDictionaryAsync(x => x.Code, x => x.MinPrice);
+    }
+}

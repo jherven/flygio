@@ -47,6 +47,7 @@ if (!app.Environment.IsDevelopment())
     var db = scope.ServiceProvider.GetRequiredService<FlygioDbContext>();
     await db.Database.MigrateAsync();
     await ArticleSeeder.SeedAsync(db);
+    await DestinationSeeder.SeedAsync(db);
 
     app.UseExceptionHandler("/Error", createScopeForErrors: true);
 }
@@ -55,6 +56,7 @@ else
     using var scope = app.Services.CreateScope();
     var db = scope.ServiceProvider.GetRequiredService<FlygioDbContext>();
     await ArticleSeeder.SeedAsync(db);
+    await DestinationSeeder.SeedAsync(db);
 }
 app.UseStatusCodePagesWithReExecute("/not-found", createScopeForStatusCodePages: true);
 app.UseAntiforgery();
