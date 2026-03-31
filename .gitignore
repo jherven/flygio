@@ -1,11 +1,15 @@
-# Node
+# .NET
+bin/
+obj/
+*.user
+*.suo
+
+# Node (Tailwind)
 node_modules/
 
 # Build output
 dist/
-
-# Astro
-.astro/
+publish/
 
 # Planning docs
 .planning/
