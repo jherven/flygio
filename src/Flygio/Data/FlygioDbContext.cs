@@ -8,6 +8,7 @@ public class FlygioDbContext(DbContextOptions<FlygioDbContext> options) : DbCont
     public DbSet<FlightRoute> FlightRoutes => Set<FlightRoute>();
     public DbSet<PricePoint> PricePoints => Set<PricePoint>();
     public DbSet<Article> Articles => Set<Article>();
+    public DbSet<AffiliateClick> AffiliateClicks => Set<AffiliateClick>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -29,6 +30,12 @@ public class FlygioDbContext(DbContextOptions<FlygioDbContext> options) : DbCont
         modelBuilder.Entity<Article>(entity =>
         {
             entity.HasIndex(e => e.Slug).IsUnique();
+        });
+
+        modelBuilder.Entity<AffiliateClick>(entity =>
+        {
+            entity.HasIndex(e => e.ClickedAt);
+            entity.HasIndex(e => new { e.Provider, e.SubId });
         });
     }
 }

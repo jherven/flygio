@@ -1,5 +1,6 @@
 using Flygio.Components;
 using Flygio.Data;
+using Flygio.Data.Models;
 using Flygio.Services;
 using Microsoft.EntityFrameworkCore;
 
@@ -22,6 +23,10 @@ builder.Services.AddSingleton<AmadeusTokenService>();
 builder.Services.AddHttpClient<AmadeusFlightSearchService>();
 builder.Services.AddScoped<AmadeusFlightSearchService>();
 
+// Travelpayouts affiliate
+builder.Services.Configure<TravelpayoutsSettings>(builder.Configuration.GetSection(TravelpayoutsSettings.SectionName));
+builder.Services.AddSingleton<TravelpayoutsAffiliateLinkService>();
+
 var app = builder.Build();
 
 // Auto-migrate in production
@@ -40,5 +45,37 @@ app.MapHealthChecks("/healthz");
 app.MapStaticAssets();
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
+
+// Affiliate click redirect endpoint
+app.MapGet("/go/{provider}", async (
+    string provider,
+    string origin,
+    string dest,
+    string dep,
+    string? ret,
+    HttpContext httpContext,
+    TravelpayoutsAffiliateLinkService affiliateService,
+    FlygioDbContext db) =>
+{
+    var departureDate = DateTime.Parse(dep);
+    DateTime? returnDate = ret is not null ? DateTime.Parse(ret) : null;
+
+    var subId = TravelpayoutsAffiliateLinkService.BuildSubId(origin, dest);
+    var click = new AffiliateClick
+    {
+        Provider = provider,
+        OriginCode = origin,
+        DestinationCode = dest,
+        SubId = subId,
+        UserAgent = httpContext.Request.Headers.UserAgent.ToString(),
+        Referer = httpContext.Request.Headers.Referer.ToString(),
+        IpAddress = httpContext.Connection.RemoteIpAddress?.ToString()
+    };
+    db.AffiliateClicks.Add(click);
+    await db.SaveChangesAsync();
+
+    var affiliateUrl = affiliateService.ResolveAffiliateUrl(provider, origin, dest, departureDate, returnDate);
+    return Results.Redirect(affiliateUrl);
+});
 
 app.Run();

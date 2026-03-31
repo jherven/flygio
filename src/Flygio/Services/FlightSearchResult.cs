@@ -19,4 +19,5 @@ public record FlightOffer
     public required string Airline { get; init; }
     public int Stops { get; init; }
     public required string Duration { get; init; }
+    public string? BookingUrl { get; init; }
 }

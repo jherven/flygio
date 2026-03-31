@@ -14,6 +14,7 @@ public class AmadeusFlightSearchService(
     IOptions<AmadeusSettings> settings,
     IMemoryCache cache,
     IServiceScopeFactory scopeFactory,
+    TravelpayoutsAffiliateLinkService affiliateService,
     ILogger<AmadeusFlightSearchService> logger)
 {
     private readonly AmadeusSettings _settings = settings.Value;
@@ -57,6 +58,15 @@ public class AmadeusFlightSearchService(
 
         var json = await response.Content.ReadFromJsonAsync<JsonElement>(ct);
         var result = MapResponse(originCode, destinationCode, json);
+
+        // Attach affiliate booking URLs via redirect endpoint
+        result = result with
+        {
+            Offers = result.Offers.Select(o => o with
+            {
+                BookingUrl = affiliateService.GetRedirectUrl("aviasales", originCode, destinationCode, o.DepartureDate, o.ReturnDate)
+            }).ToList()
+        };
 
         cache.Set(cacheKey, result, CacheDuration);
 

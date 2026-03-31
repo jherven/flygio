@@ -1,0 +1,86 @@
+using Microsoft.Extensions.Options;
+
+namespace Flygio.Services;
+
+public class TravelpayoutsAffiliateLinkService(IOptions<TravelpayoutsSettings> settings)
+{
+    private readonly TravelpayoutsSettings _settings = settings.Value;
+
+    /// <summary>
+    /// Generates an Aviasales affiliate search link.
+    /// </summary>
+    public string GenerateAviasalesLink(string originCode, string destinationCode, DateTime departureDate, DateTime? returnDate = null)
+    {
+        var subId = BuildSubId(originCode, destinationCode);
+        var dateStr = departureDate.ToString("ddMM");
+        var returnStr = returnDate?.ToString("ddMM") ?? "";
+        var route = $"{originCode}{dateStr}{destinationCode}{returnStr}1";
+
+        return $"https://www.aviasales.com/search/{route}?marker={_settings.MarkerId}&with_request=true&t=flygio_{subId}";
+    }
+
+    /// <summary>
+    /// Generates a WayAway affiliate link for a route.
+    /// </summary>
+    public string GenerateWayAwayLink(string originCode, string destinationCode, DateTime departureDate, DateTime? returnDate = null)
+    {
+        var subId = BuildSubId(originCode, destinationCode);
+        var dep = departureDate.ToString("yyyy-MM-dd");
+
+        var url = $"https://www.wayaway.io/flights/{originCode}-{destinationCode}/{dep}";
+        if (returnDate.HasValue)
+            url += $"/{returnDate.Value:yyyy-MM-dd}";
+
+        return $"{url}?marker={_settings.MarkerId}&utm_source=flygio&sub_id={subId}";
+    }
+
+    /// <summary>
+    /// Generates a Kiwi.com (via Travelpayouts) affiliate link.
+    /// </summary>
+    public string GenerateKiwiLink(string originCode, string destinationCode, DateTime departureDate, DateTime? returnDate = null)
+    {
+        var subId = BuildSubId(originCode, destinationCode);
+        var dep = departureDate.ToString("dd/MM/yyyy");
+
+        var url = $"https://www.kiwi.com/deep?affilid={_settings.MarkerId}" +
+                  $"&from={originCode}&to={destinationCode}" +
+                  $"&departure={dep}" +
+                  $"&lang=sv&currency=SEK";
+
+        if (returnDate.HasValue)
+            url += $"&return={returnDate.Value:dd/MM/yyyy}";
+
+        return $"{url}&sub_id={subId}";
+    }
+
+    /// <summary>
+    /// Returns the internal redirect URL that logs clicks before redirecting.
+    /// </summary>
+    public string GetRedirectUrl(string provider, string originCode, string destinationCode, DateTime departureDate, DateTime? returnDate = null)
+    {
+        var dep = departureDate.ToString("yyyy-MM-dd");
+        var url = $"/go/{provider}?origin={originCode}&dest={destinationCode}&dep={dep}";
+        if (returnDate.HasValue)
+            url += $"&ret={returnDate.Value:yyyy-MM-dd}";
+        return url;
+    }
+
+    /// <summary>
+    /// Resolves the final affiliate URL for a given provider.
+    /// </summary>
+    public string ResolveAffiliateUrl(string provider, string originCode, string destinationCode, DateTime departureDate, DateTime? returnDate)
+    {
+        return provider.ToLowerInvariant() switch
+        {
+            "aviasales" => GenerateAviasalesLink(originCode, destinationCode, departureDate, returnDate),
+            "wayaway" => GenerateWayAwayLink(originCode, destinationCode, departureDate, returnDate),
+            "kiwi" => GenerateKiwiLink(originCode, destinationCode, departureDate, returnDate),
+            _ => GenerateAviasalesLink(originCode, destinationCode, departureDate, returnDate)
+        };
+    }
+
+    public static string BuildSubId(string originCode, string destinationCode)
+    {
+        return $"{originCode}_{destinationCode}".ToLowerInvariant();
+    }
+}
