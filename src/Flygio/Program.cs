@@ -30,6 +30,10 @@ builder.Services.AddSingleton<TravelpayoutsAffiliateLinkService>();
 // Umami analytics
 builder.Services.Configure<UmamiSettings>(builder.Configuration.GetSection(UmamiSettings.SectionName));
 
+// Background price tracking
+builder.Services.Configure<PriceTrackingSettings>(builder.Configuration.GetSection(PriceTrackingSettings.SectionName));
+builder.Services.AddHostedService<PriceTrackingService>();
+
 var app = builder.Build();
 
 // Auto-migrate and seed in production

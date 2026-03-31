@@ -1,0 +1,144 @@
+@page "/admin/prices"
+@using Flygio.Data
+@using Flygio.Data.Models
+@using Microsoft.EntityFrameworkCore
+@inject FlygioDbContext Db
+@rendermode InteractiveServer
+
+<PageTitle>Flygio - Prisbevakning</PageTitle>
+
+<section class="tracking-page">
+    <h1>Prisbevakning</h1>
+
+    <div class="tracking-grid">
+        <div class="stat-card">
+            <span class="stat-value">@TrackedRoutes</span>
+            <span class="stat-label">Bevakade rutter</span>
+        </div>
+        <div class="stat-card">
+            <span class="stat-value">@TotalPricePoints</span>
+            <span class="stat-label">Prispunkter</span>
+        </div>
+        <div class="stat-card">
+            <span class="stat-value">@(LastRun?.ToString("MM-dd HH:mm") ?? "Aldrig")</span>
+            <span class="stat-label">Senaste körning</span>
+        </div>
+        <div class="stat-card">
+            <span class="stat-value">@PopularRoutes</span>
+            <span class="stat-label">Populära rutter</span>
+        </div>
+    </div>
+
+    <div class="tracking-section">
+        <h2>Bevakade rutter och senaste priser</h2>
+        <table class="tracking-table">
+            <thead>
+                <tr>
+                    <th>Rutt</th>
+                    <th>Lägsta pris</th>
+                    <th>Medelpris</th>
+                    <th>Högsta pris</th>
+                    <th>Prispunkter</th>
+                    <th>Senast uppdaterad</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var route in Routes)
+                {
+                    <tr>
+                        <td class="route-cell">
+                            <span class="route-codes">@route.OriginCode → @route.DestCode</span>
+                            <span class="route-names">@route.Origin — @route.Destination</span>
+                        </td>
+                        <td class="price-low">@(route.MinPrice?.ToString("N0") ?? "—") SEK</td>
+                        <td>@(route.AvgPrice?.ToString("N0") ?? "—") SEK</td>
+                        <td>@(route.MaxPrice?.ToString("N0") ?? "—") SEK</td>
+                        <td>@route.PointCount</td>
+                        <td>@route.UpdatedAt.ToString("yyyy-MM-dd HH:mm")</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <div class="tracking-section">
+        <h2>Senaste prispunkter</h2>
+        <table class="tracking-table">
+            <thead>
+                <tr>
+                    <th>Rutt</th>
+                    <th>Pris</th>
+                    <th>Leverantör</th>
+                    <th>Avgångsdatum</th>
+                    <th>Returdatum</th>
+                    <th>Insamlad</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var pp in RecentPrices)
+                {
+                    <tr>
+                        <td>@pp.FlightRoute.OriginCode → @pp.FlightRoute.DestinationCode</td>
+                        <td>@pp.Price.ToString("N0") @pp.Currency</td>
+                        <td>@pp.Provider</td>
+                        <td>@pp.DepartureDate.ToString("yyyy-MM-dd")</td>
+                        <td>@(pp.ReturnDate?.ToString("yyyy-MM-dd") ?? "—")</td>
+                        <td>@pp.ScrapedAt.ToString("yyyy-MM-dd HH:mm")</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</section>
+
+@code {
+    private int TrackedRoutes;
+    private int TotalPricePoints;
+    private int PopularRoutes;
+    private DateTime? LastRun;
+    private List<RouteWithPrices> Routes = [];
+    private List<PricePoint> RecentPrices = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        TrackedRoutes = await Db.FlightRoutes.CountAsync();
+        TotalPricePoints = await Db.PricePoints.CountAsync();
+        PopularRoutes = await Db.FlightRoutes.CountAsync(r => r.IsPopular);
+        LastRun = await Db.PricePoints.MaxAsync(p => (DateTime?)p.ScrapedAt);
+
+        Routes = await Db.FlightRoutes
+            .Select(r => new RouteWithPrices
+            {
+                OriginCode = r.OriginCode,
+                DestCode = r.DestinationCode,
+                Origin = r.Origin,
+                Destination = r.Destination,
+                MinPrice = r.PricePoints.Any() ? r.PricePoints.Min(p => p.Price) : null,
+                AvgPrice = r.PricePoints.Any() ? r.PricePoints.Average(p => p.Price) : null,
+                MaxPrice = r.PricePoints.Any() ? r.PricePoints.Max(p => p.Price) : null,
+                PointCount = r.PricePoints.Count(),
+                UpdatedAt = r.UpdatedAt
+            })
+            .OrderByDescending(r => r.PointCount)
+            .ToListAsync();
+
+        RecentPrices = await Db.PricePoints
+            .Include(p => p.FlightRoute)
+            .OrderByDescending(p => p.ScrapedAt)
+            .Take(30)
+            .ToListAsync();
+    }
+
+    private class RouteWithPrices
+    {
+        public string OriginCode { get; set; } = "";
+        public string DestCode { get; set; } = "";
+        public string Origin { get; set; } = "";
+        public string Destination { get; set; } = "";
+        public decimal? MinPrice { get; set; }
+        public decimal? AvgPrice { get; set; }
+        public decimal? MaxPrice { get; set; }
+        public int PointCount { get; set; }
+        public DateTime UpdatedAt { get; set; }
+    }
+}
