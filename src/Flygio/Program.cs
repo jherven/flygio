@@ -1,5 +1,6 @@
 using Flygio.Components;
 using Flygio.Data;
+using Flygio.Services;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -12,6 +13,14 @@ builder.Services.AddDbContext<FlygioDbContext>(options =>
 
 builder.Services.AddHealthChecks()
     .AddDbContextCheck<FlygioDbContext>();
+
+// Amadeus API
+builder.Services.Configure<AmadeusSettings>(builder.Configuration.GetSection(AmadeusSettings.SectionName));
+builder.Services.AddMemoryCache();
+builder.Services.AddHttpClient<AmadeusTokenService>();
+builder.Services.AddSingleton<AmadeusTokenService>();
+builder.Services.AddHttpClient<AmadeusFlightSearchService>();
+builder.Services.AddScoped<AmadeusFlightSearchService>();
 
 var app = builder.Build();
 
