@@ -50,9 +50,9 @@
                             <span class="route-codes">@route.OriginCode → @route.DestCode</span>
                             <span class="route-names">@route.Origin — @route.Destination</span>
                         </td>
-                        <td class="price-low">@(route.MinPrice?.ToString("N0") ?? "—") SEK</td>
-                        <td>@(route.AvgPrice?.ToString("N0") ?? "—") SEK</td>
-                        <td>@(route.MaxPrice?.ToString("N0") ?? "—") SEK</td>
+                        <td class="price-low">@(route.MinPrice?.ToString("N0") ?? "—") kr</td>
+                        <td>@(route.AvgPrice?.ToString("N0") ?? "—") kr</td>
+                        <td>@(route.MaxPrice?.ToString("N0") ?? "—") kr</td>
                         <td>@route.PointCount</td>
                         <td>@route.UpdatedAt.ToString("yyyy-MM-dd HH:mm")</td>
                     </tr>

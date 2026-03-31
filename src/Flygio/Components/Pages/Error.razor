@@ -1,27 +1,27 @@
 ﻿@page "/Error"
 @using System.Diagnostics
 
-<PageTitle>Error</PageTitle>
+<PageTitle>Fel - Flygio</PageTitle>
 
-<h1 class="text-danger">Error.</h1>
-<h2 class="text-danger">An error occurred while processing your request.</h2>
+<h1 class="text-danger">Ett fel uppstod.</h1>
+<h2 class="text-danger">Något gick fel när din förfrågan behandlades.</h2>
 
 @if (ShowRequestId)
 {
     <p>
-        <strong>Request ID:</strong> <code>@RequestId</code>
+        <strong>Förfrågnings-ID:</strong> <code>@RequestId</code>
     </p>
 }
 
-<h3>Development Mode</h3>
+<h3>Utvecklingsläge</h3>
 <p>
-    Swapping to <strong>Development</strong> environment will display more detailed information about the error that occurred.
+    Byt till <strong>Development</strong>-miljön för att visa mer detaljerad information om felet.
 </p>
 <p>
-    <strong>The Development environment shouldn't be enabled for deployed applications.</strong>
-    It can result in displaying sensitive information from exceptions to end users.
-    For local debugging, enable the <strong>Development</strong> environment by setting the <strong>ASPNETCORE_ENVIRONMENT</strong> environment variable to <strong>Development</strong>
-    and restarting the app.
+    <strong>Development-miljön ska inte vara aktiverad i produktionsmiljöer.</strong>
+    Det kan leda till att känslig information visas för slutanvändare.
+    För lokal felsökning, aktivera <strong>Development</strong>-miljön genom att sätta <strong>ASPNETCORE_ENVIRONMENT</strong> till <strong>Development</strong>
+    och starta om appen.
 </p>
 
 @code{

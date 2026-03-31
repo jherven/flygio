@@ -10,7 +10,7 @@
             <span class="alert-icon">&#10003;</span>
             <div>
                 <strong>Prisvarning aktiverad!</strong>
-                <p>Vi mejlar dig när priset för @OriginCode &rarr; @DestinationCode sjunker under @targetPrice SEK.</p>
+                <p>Vi mejlar dig när priset för @OriginCode &rarr; @DestinationCode sjunker under @targetPrice kr.</p>
             </div>
         </div>
     }
@@ -27,7 +27,7 @@
 
             <div class="alert-form-fields">
                 <input type="email" placeholder="Din e-postadress" @bind="email" @bind:event="oninput" />
-                <input type="number" placeholder="Målpris (SEK)" @bind="targetPrice" min="1" step="100" />
+                <input type="number" placeholder="Målpris (kr)" @bind="targetPrice" min="1" step="100" />
                 <button @onclick="SubmitAlert" disabled="@isSubmitting" class="btn-alert">
                     @(isSubmitting ? "Sparar..." : "Bevaka")
                 </button>

@@ -1,8 +1,14 @@
+using System.Globalization;
 using Flygio.Components;
 using Flygio.Data;
 using Flygio.Data.Models;
 using Flygio.Services;
 using Microsoft.EntityFrameworkCore;
+
+// Set Swedish culture as default for date/number formatting
+var svCulture = new CultureInfo("sv-SE");
+CultureInfo.DefaultThreadCurrentCulture = svCulture;
+CultureInfo.DefaultThreadCurrentUICulture = svCulture;
 
 var builder = WebApplication.CreateBuilder(args);
 
