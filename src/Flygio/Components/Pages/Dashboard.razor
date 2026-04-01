@@ -1,0 +1,174 @@
+@page "/konto"
+@using System.Security.Claims
+@using Flygio.Data.Models
+@using Flygio.Services
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize]
+@inject UserSessionService UserSession
+@inject NavigationManager Navigation
+
+<PageTitle>Mitt konto - Flygio</PageTitle>
+
+<section class="dashboard-page">
+    <div class="dashboard-header">
+        <h1>Mitt konto</h1>
+        <p class="dashboard-email">@userEmail</p>
+    </div>
+
+    @if (isLoading)
+    {
+        <div class="dashboard-loading">
+            <div class="spinner"></div>
+            <p>Laddar...</p>
+        </div>
+    }
+    else
+    {
+        <div class="dashboard-grid">
+            <!-- Price Alerts -->
+            <div class="dashboard-section">
+                <h2>Mina prisvarningar</h2>
+                @if (alerts.Count == 0)
+                {
+                    <p class="dashboard-empty">Du har inga aktiva prisvarningar. Sök efter en flygresa och aktivera en prisvarning!</p>
+                }
+                else
+                {
+                    <div class="dashboard-list">
+                        @foreach (var alert in alerts)
+                        {
+                            <div class="dashboard-item">
+                                <div class="item-route">@alert.OriginCode &rarr; @alert.DestinationCode</div>
+                                <div class="item-detail">Målpris: @alert.TargetPrice.ToString("N0") @alert.Currency</div>
+                                <div class="item-date">Skapad @alert.CreatedAt.ToString("d MMM yyyy")</div>
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+
+            <!-- Saved Routes -->
+            <div class="dashboard-section">
+                <h2>Sparade rutter</h2>
+                @if (savedRoutes.Count == 0)
+                {
+                    <p class="dashboard-empty">Du har inga sparade rutter ännu.</p>
+                }
+                else
+                {
+                    <div class="dashboard-list">
+                        @foreach (var route in savedRoutes)
+                        {
+                            <div class="dashboard-item">
+                                <div class="item-route">@route.OriginCode &rarr; @route.DestinationCode</div>
+                                @if (!string.IsNullOrEmpty(route.Label))
+                                {
+                                    <div class="item-detail">@route.Label</div>
+                                }
+                                <div class="item-actions">
+                                    <a href="/?from=@route.OriginCode&to=@route.DestinationCode" class="btn-search-small">Sök</a>
+                                    <button @onclick="() => RemoveRoute(route.Id)" class="btn-remove">Ta bort</button>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+
+            <!-- Saved Searches -->
+            <div class="dashboard-section">
+                <h2>Sparade sökningar</h2>
+                @if (savedSearches.Count == 0)
+                {
+                    <p class="dashboard-empty">Du har inga sparade sökningar. Spara en sökning för att bevaka priset!</p>
+                }
+                else
+                {
+                    <div class="dashboard-list">
+                        @foreach (var search in savedSearches)
+                        {
+                            <div class="dashboard-item">
+                                <div class="item-route">@search.OriginCode &rarr; @search.DestinationCode</div>
+                                @if (search.DepartureDate.HasValue)
+                                {
+                                    <div class="item-detail">
+                                        Avresa: @search.DepartureDate.Value.ToString("d MMM yyyy")
+                                        @if (search.ReturnDate.HasValue)
+                                        {
+                                            <span> | Retur: @search.ReturnDate.Value.ToString("d MMM yyyy")</span>
+                                        }
+                                    </div>
+                                }
+                                @if (search.LastKnownPrice.HasValue)
+                                {
+                                    <div class="item-detail item-price">Senaste pris: @search.LastKnownPrice.Value.ToString("N0") kr</div>
+                                }
+                                <div class="item-actions">
+                                    <button @onclick="() => RemoveSearch(search.Id)" class="btn-remove">Ta bort</button>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+        </div>
+
+        <div class="dashboard-footer">
+            <a href="/auth/logout" class="btn-logout">Logga ut</a>
+        </div>
+    }
+</section>
+
+@code {
+    [CascadingParameter] private Task<AuthenticationState>? AuthState { get; set; }
+
+    private string userEmail = "";
+    private int userId;
+    private bool isLoading = true;
+    private List<PriceAlert> alerts = [];
+    private List<SavedRoute> savedRoutes = [];
+    private List<SavedSearch> savedSearches = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (AuthState is null) return;
+
+        var state = await AuthState;
+        var user = state.User;
+
+        if (user.Identity?.IsAuthenticated != true)
+        {
+            Navigation.NavigateTo("/konto/logga-in");
+            return;
+        }
+
+        userEmail = user.FindFirst(ClaimTypes.Email)?.Value ?? "";
+        var idClaim = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (idClaim is not null && int.TryParse(idClaim, out var id))
+        {
+            userId = id;
+        }
+
+        await LoadDataAsync();
+        isLoading = false;
+    }
+
+    private async Task LoadDataAsync()
+    {
+        alerts = await UserSession.GetUserAlertsAsync(userId);
+        savedRoutes = await UserSession.GetUserSavedRoutesAsync(userId);
+        savedSearches = await UserSession.GetUserSavedSearchesAsync(userId);
+    }
+
+    private async Task RemoveRoute(int routeId)
+    {
+        await UserSession.RemoveSavedRouteAsync(userId, routeId);
+        savedRoutes = await UserSession.GetUserSavedRoutesAsync(userId);
+    }
+
+    private async Task RemoveSearch(int searchId)
+    {
+        await UserSession.RemoveSavedSearchAsync(userId, searchId);
+        savedSearches = await UserSession.GetUserSavedSearchesAsync(userId);
+    }
+}

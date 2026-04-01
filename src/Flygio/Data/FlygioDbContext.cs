@@ -12,6 +12,10 @@ public class FlygioDbContext(DbContextOptions<FlygioDbContext> options) : DbCont
     public DbSet<SearchEvent> SearchEvents => Set<SearchEvent>();
     public DbSet<PriceAlert> PriceAlerts => Set<PriceAlert>();
     public DbSet<Destination> Destinations => Set<Destination>();
+    public DbSet<AppUser> Users => Set<AppUser>();
+    public DbSet<MagicLink> MagicLinks => Set<MagicLink>();
+    public DbSet<SavedRoute> SavedRoutes => Set<SavedRoute>();
+    public DbSet<SavedSearch> SavedSearches => Set<SavedSearch>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -53,6 +57,10 @@ public class FlygioDbContext(DbContextOptions<FlygioDbContext> options) : DbCont
             entity.HasIndex(e => e.UnsubscribeToken).IsUnique();
             entity.HasIndex(e => e.Email);
             entity.Property(e => e.TargetPrice).HasPrecision(10, 2);
+            entity.HasOne(e => e.User)
+                  .WithMany(u => u.PriceAlerts)
+                  .HasForeignKey(e => e.UserId)
+                  .OnDelete(DeleteBehavior.SetNull);
         });
 
         modelBuilder.Entity<Destination>(entity =>
@@ -60,5 +68,36 @@ public class FlygioDbContext(DbContextOptions<FlygioDbContext> options) : DbCont
             entity.HasIndex(e => e.Slug).IsUnique();
             entity.HasIndex(e => e.AirportCode);
         });
+
+        modelBuilder.Entity<AppUser>(entity =>
+        {
+            entity.HasIndex(e => e.Email).IsUnique();
+        });
+
+        modelBuilder.Entity<MagicLink>(entity =>
+        {
+            entity.HasIndex(e => e.Token).IsUnique();
+            entity.HasIndex(e => e.Email);
+        });
+
+        modelBuilder.Entity<SavedRoute>(entity =>
+        {
+            entity.HasIndex(e => e.UserId);
+            entity.HasOne(e => e.User)
+                  .WithMany(u => u.SavedRoutes)
+                  .HasForeignKey(e => e.UserId)
+                  .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<SavedSearch>(entity =>
+        {
+            entity.HasIndex(e => e.UserId);
+            entity.Property(e => e.LastKnownPrice).HasPrecision(10, 2);
+            entity.HasOne(e => e.User)
+                  .WithMany(u => u.SavedSearches)
+                  .HasForeignKey(e => e.UserId)
+                  .OnDelete(DeleteBehavior.Cascade);
+        });
+
     }
 }

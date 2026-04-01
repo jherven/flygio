@@ -1,0 +1,87 @@
+@page "/konto/logga-in"
+@using Flygio.Services
+@inject MagicLinkService MagicLinkService
+
+<PageTitle>Logga in - Flygio</PageTitle>
+
+<section class="auth-page">
+    <div class="auth-card">
+        <h1>Logga in</h1>
+        <p>Ange din e-postadress så skickar vi en inloggningslänk.</p>
+
+        @if (sent)
+        {
+            <div class="auth-success">
+                <span class="alert-icon">&#10003;</span>
+                <div>
+                    <strong>Kolla din inkorg!</strong>
+                    <p>Vi har skickat en inloggningslänk till <strong>@email</strong>. Länken är giltig i 15 minuter.</p>
+                </div>
+            </div>
+        }
+        else
+        {
+            @if (Error == "invalid")
+            {
+                <div class="auth-error">Inloggningslänken är ogiltig eller har gått ut. Försök igen.</div>
+            }
+
+            @if (errorMessage is not null)
+            {
+                <div class="auth-error">@errorMessage</div>
+            }
+
+            <div class="auth-form">
+                <input type="email" placeholder="din@epost.se" @bind="email" @bind:event="oninput" />
+                <button @onclick="SendLink" disabled="@isSubmitting" class="btn-auth">
+                    @(isSubmitting ? "Skickar..." : "Skicka inloggningslänk")
+                </button>
+            </div>
+
+            <p class="auth-note">Inget lösenord behövs. Vi skickar en säker engångslänk till din e-post.</p>
+        }
+    </div>
+</section>
+
+@code {
+    [SupplyParameterFromQuery] public string? Error { get; set; }
+
+    private string email = "";
+    private bool isSubmitting;
+    private bool sent;
+    private string? errorMessage;
+
+    private async Task SendLink()
+    {
+        errorMessage = null;
+
+        if (string.IsNullOrWhiteSpace(email) || !email.Contains('@') || !email.Contains('.'))
+        {
+            errorMessage = "Ange en giltig e-postadress.";
+            return;
+        }
+
+        isSubmitting = true;
+
+        try
+        {
+            var success = await MagicLinkService.SendMagicLinkAsync(email.Trim());
+            if (success)
+            {
+                sent = true;
+            }
+            else
+            {
+                errorMessage = "Kunde inte skicka inloggningslänken. Försök igen.";
+            }
+        }
+        catch
+        {
+            errorMessage = "Något gick fel. Försök igen.";
+        }
+        finally
+        {
+            isSubmitting = false;
+        }
+    }
+}

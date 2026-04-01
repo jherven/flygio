@@ -1,8 +1,11 @@
 using System.Globalization;
+using System.Security.Claims;
 using Flygio.Components;
 using Flygio.Data;
 using Flygio.Data.Models;
 using Flygio.Services;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
 
 // Set Swedish culture as default for date/number formatting
@@ -44,6 +47,23 @@ builder.Services.AddHostedService<PriceTrackingService>();
 builder.Services.Configure<ResendSettings>(builder.Configuration.GetSection(ResendSettings.SectionName));
 builder.Services.AddHostedService<PriceAlertService>();
 
+// User accounts & auth
+builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+    .AddCookie(options =>
+    {
+        options.LoginPath = "/konto/logga-in";
+        options.LogoutPath = "/konto/logga-ut";
+        options.ExpireTimeSpan = TimeSpan.FromDays(30);
+        options.SlidingExpiration = true;
+        options.Cookie.HttpOnly = true;
+        options.Cookie.SameSite = SameSiteMode.Lax;
+        options.Cookie.Name = "flygio_session";
+    });
+builder.Services.AddAuthorization();
+builder.Services.AddCascadingAuthenticationState();
+builder.Services.AddScoped<MagicLinkService>();
+builder.Services.AddScoped<UserSessionService>();
+
 var app = builder.Build();
 
 // Auto-migrate and seed in production
@@ -71,6 +91,8 @@ else
     await SeoContentSeeder.SeedTravelGuideArticlesAsync(db);
 }
 app.UseStatusCodePagesWithReExecute("/not-found");
+app.UseAuthentication();
+app.UseAuthorization();
 app.UseAntiforgery();
 
 app.MapHealthChecks("/healthz");
@@ -280,6 +302,36 @@ app.MapGet("/go/viator", async (
 
     var affiliateUrl = affiliateService.GenerateViatorLink(city);
     return Results.Redirect(affiliateUrl);
+});
+
+// Auth: verify magic link token (GET so email links work)
+app.MapGet("/auth/verify", async (
+    string token,
+    HttpContext httpContext,
+    MagicLinkService magicLinkService) =>
+{
+    var user = await magicLinkService.ValidateTokenAsync(token);
+    if (user is null)
+        return Results.Redirect("/konto/logga-in?error=invalid");
+
+    var claims = new List<Claim>
+    {
+        new(ClaimTypes.NameIdentifier, user.Id.ToString()),
+        new(ClaimTypes.Email, user.Email),
+        new(ClaimTypes.Name, user.DisplayName ?? user.Email)
+    };
+    var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+    var principal = new ClaimsPrincipal(identity);
+
+    await httpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
+    return Results.Redirect("/konto");
+});
+
+// Auth: logout
+app.MapGet("/auth/logout", async (HttpContext httpContext) =>
+{
+    await httpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+    return Results.Redirect("/");
 });
 
 // XML Sitemap

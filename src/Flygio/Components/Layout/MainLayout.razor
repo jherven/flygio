@@ -17,6 +17,14 @@
                 <NavLink href="/resor">Resor</NavLink>
                 <NavLink href="/artiklar">Artiklar</NavLink>
                 <NavLink href="/admin/analytics">Analys</NavLink>
+                <AuthorizeView>
+                    <Authorized>
+                        <NavLink href="/konto" class="nav-account">Mitt konto</NavLink>
+                    </Authorized>
+                    <NotAuthorized>
+                        <NavLink href="/konto/logga-in" class="nav-login">Logga in</NavLink>
+                    </NotAuthorized>
+                </AuthorizeView>
             </nav>
         </div>
     </header>
