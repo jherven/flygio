@@ -16,7 +16,11 @@
                 <NavLink href="/aktiviteter">Aktiviteter</NavLink>
                 <NavLink href="/resor">Resor</NavLink>
                 <NavLink href="/artiklar">Artiklar</NavLink>
-                <NavLink href="/admin/analytics">Analys</NavLink>
+                <AuthorizeView>
+                    <Authorized>
+                        <NavLink href="/admin/analytics">Analys</NavLink>
+                    </Authorized>
+                </AuthorizeView>
                 <AuthorizeView>
                     <Authorized>
                         <NavLink href="/konto" class="nav-account">Mitt konto</NavLink>

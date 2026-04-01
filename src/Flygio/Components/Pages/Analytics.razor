@@ -1,6 +1,7 @@
 @page "/admin/analytics"
 @using Flygio.Data
 @using Microsoft.EntityFrameworkCore
+@attribute [Authorize]
 @inject FlygioDbContext Db
 @rendermode InteractiveServer
 
