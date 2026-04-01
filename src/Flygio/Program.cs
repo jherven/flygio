@@ -64,7 +64,7 @@ else
     await ArticleSeeder.SeedAsync(db);
     await DestinationSeeder.SeedAsync(db);
 }
-app.UseStatusCodePagesWithReExecute("/not-found", createScopeForStatusCodePages: true);
+app.UseStatusCodePagesWithReExecute("/not-found");
 app.UseAntiforgery();
 
 app.MapHealthChecks("/healthz");
