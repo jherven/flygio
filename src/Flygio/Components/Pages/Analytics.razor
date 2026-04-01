@@ -1,8 +1,10 @@
 @page "/admin/analytics"
 @using Flygio.Data
+@using Flygio.Services
 @using Microsoft.EntityFrameworkCore
 @attribute [Authorize]
 @inject FlygioDbContext Db
+@inject NewsletterService Newsletter
 @rendermode InteractiveServer
 
 <PageTitle>Flygio - Analysöversikt</PageTitle>
@@ -26,6 +28,30 @@
         <div class="stat-card">
             <span class="stat-value">@TodayClicks</span>
             <span class="stat-label">Klick idag</span>
+        </div>
+        <div class="stat-card">
+            <span class="stat-value">@NewsletterSubscribers</span>
+            <span class="stat-label">Nyhetsbrevsprenumeranter</span>
+        </div>
+    </div>
+
+    <div class="analytics-section">
+        <h2>Nyhetsbrev</h2>
+        <div class="newsletter-admin">
+            @if (newsletterSent)
+            {
+                <p class="newsletter-admin-result">Nyhetsbrev skickat till @newsletterSentCount prenumeranter. @newsletterFailedCount misslyckades.</p>
+            }
+            else
+            {
+                <button @onclick="SendNewsletter" disabled="@isSendingNewsletter" class="btn-send-newsletter">
+                    @(isSendingNewsletter ? "Skickar..." : "Generera & Skicka Nyhetsbrev")
+                </button>
+            }
+            @if (newsletterError is not null)
+            {
+                <p class="newsletter-admin-error">@newsletterError</p>
+            }
         </div>
     </div>
 
@@ -131,6 +157,12 @@
     private int TotalSearches;
     private int TodayClicks;
     private double ConversionRate;
+    private int NewsletterSubscribers;
+    private bool isSendingNewsletter;
+    private bool newsletterSent;
+    private int newsletterSentCount;
+    private int newsletterFailedCount;
+    private string? newsletterError;
     private List<ProviderStat> ClicksByProvider = [];
     private List<RouteStat> TopRoutes = [];
     private List<DailyStat> DailyStats = [];
@@ -145,6 +177,7 @@
         TotalSearches = await Db.SearchEvents.CountAsync();
         TodayClicks = await Db.AffiliateClicks.CountAsync(c => c.ClickedAt >= today);
         ConversionRate = TotalSearches > 0 ? (double)TotalClicks / TotalSearches * 100 : 0;
+        NewsletterSubscribers = await Db.NewsletterSubscribers.CountAsync(s => s.IsActive);
 
         ClicksByProvider = await Db.AffiliateClicks
             .GroupBy(c => c.Provider)
@@ -191,6 +224,27 @@
             .OrderByDescending(s => s.SearchedAt)
             .Take(20)
             .ToListAsync();
+    }
+
+    private async Task SendNewsletter()
+    {
+        isSendingNewsletter = true;
+        newsletterError = null;
+        try
+        {
+            var (sent, failed) = await Newsletter.SendWeeklyNewsletterAsync();
+            newsletterSentCount = sent;
+            newsletterFailedCount = failed;
+            newsletterSent = true;
+        }
+        catch (Exception ex)
+        {
+            newsletterError = $"Kunde inte skicka nyhetsbrev: {ex.Message}";
+        }
+        finally
+        {
+            isSendingNewsletter = false;
+        }
     }
 
     private class ProviderStat { public string Name { get; set; } = ""; public int Count { get; set; } }

@@ -16,6 +16,7 @@ public class FlygioDbContext(DbContextOptions<FlygioDbContext> options) : DbCont
     public DbSet<MagicLink> MagicLinks => Set<MagicLink>();
     public DbSet<SavedRoute> SavedRoutes => Set<SavedRoute>();
     public DbSet<SavedSearch> SavedSearches => Set<SavedSearch>();
+    public DbSet<NewsletterSubscriber> NewsletterSubscribers => Set<NewsletterSubscriber>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -97,6 +98,12 @@ public class FlygioDbContext(DbContextOptions<FlygioDbContext> options) : DbCont
                   .WithMany(u => u.SavedSearches)
                   .HasForeignKey(e => e.UserId)
                   .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<NewsletterSubscriber>(entity =>
+        {
+            entity.HasIndex(e => e.Email).IsUnique();
+            entity.HasIndex(e => e.UnsubscribeToken).IsUnique();
         });
 
     }

@@ -1,0 +1,94 @@
+@using Flygio.Data
+@using Microsoft.EntityFrameworkCore
+@inject FlygioDbContext Db
+
+<div class="footer-newsletter">
+    @if (submitted)
+    {
+        <p class="footer-nl-success">&#10003; Tack! Du är nu prenumerant.</p>
+    }
+    else
+    {
+        <p class="footer-nl-title">Få veckans bästa flygpriser i din inkorg</p>
+        <div class="footer-nl-form">
+            <input type="email" @bind="email" @bind:event="oninput"
+                   placeholder="din@epost.se" class="footer-nl-input" />
+            <button @onclick="Subscribe" disabled="@isSubmitting" class="footer-nl-btn">
+                @(isSubmitting ? "..." : "Prenumerera")
+            </button>
+        </div>
+        <label class="footer-nl-consent">
+            <input type="checkbox" @bind="consent" />
+            <span>Jag godkänner att ta emot nyhetsbrev</span>
+        </label>
+        @if (errorMessage is not null)
+        {
+            <p class="footer-nl-error">@errorMessage</p>
+        }
+    }
+</div>
+
+@code {
+    private string email = "";
+    private bool consent;
+    private bool isSubmitting;
+    private bool submitted;
+    private string? errorMessage;
+
+    private async Task Subscribe()
+    {
+        errorMessage = null;
+
+        if (string.IsNullOrWhiteSpace(email) || !email.Contains('@') || !email.Contains('.'))
+        {
+            errorMessage = "Ange en giltig e-postadress.";
+            return;
+        }
+
+        if (!consent)
+        {
+            errorMessage = "Du måste godkänna att ta emot nyhetsbrev.";
+            return;
+        }
+
+        var normalizedEmail = email.Trim().ToLowerInvariant();
+
+        var exists = await Db.NewsletterSubscribers
+            .AnyAsync(s => s.Email == normalizedEmail && s.IsActive);
+        if (exists)
+        {
+            errorMessage = "Du prenumererar redan.";
+            return;
+        }
+
+        isSubmitting = true;
+        try
+        {
+            var existing = await Db.NewsletterSubscribers
+                .FirstOrDefaultAsync(s => s.Email == normalizedEmail);
+
+            if (existing is not null)
+            {
+                existing.IsActive = true;
+            }
+            else
+            {
+                Db.NewsletterSubscribers.Add(new Data.Models.NewsletterSubscriber
+                {
+                    Email = normalizedEmail
+                });
+            }
+
+            await Db.SaveChangesAsync();
+            submitted = true;
+        }
+        catch
+        {
+            errorMessage = "Något gick fel. Försök igen.";
+        }
+        finally
+        {
+            isSubmitting = false;
+        }
+    }
+}

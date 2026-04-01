@@ -1,0 +1,128 @@
+@page "/nyhetsbrev"
+@using Flygio.Data
+@using Microsoft.EntityFrameworkCore
+@inject FlygioDbContext Db
+
+<PageTitle>Nyhetsbrev - Flygio</PageTitle>
+
+<section class="newsletter-page">
+    <div class="newsletter-hero">
+        <h1>Få veckans bästa flygpriser</h1>
+        <p>Prenumerera på vårt nyhetsbrev och missa aldrig ett bra erbjudande. Varje vecka skickar vi de 5 billigaste flygresorna, prisfall och nya destinationer direkt till din inkorg.</p>
+    </div>
+
+    <div class="newsletter-signup-card">
+        @if (submitted)
+        {
+            <div class="newsletter-success">
+                <span class="success-icon">&#10003;</span>
+                <h2>Tack för din anmälan!</h2>
+                <p>Du kommer att få vårt nästa nyhetsbrev till <strong>@email</strong>.</p>
+            </div>
+        }
+        else
+        {
+            <h2>Anmäl dig till nyhetsbrevet</h2>
+            <p>Gratis, en gång i veckan. Avsluta när du vill.</p>
+
+            <div class="newsletter-form">
+                <input type="email" @bind="email" @bind:event="oninput"
+                       placeholder="din@epost.se" class="newsletter-input" />
+                <label class="newsletter-consent">
+                    <input type="checkbox" @bind="consent" />
+                    <span>Jag godkänner att Flygio skickar nyhetsbrev till mig via e-post</span>
+                </label>
+                <button @onclick="Subscribe" disabled="@isSubmitting" class="newsletter-btn">
+                    @(isSubmitting ? "Anmäler..." : "Prenumerera")
+                </button>
+            </div>
+
+            @if (errorMessage is not null)
+            {
+                <p class="newsletter-error">@errorMessage</p>
+            }
+        }
+    </div>
+
+    <div class="newsletter-features">
+        <div class="feature-item">
+            <span class="feature-icon">&#9992;</span>
+            <h3>Billigaste flygresorna</h3>
+            <p>Topp 5 billigaste flygningar från Sverige varje vecka.</p>
+        </div>
+        <div class="feature-item">
+            <span class="feature-icon">&#8595;</span>
+            <h3>Prisfall</h3>
+            <p>Rutter som sjunkit kraftigt i pris jämfört med genomsnittet.</p>
+        </div>
+        <div class="feature-item">
+            <span class="feature-icon">&#127758;</span>
+            <h3>Nya destinationer</h3>
+            <p>Bli först att upptäcka nya flygrutter från din stad.</p>
+        </div>
+    </div>
+</section>
+
+@code {
+    private string email = "";
+    private bool consent;
+    private bool isSubmitting;
+    private bool submitted;
+    private string? errorMessage;
+
+    private async Task Subscribe()
+    {
+        errorMessage = null;
+
+        if (string.IsNullOrWhiteSpace(email) || !email.Contains('@') || !email.Contains('.'))
+        {
+            errorMessage = "Ange en giltig e-postadress.";
+            return;
+        }
+
+        if (!consent)
+        {
+            errorMessage = "Du måste godkänna att ta emot nyhetsbrev.";
+            return;
+        }
+
+        var exists = await Db.NewsletterSubscribers
+            .AnyAsync(s => s.Email == email.Trim().ToLowerInvariant() && s.IsActive);
+        if (exists)
+        {
+            errorMessage = "Den här e-postadressen prenumererar redan på nyhetsbrevet.";
+            return;
+        }
+
+        isSubmitting = true;
+        try
+        {
+            // Reactivate if previously unsubscribed
+            var existing = await Db.NewsletterSubscribers
+                .FirstOrDefaultAsync(s => s.Email == email.Trim().ToLowerInvariant());
+
+            if (existing is not null)
+            {
+                existing.IsActive = true;
+            }
+            else
+            {
+                Db.NewsletterSubscribers.Add(new Data.Models.NewsletterSubscriber
+                {
+                    Email = email.Trim().ToLowerInvariant()
+                });
+            }
+
+            await Db.SaveChangesAsync();
+            submitted = true;
+        }
+        catch
+        {
+            errorMessage = "Något gick fel. Försök igen.";
+        }
+        finally
+        {
+            isSubmitting = false;
+        }
+    }
+}

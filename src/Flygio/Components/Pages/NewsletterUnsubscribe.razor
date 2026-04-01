@@ -1,0 +1,63 @@
+@page "/nyhetsbrev/avsluta"
+@using Flygio.Data
+@using Microsoft.EntityFrameworkCore
+@inject FlygioDbContext Db
+
+<PageTitle>Avsluta nyhetsbrev - Flygio</PageTitle>
+
+<section class="unsubscribe-page">
+    @if (success)
+    {
+        <div class="unsub-card">
+            <h1>Prenumeration avslutad</h1>
+            <p>Du kommer inte längre få vårt nyhetsbrev till <strong>@subscriberEmail</strong>.</p>
+            <a href="/" class="btn-back">Tillbaka till Flygio</a>
+        </div>
+    }
+    else if (errorMessage is not null)
+    {
+        <div class="unsub-card unsub-error">
+            <h1>Något gick fel</h1>
+            <p>@errorMessage</p>
+            <a href="/" class="btn-back">Tillbaka till Flygio</a>
+        </div>
+    }
+    else
+    {
+        <div class="unsub-card">
+            <div class="spinner"></div>
+            <p>Avslutar prenumeration...</p>
+        </div>
+    }
+</section>
+
+@code {
+    [SupplyParameterFromQuery] public string? Token { get; set; }
+
+    private bool success;
+    private string? errorMessage;
+    private string subscriberEmail = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (string.IsNullOrEmpty(Token))
+        {
+            errorMessage = "Ogiltig avprenumerationslänk.";
+            return;
+        }
+
+        var subscriber = await Db.NewsletterSubscribers
+            .FirstOrDefaultAsync(s => s.UnsubscribeToken == Token);
+
+        if (subscriber is null)
+        {
+            errorMessage = "Prenumerationen hittades inte eller har redan avslutats.";
+            return;
+        }
+
+        subscriberEmail = subscriber.Email;
+        subscriber.IsActive = false;
+        await Db.SaveChangesAsync();
+        success = true;
+    }
+}

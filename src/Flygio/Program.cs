@@ -66,6 +66,9 @@ builder.Services.AddHostedService<PriceTrackingService>();
 builder.Services.Configure<ResendSettings>(builder.Configuration.GetSection(ResendSettings.SectionName));
 builder.Services.AddHostedService<PriceAlertService>();
 
+// Newsletter service
+builder.Services.AddSingleton<NewsletterService>();
+
 // User accounts & auth
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
