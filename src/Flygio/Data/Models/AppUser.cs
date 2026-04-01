@@ -15,5 +15,4 @@ public class AppUser
 
     public List<SavedRoute> SavedRoutes { get; set; } = [];
     public List<SavedSearch> SavedSearches { get; set; } = [];
-    public List<PriceAlert> PriceAlerts { get; set; } = [];
 }

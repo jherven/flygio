@@ -39,29 +39,10 @@ public class MagicLinkService(
         {
             user = new AppUser { Email = link.Email };
             db.Users.Add(user);
-
-            // Link any existing price alerts to this new user
-            var existingAlerts = await db.PriceAlerts
-                .Where(a => a.Email == link.Email && a.UserId == null)
-                .ToListAsync();
-            foreach (var alert in existingAlerts)
-                alert.UserId = user.Id;
         }
 
         user.LastLoginAt = DateTime.UtcNow;
         await db.SaveChangesAsync();
-
-        // Re-link alerts after SaveChanges (user.Id is now set for new users)
-        if (user.Id > 0)
-        {
-            var unlinkedAlerts = await db.PriceAlerts
-                .Where(a => a.Email == link.Email && a.UserId == null)
-                .ToListAsync();
-            foreach (var alert in unlinkedAlerts)
-                alert.UserId = user.Id;
-            if (unlinkedAlerts.Count > 0)
-                await db.SaveChangesAsync();
-        }
 
         return user;
     }

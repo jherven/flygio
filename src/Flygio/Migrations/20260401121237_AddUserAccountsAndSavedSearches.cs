@@ -12,12 +12,6 @@ namespace Flygio.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.AddColumn<int>(
-                name: "UserId",
-                table: "PriceAlerts",
-                type: "integer",
-                nullable: true);
-
             migrationBuilder.CreateTable(
                 name: "MagicLinks",
                 columns: table => new
@@ -104,11 +98,6 @@ namespace Flygio.Migrations
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_PriceAlerts_UserId",
-                table: "PriceAlerts",
-                column: "UserId");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_MagicLinks_Email",
                 table: "MagicLinks",
                 column: "Email");
@@ -135,22 +124,11 @@ namespace Flygio.Migrations
                 column: "Email",
                 unique: true);
 
-            migrationBuilder.AddForeignKey(
-                name: "FK_PriceAlerts_Users_UserId",
-                table: "PriceAlerts",
-                column: "UserId",
-                principalTable: "Users",
-                principalColumn: "Id",
-                onDelete: ReferentialAction.SetNull);
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropForeignKey(
-                name: "FK_PriceAlerts_Users_UserId",
-                table: "PriceAlerts");
-
             migrationBuilder.DropTable(
                 name: "MagicLinks");
 
@@ -162,14 +140,6 @@ namespace Flygio.Migrations
 
             migrationBuilder.DropTable(
                 name: "Users");
-
-            migrationBuilder.DropIndex(
-                name: "IX_PriceAlerts_UserId",
-                table: "PriceAlerts");
-
-            migrationBuilder.DropColumn(
-                name: "UserId",
-                table: "PriceAlerts");
         }
     }
 }

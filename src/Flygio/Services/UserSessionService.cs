@@ -18,8 +18,10 @@ public class UserSessionService(FlygioDbContext db)
 
     public async Task<List<PriceAlert>> GetUserAlertsAsync(int userId)
     {
+        var user = await db.Users.FindAsync(userId);
+        if (user is null) return [];
         return await db.PriceAlerts
-            .Where(a => a.UserId == userId && a.IsActive)
+            .Where(a => a.Email == user.Email && a.IsActive)
             .OrderByDescending(a => a.CreatedAt)
             .ToListAsync();
     }

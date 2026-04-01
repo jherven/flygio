@@ -376,17 +376,12 @@ namespace Flygio.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<int?>("UserId")
-                        .HasColumnType("integer");
-
                     b.HasKey("Id");
 
                     b.HasIndex("Email");
 
                     b.HasIndex("UnsubscribeToken")
                         .IsUnique();
-
-                    b.HasIndex("UserId");
 
                     b.HasIndex("OriginCode", "DestinationCode");
 
@@ -557,16 +552,6 @@ namespace Flygio.Migrations
                     b.ToTable("SearchEvents");
                 });
 
-            modelBuilder.Entity("Flygio.Data.Models.PriceAlert", b =>
-                {
-                    b.HasOne("Flygio.Data.Models.AppUser", "User")
-                        .WithMany("PriceAlerts")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("Flygio.Data.Models.PricePoint", b =>
                 {
                     b.HasOne("Flygio.Data.Models.FlightRoute", "FlightRoute")
@@ -602,8 +587,6 @@ namespace Flygio.Migrations
 
             modelBuilder.Entity("Flygio.Data.Models.AppUser", b =>
                 {
-                    b.Navigation("PriceAlerts");
-
                     b.Navigation("SavedRoutes");
 
                     b.Navigation("SavedSearches");

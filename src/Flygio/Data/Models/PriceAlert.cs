@@ -10,8 +10,6 @@ public class PriceAlert
     public required string DestinationCode { get; set; }
     public decimal TargetPrice { get; set; }
     public required string Currency { get; set; }
-    public int? UserId { get; set; }
-    public AppUser? User { get; set; }
     public bool IsActive { get; set; } = true;
     public string UnsubscribeToken { get; set; } = GenerateToken();
     public DateTime? LastNotifiedAt { get; set; }

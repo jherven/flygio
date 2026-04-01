@@ -60,10 +60,6 @@ public class FlygioDbContext(DbContextOptions<FlygioDbContext> options) : DbCont
             entity.HasIndex(e => e.UnsubscribeToken).IsUnique();
             entity.HasIndex(e => e.Email);
             entity.Property(e => e.TargetPrice).HasPrecision(10, 2);
-            entity.HasOne(e => e.User)
-                  .WithMany(u => u.PriceAlerts)
-                  .HasForeignKey(e => e.UserId)
-                  .OnDelete(DeleteBehavior.SetNull);
         });
 
         modelBuilder.Entity<Destination>(entity =>
