@@ -1,0 +1,540 @@
+@page "/resor"
+@page "/resor/{EncodedTrip}"
+@using Flygio.Services
+@inject TravelpayoutsAffiliateLinkService AffiliateService
+@inject NavigationManager Navigation
+@inject IJSRuntime JS
+@rendermode InteractiveServer
+
+<PageTitle>Planera flerstegsresa - Flygio</PageTitle>
+
+<section class="trip-hero">
+    <h1>Planera din flerstegsresa</h1>
+    <p>Bygg ett reseschema med flera destinationer och se totalpriset</p>
+</section>
+
+<section class="trip-planner-section">
+    <div class="trip-planner-card">
+        <div class="trip-legs">
+            @for (int i = 0; i < Legs.Count; i++)
+            {
+                var idx = i;
+                var leg = Legs[idx];
+                <div class="trip-leg">
+                    <div class="leg-header">
+                        <span class="leg-number">Flyg @(idx + 1)</span>
+                        @if (Legs.Count > 2)
+                        {
+                            <button class="leg-remove" @onclick="() => RemoveLeg(idx)" title="Ta bort">&#10005;</button>
+                        }
+                    </div>
+                    <div class="leg-fields">
+                        <div class="form-group @(showValidation && string.IsNullOrEmpty(leg.OriginCode) ? "field-error" : "")">
+                            <label>Från</label>
+                            <input type="text"
+                                   placeholder="T.ex. Stockholm"
+                                   value="@leg.OriginInput"
+                                   @oninput="(e) => OnOriginInput(idx, e.Value?.ToString() ?? string.Empty)"
+                                   @onfocus="() => ShowDropdown(idx, true)"
+                                   @onblur="() => DelayHideDropdown(idx, true)"
+                                   autocomplete="off" />
+                            @if (leg.ShowOriginDropdown && GetFilteredAirports(leg.OriginInput).Any())
+                            {
+                                <div class="autocomplete-dropdown">
+                                    @foreach (var airport in GetFilteredAirports(leg.OriginInput))
+                                    {
+                                        <div class="autocomplete-item" @onmousedown="() => SelectOrigin(idx, airport)">
+                                            <span class="airport-name">@airport.City - @airport.Name</span>
+                                            <span class="airport-code">@airport.Code</span>
+                                        </div>
+                                    }
+                                </div>
+                            }
+                            @if (showValidation && string.IsNullOrEmpty(leg.OriginCode))
+                            {
+                                <span class="validation-msg">Välj avgångsflygplats</span>
+                            }
+                        </div>
+
+                        <div class="form-group @(showValidation && string.IsNullOrEmpty(leg.DestinationCode) ? "field-error" : "")">
+                            <label>Till</label>
+                            <input type="text"
+                                   placeholder="T.ex. London"
+                                   value="@leg.DestinationInput"
+                                   @oninput="(e) => OnDestInput(idx, e.Value?.ToString() ?? string.Empty)"
+                                   @onfocus="() => ShowDropdown(idx, false)"
+                                   @onblur="() => DelayHideDropdown(idx, false)"
+                                   autocomplete="off" />
+                            @if (leg.ShowDestDropdown && GetFilteredAirports(leg.DestinationInput).Any())
+                            {
+                                <div class="autocomplete-dropdown">
+                                    @foreach (var airport in GetFilteredAirports(leg.DestinationInput))
+                                    {
+                                        <div class="autocomplete-item" @onmousedown="() => SelectDestination(idx, airport)">
+                                            <span class="airport-name">@airport.City - @airport.Name</span>
+                                            <span class="airport-code">@airport.Code</span>
+                                        </div>
+                                    }
+                                </div>
+                            }
+                            @if (showValidation && string.IsNullOrEmpty(leg.DestinationCode))
+                            {
+                                <span class="validation-msg">Välj destination</span>
+                            }
+                        </div>
+
+                        <div class="form-group @(showValidation && leg.DepartureDate == default ? "field-error" : "")">
+                            <label>Datum</label>
+                            <input type="date" value="@(leg.DepartureDate != default ? leg.DepartureDate.ToString("yyyy-MM-dd") : "")"
+                                   @onchange="(e) => OnDateChange(idx, e.Value?.ToString() ?? string.Empty)"
+                                   min="@GetMinDate(idx)" />
+                            @if (showValidation && leg.DepartureDate == default)
+                            {
+                                <span class="validation-msg">Välj datum</span>
+                            }
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+
+        <div class="trip-actions">
+            @if (Legs.Count < 8)
+            {
+                <button class="btn-add-leg" @onclick="AddLeg">+ Lägg till flyg</button>
+            }
+
+            <div class="trip-passengers">
+                <label>Resenärer</label>
+                <select @bind="Passengers">
+                    @for (int i = 1; i <= 9; i++)
+                    {
+                        <option value="@i">@i</option>
+                    }
+                </select>
+            </div>
+
+            <button class="btn-search-trip" @onclick="BuildTrip" disabled="@IsLoading">
+                @if (IsLoading)
+                {
+                    <span>Söker...</span>
+                }
+                else
+                {
+                    <span>Sök flyg för alla sträckor</span>
+                }
+            </button>
+        </div>
+    </div>
+</section>
+
+@if (IsLoading)
+{
+    <div class="loading-state">
+        <div class="spinner"></div>
+        <p>Bygger din resplan...</p>
+    </div>
+}
+else if (ShowResults)
+{
+    <section class="trip-results-section">
+        <div class="trip-results-header">
+            <h2>Din resplan</h2>
+            <div class="trip-results-actions">
+                <button class="btn-share-trip" @onclick="ShareTrip">Dela resplan</button>
+            </div>
+        </div>
+
+        @if (ShareUrl is not null)
+        {
+            <div class="share-banner">
+                <span>Länk kopierad! Dela denna URL:</span>
+                <code>@ShareUrl</code>
+            </div>
+        }
+
+        <div class="trip-route-summary">
+            @for (int i = 0; i < Legs.Count; i++)
+            {
+                var leg = Legs[i];
+                @if (i > 0)
+                {
+                    <span class="route-arrow">&rarr;</span>
+                }
+                <span class="route-city">@GetCityName(leg.OriginCode)</span>
+            }
+            <span class="route-arrow">&rarr;</span>
+            <span class="route-city">@GetCityName(Legs[^1].DestinationCode)</span>
+        </div>
+
+        <div class="trip-leg-results">
+            @for (int i = 0; i < Legs.Count; i++)
+            {
+                var leg = Legs[i];
+                var aviasalesUrl = AffiliateService.GetRedirectUrl("aviasales", leg.OriginCode!, leg.DestinationCode!, leg.DepartureDate, null);
+                var kiwiUrl = AffiliateService.GetRedirectUrl("kiwi", leg.OriginCode!, leg.DestinationCode!, leg.DepartureDate, null);
+                <div class="trip-leg-card">
+                    <div class="leg-card-header">
+                        <span class="leg-card-number">Flyg @(i + 1)</span>
+                        <span class="leg-card-date">@leg.DepartureDate.ToString("d MMMM yyyy")</span>
+                    </div>
+                    <div class="leg-card-route">
+                        <span class="leg-origin">@GetCityName(leg.OriginCode) <small>(@leg.OriginCode)</small></span>
+                        <span class="leg-arrow">&rarr;</span>
+                        <span class="leg-dest">@GetCityName(leg.DestinationCode) <small>(@leg.DestinationCode)</small></span>
+                    </div>
+                    <div class="leg-card-actions">
+                        <a href="@aviasalesUrl" target="_blank" rel="noopener" class="btn-book-leg">Sök på Aviasales</a>
+                        <a href="@kiwiUrl" target="_blank" rel="noopener" class="btn-book-leg btn-book-alt">Sök på Kiwi</a>
+                    </div>
+                </div>
+            }
+        </div>
+
+        <div class="trip-tip">
+            <strong>Tips:</strong> Boka varje sträcka separat för bästa pris. Jämför priser mellan Aviasales och Kiwi för varje flyg.
+        </div>
+    </section>
+}
+
+<section class="popular-routes-section">
+    <h2>Populära flerstegsresor från Sverige</h2>
+    <p class="popular-routes-subtitle">Inspireras av våra mest sökta resplaner</p>
+    <div class="popular-routes-grid">
+        @foreach (var route in PopularRoutes)
+        {
+            <div class="popular-route-card" @onclick="() => LoadPopularRoute(route)">
+                <div class="route-card-cities">
+                    @foreach (var city in route.Cities)
+                    {
+                        @if (city != route.Cities[0])
+                        {
+                            <span class="route-card-arrow">&rarr;</span>
+                        }
+                        <span>@city</span>
+                    }
+                </div>
+                <div class="route-card-meta">
+                    <span class="route-card-legs">@(route.Cities.Length - 1) flyg</span>
+                    <span class="route-card-duration">@route.Duration</span>
+                </div>
+                <span class="route-card-desc">@route.Description</span>
+            </div>
+        }
+    </div>
+</section>
+
+@code {
+    [Parameter]
+    public string? EncodedTrip { get; set; }
+
+    private List<TripLeg> Legs { get; set; } = new();
+    private int Passengers { get; set; } = 1;
+    private bool IsLoading { get; set; }
+    private bool ShowResults { get; set; }
+    private bool showValidation;
+    private string? ShareUrl;
+
+    private class TripLeg
+    {
+        public string OriginInput { get; set; } = "";
+        public string DestinationInput { get; set; } = "";
+        public string? OriginCode { get; set; }
+        public string? DestinationCode { get; set; }
+        public DateTime DepartureDate { get; set; }
+        public bool ShowOriginDropdown { get; set; }
+        public bool ShowDestDropdown { get; set; }
+    }
+
+    private record PopularRoute(string[] Cities, string[] Codes, string Duration, string Description);
+
+    private static readonly PopularRoute[] PopularRoutes =
+    [
+        new(["Stockholm", "London", "Paris", "Stockholm"], ["ARN", "LHR", "CDG", "ARN"], "10-14 dagar", "Klassisk Europaresa med två av kontinentens mest populära städer"),
+        new(["Stockholm", "Barcelona", "Rom", "Stockholm"], ["ARN", "BCN", "FCO", "ARN"], "10-14 dagar", "Medelhavsdröm med sol, kultur och fantastisk mat"),
+        new(["Göteborg", "Amsterdam", "Prag", "Budapest", "Göteborg"], ["GOT", "AMS", "PRG", "BUD", "GOT"], "14-18 dagar", "Centraleuropeisk rundresa med tre unika huvudstäder"),
+        new(["Stockholm", "Berlin", "Wien", "Stockholm"], ["ARN", "BER", "VIE", "ARN"], "7-10 dagar", "Kultur och historia genom Centraleuropa"),
+        new(["Malmö", "London", "Dublin", "Malmö"], ["MMX", "LHR", "DUB", "MMX"], "7-10 dagar", "Brittisk-irländsk äventyrsresa"),
+        new(["Stockholm", "Bangkok", "Dubai", "Stockholm"], ["ARN", "BKK", "DXB", "ARN"], "14-21 dagar", "Asien och Mellanöstern i en och samma resa"),
+        new(["Stockholm", "Lissabon", "Málaga", "Stockholm"], ["ARN", "LIS", "AGP", "ARN"], "10-14 dagar", "Iberiska halvöns bästa — stränder, kultur och tapas"),
+        new(["Göteborg", "Aten", "Istanbul", "Göteborg"], ["GOT", "ATH", "IST", "GOT"], "10-14 dagar", "Östra Medelhavet — antikens vagga och orientens port"),
+    ];
+
+    protected override void OnInitialized()
+    {
+        if (!string.IsNullOrEmpty(EncodedTrip))
+        {
+            DecodeTrip(EncodedTrip);
+        }
+        else
+        {
+            // Default: Stockholm -> ? -> Stockholm (round trip skeleton)
+            Legs.Add(new TripLeg { OriginInput = "Stockholm (ARN)", OriginCode = "ARN" });
+            Legs.Add(new TripLeg());
+        }
+    }
+
+    private void AddLeg()
+    {
+        // Pre-fill origin from previous leg's destination
+        var prevLeg = Legs[^1];
+        var newLeg = new TripLeg();
+        if (!string.IsNullOrEmpty(prevLeg.DestinationCode))
+        {
+            newLeg.OriginInput = prevLeg.DestinationInput;
+            newLeg.OriginCode = prevLeg.DestinationCode;
+        }
+        Legs.Add(newLeg);
+    }
+
+    private void RemoveLeg(int index)
+    {
+        if (Legs.Count > 2)
+            Legs.RemoveAt(index);
+    }
+
+    private void OnOriginInput(int idx, string value)
+    {
+        Legs[idx].OriginInput = value;
+        Legs[idx].OriginCode = null;
+        Legs[idx].ShowOriginDropdown = true;
+    }
+
+    private void OnDestInput(int idx, string value)
+    {
+        Legs[idx].DestinationInput = value;
+        Legs[idx].DestinationCode = null;
+        Legs[idx].ShowDestDropdown = true;
+    }
+
+    private void OnDateChange(int idx, string value)
+    {
+        if (DateTime.TryParse(value, out var date))
+            Legs[idx].DepartureDate = date;
+    }
+
+    private void ShowDropdown(int idx, bool isOrigin)
+    {
+        if (isOrigin)
+            Legs[idx].ShowOriginDropdown = true;
+        else
+            Legs[idx].ShowDestDropdown = true;
+    }
+
+    private async Task DelayHideDropdown(int idx, bool isOrigin)
+    {
+        await Task.Delay(200);
+        if (isOrigin)
+            Legs[idx].ShowOriginDropdown = false;
+        else
+            Legs[idx].ShowDestDropdown = false;
+    }
+
+    private void SelectOrigin(int idx, Airport airport)
+    {
+        Legs[idx].OriginInput = $"{airport.City} ({airport.Code})";
+        Legs[idx].OriginCode = airport.Code;
+        Legs[idx].ShowOriginDropdown = false;
+    }
+
+    private void SelectDestination(int idx, Airport airport)
+    {
+        Legs[idx].DestinationInput = $"{airport.City} ({airport.Code})";
+        Legs[idx].DestinationCode = airport.Code;
+        Legs[idx].ShowDestDropdown = false;
+
+        // Auto-fill next leg's origin
+        if (idx + 1 < Legs.Count && string.IsNullOrEmpty(Legs[idx + 1].OriginCode))
+        {
+            Legs[idx + 1].OriginInput = $"{airport.City} ({airport.Code})";
+            Legs[idx + 1].OriginCode = airport.Code;
+        }
+    }
+
+    private string GetMinDate(int idx)
+    {
+        if (idx > 0 && Legs[idx - 1].DepartureDate != default)
+            return Legs[idx - 1].DepartureDate.AddDays(1).ToString("yyyy-MM-dd");
+        return DateTime.Today.ToString("yyyy-MM-dd");
+    }
+
+    private async Task BuildTrip()
+    {
+        showValidation = true;
+        ShowResults = false;
+        ShareUrl = null;
+
+        foreach (var leg in Legs)
+        {
+            if (string.IsNullOrEmpty(leg.OriginCode) || string.IsNullOrEmpty(leg.DestinationCode) || leg.DepartureDate == default)
+                return;
+        }
+
+        IsLoading = true;
+        StateHasChanged();
+
+        // Simulate brief loading for UX
+        await Task.Delay(500);
+
+        ShowResults = true;
+        IsLoading = false;
+        showValidation = false;
+    }
+
+    private async Task ShareTrip()
+    {
+        var encoded = EncodeTrip();
+        ShareUrl = $"{Navigation.BaseUri}resor/{encoded}";
+        await JS.InvokeVoidAsync("navigator.clipboard.writeText", ShareUrl);
+    }
+
+    private string EncodeTrip()
+    {
+        // Format: ARN-LHR-20260415_LHR-CDG-20260420_CDG-ARN-20260425_p2
+        var parts = Legs.Select(l =>
+            $"{l.OriginCode}-{l.DestinationCode}-{l.DepartureDate:yyyyMMdd}");
+        var encoded = string.Join("_", parts);
+        if (Passengers > 1)
+            encoded += $"_p{Passengers}";
+        return encoded;
+    }
+
+    private void DecodeTrip(string encoded)
+    {
+        Legs.Clear();
+        var segments = encoded.Split('_');
+        foreach (var seg in segments)
+        {
+            if (seg.StartsWith("p") && int.TryParse(seg[1..], out var p))
+            {
+                Passengers = p;
+                continue;
+            }
+
+            var parts = seg.Split('-');
+            if (parts.Length >= 3)
+            {
+                var origin = parts[0];
+                var dest = parts[1];
+                var dateStr = parts[2];
+
+                var leg = new TripLeg
+                {
+                    OriginCode = origin,
+                    OriginInput = $"{GetCityName(origin)} ({origin})",
+                    DestinationCode = dest,
+                    DestinationInput = $"{GetCityName(dest)} ({dest})",
+                };
+
+                if (DateTime.TryParseExact(dateStr, "yyyyMMdd", null, System.Globalization.DateTimeStyles.None, out var date))
+                    leg.DepartureDate = date;
+
+                Legs.Add(leg);
+            }
+        }
+
+        if (Legs.Count < 2)
+        {
+            Legs.Clear();
+            Legs.Add(new TripLeg { OriginInput = "Stockholm (ARN)", OriginCode = "ARN" });
+            Legs.Add(new TripLeg());
+        }
+
+        // Auto-show results if we have a full valid trip
+        if (Legs.All(l => !string.IsNullOrEmpty(l.OriginCode) && !string.IsNullOrEmpty(l.DestinationCode) && l.DepartureDate != default))
+        {
+            ShowResults = true;
+        }
+    }
+
+    private void LoadPopularRoute(PopularRoute route)
+    {
+        Legs.Clear();
+        var baseDate = DateTime.Today.AddDays(30);
+        for (int i = 0; i < route.Codes.Length - 1; i++)
+        {
+            Legs.Add(new TripLeg
+            {
+                OriginCode = route.Codes[i],
+                OriginInput = $"{route.Cities[i]} ({route.Codes[i]})",
+                DestinationCode = route.Codes[i + 1],
+                DestinationInput = $"{route.Cities[i + 1]} ({route.Codes[i + 1]})",
+                DepartureDate = baseDate.AddDays(i * 5),
+            });
+        }
+        ShowResults = false;
+        ShareUrl = null;
+        showValidation = false;
+    }
+
+    private static string GetCityName(string? code)
+    {
+        if (string.IsNullOrEmpty(code)) return "?";
+        var airport = Airports.FirstOrDefault(a => a.Code == code);
+        return airport?.City ?? code;
+    }
+
+    private static IEnumerable<Airport> GetFilteredAirports(string input) =>
+        string.IsNullOrWhiteSpace(input)
+            ? Airports.Where(a => a.Country == "Sverige").Take(8)
+            : Airports.Where(a =>
+                a.City.Contains(input, StringComparison.OrdinalIgnoreCase) ||
+                a.Name.Contains(input, StringComparison.OrdinalIgnoreCase) ||
+                a.Code.Contains(input, StringComparison.OrdinalIgnoreCase) ||
+                a.Country.Contains(input, StringComparison.OrdinalIgnoreCase))
+            .Take(8);
+
+    private record Airport(string Code, string Name, string City, string Country);
+
+    private static readonly Airport[] Airports =
+    [
+        new("ARN", "Arlanda", "Stockholm", "Sverige"),
+        new("GOT", "Landvetter", "Göteborg", "Sverige"),
+        new("BMA", "Bromma", "Stockholm", "Sverige"),
+        new("MMX", "Sturup", "Malmö", "Sverige"),
+        new("NYO", "Skavsta", "Stockholm", "Sverige"),
+        new("VST", "Västerås", "Stockholm", "Sverige"),
+        new("UME", "Umeå Airport", "Umeå", "Sverige"),
+        new("LLA", "Kallax", "Luleå", "Sverige"),
+        new("KRN", "Kiruna Airport", "Kiruna", "Sverige"),
+        new("OSD", "Åre Östersund", "Östersund", "Sverige"),
+        new("VXO", "Småland Airport", "Växjö", "Sverige"),
+        new("RNB", "Kallinge", "Ronneby", "Sverige"),
+        new("KSD", "Karlstad Airport", "Karlstad", "Sverige"),
+        new("HAD", "Halmstad City", "Halmstad", "Sverige"),
+        new("SDL", "Sundsvall-Timrå", "Sundsvall", "Sverige"),
+        new("LHR", "Heathrow", "London", "Storbritannien"),
+        new("LGW", "Gatwick", "London", "Storbritannien"),
+        new("STN", "Stansted", "London", "Storbritannien"),
+        new("CDG", "Charles de Gaulle", "Paris", "Frankrike"),
+        new("ORY", "Orly", "Paris", "Frankrike"),
+        new("BCN", "El Prat", "Barcelona", "Spanien"),
+        new("MAD", "Barajas", "Madrid", "Spanien"),
+        new("AGP", "Málaga", "Málaga", "Spanien"),
+        new("ALC", "Alicante", "Alicante", "Spanien"),
+        new("PMI", "Palma de Mallorca", "Palma", "Spanien"),
+        new("FCO", "Fiumicino", "Rom", "Italien"),
+        new("MXP", "Malpensa", "Milano", "Italien"),
+        new("BER", "Brandenburg", "Berlin", "Tyskland"),
+        new("MUC", "Franz Josef Strauss", "München", "Tyskland"),
+        new("FRA", "Frankfurt Airport", "Frankfurt", "Tyskland"),
+        new("AMS", "Schiphol", "Amsterdam", "Nederländerna"),
+        new("CPH", "Kastrup", "Köpenhamn", "Danmark"),
+        new("OSL", "Gardermoen", "Oslo", "Norge"),
+        new("HEL", "Vanda", "Helsingfors", "Finland"),
+        new("ATH", "Eleftherios Venizelos", "Aten", "Grekland"),
+        new("IST", "Istanbul Airport", "Istanbul", "Turkiet"),
+        new("DUB", "Dublin Airport", "Dublin", "Irland"),
+        new("LIS", "Humberto Delgado", "Lissabon", "Portugal"),
+        new("WAW", "Chopin", "Warszawa", "Polen"),
+        new("PRG", "Václav Havel", "Prag", "Tjeckien"),
+        new("BUD", "Ferenc Liszt", "Budapest", "Ungern"),
+        new("VIE", "Wien-Schwechat", "Wien", "Österrike"),
+        new("ZRH", "Zürich Airport", "Zürich", "Schweiz"),
+        new("BRU", "Zaventem", "Bryssel", "Belgien"),
+        new("JFK", "John F. Kennedy", "New York", "USA"),
+        new("LAX", "Los Angeles Intl", "Los Angeles", "USA"),
+        new("BKK", "Suvarnabhumi", "Bangkok", "Thailand"),
+        new("DXB", "Dubai Intl", "Dubai", "Förenade Arabemiraten"),
+    ];
+}
