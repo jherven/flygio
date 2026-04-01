@@ -1,0 +1,121 @@
+@page "/aktiviteter"
+@using Flygio.Data
+@using Flygio.Data.Models
+@using Flygio.Services
+@using Microsoft.EntityFrameworkCore
+@inject FlygioDbContext Db
+@inject TravelpayoutsAffiliateLinkService AffiliateService
+
+<PageTitle>Aktiviteter och turer i populara resmal - Flygio</PageTitle>
+<HeadContent>
+    <meta name="description" content="Hitta turer, upplevelser och aktiviteter i populara destinationer. Boka guidade turer i Barcelona, London, Bangkok, Paris och fler." />
+    <meta property="og:title" content="Aktiviteter och turer i populara resmal - Flygio" />
+    <meta property="og:description" content="Hitta turer, upplevelser och aktiviteter i populara destinationer. Boka guidade turer i Barcelona, London och fler." />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://flygio.se/aktiviteter" />
+    <link rel="canonical" href="https://flygio.se/aktiviteter" />
+</HeadContent>
+
+<section class="max-w-5xl mx-auto px-4 py-8">
+    <div class="text-center mb-10">
+        <h1 class="text-4xl font-bold text-gray-900 mb-3">Aktiviteter och turer i populara resmal</h1>
+        <p class="text-lg text-gray-600">Hitta guidade turer, upplevelser och saker att gora i varldens mest populara stader</p>
+    </div>
+
+    <div class="bg-gradient-to-r from-purple-50 to-violet-50 rounded-xl p-6 mb-10 border border-purple-200">
+        <h2 class="text-lg font-semibold text-gray-800 mb-4">Sok aktiviteter direkt</h2>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Destination</label>
+                <input type="text" @bind="searchCity" placeholder="T.ex. Barcelona"
+                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500" />
+            </div>
+            <div class="flex items-end gap-3">
+                <a href="@GetSearchUrl("getyourguide")" target="_blank" rel="noopener sponsored"
+                   class="inline-flex items-center bg-purple-600 text-white px-6 py-2.5 rounded-lg hover:bg-purple-700 transition-colors font-medium">
+                    GetYourGuide &rarr;
+                </a>
+                <a href="@GetSearchUrl("viator")" target="_blank" rel="noopener sponsored"
+                   class="inline-flex items-center bg-violet-600 text-white px-6 py-2.5 rounded-lg hover:bg-violet-700 transition-colors font-medium">
+                    Viator &rarr;
+                </a>
+            </div>
+        </div>
+    </div>
+
+    @if (destinations is null)
+    {
+        <div class="text-center py-16">
+            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600 mx-auto mb-4"></div>
+            <p class="text-gray-600">Laddar destinationer...</p>
+        </div>
+    }
+    else if (!destinations.Any())
+    {
+        <p class="text-center text-gray-600">Inga destinationer annu.</p>
+    }
+    else
+    {
+        @foreach (var group in destinations.GroupBy(d => d.Country).OrderBy(g => g.Key))
+        {
+            <div class="mb-8">
+                <h2 class="text-2xl font-semibold text-gray-800 mb-4">Aktiviteter i @group.Key</h2>
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                    @foreach (var dest in group.OrderBy(d => d.City))
+                    {
+                        <a href="/aktiviteter/@dest.Slug" class="group bg-white border border-gray-200 rounded-xl p-5 hover:shadow-lg hover:border-purple-300 transition-all">
+                            <h3 class="text-lg font-semibold text-gray-800 group-hover:text-purple-600 transition-colors">
+                                Aktiviteter i @dest.City
+                            </h3>
+                            <p class="text-sm text-gray-500 mt-1">@dest.Country</p>
+                            <span class="text-sm text-purple-600 mt-2 inline-block group-hover:underline">Utforska &rarr;</span>
+                        </a>
+                    }
+                </div>
+            </div>
+        }
+    }
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-8">
+        <div class="bg-blue-50 rounded-xl p-6 text-center">
+            <h2 class="text-lg font-semibold text-gray-800 mb-3">Behover du flyg?</h2>
+            <p class="text-gray-600 mb-4">Jamfor flygpriser fran Sverige.</p>
+            <a href="/flyg-till" class="inline-block bg-blue-600 text-white px-5 py-2.5 rounded-lg hover:bg-blue-700 transition-colors font-medium">
+                Flygdestinationer &rarr;
+            </a>
+        </div>
+        <div class="bg-amber-50 rounded-xl p-6 text-center">
+            <h2 class="text-lg font-semibold text-gray-800 mb-3">Behover du hotell?</h2>
+            <p class="text-gray-600 mb-4">Hitta billigt boende.</p>
+            <a href="/hotell" class="inline-block bg-amber-600 text-white px-5 py-2.5 rounded-lg hover:bg-amber-700 transition-colors font-medium">
+                Hotelldestinationer &rarr;
+            </a>
+        </div>
+        <div class="bg-emerald-50 rounded-xl p-6 text-center">
+            <h2 class="text-lg font-semibold text-gray-800 mb-3">Behover du hyrbil?</h2>
+            <p class="text-gray-600 mb-4">Jamfor priser pa hyrbil.</p>
+            <a href="/hyrbil" class="inline-block bg-emerald-600 text-white px-5 py-2.5 rounded-lg hover:bg-emerald-700 transition-colors font-medium">
+                Hyrbilsdestinationer &rarr;
+            </a>
+        </div>
+    </div>
+</section>
+
+@code {
+    private List<Destination>? destinations;
+    private string searchCity = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        destinations = await Db.Destinations
+            .Where(d => d.IsPublished)
+            .OrderBy(d => d.City)
+            .ToListAsync();
+    }
+
+    private string GetSearchUrl(string provider)
+    {
+        var city = string.IsNullOrWhiteSpace(searchCity) ? "Stockholm" : searchCity;
+        return AffiliateService.GetActivityRedirectUrl(provider, city);
+    }
+}

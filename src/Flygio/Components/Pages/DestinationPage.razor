@@ -173,13 +173,31 @@
             </div>
         }
 
-        <div class="bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-xl p-6 mb-8">
-            <h2 class="text-lg font-semibold text-gray-800 mb-3">Behöver du hotell i @destination.City?</h2>
-            <p class="text-gray-600 mb-4">Jämför hotellpriser och hitta billigt boende i @destination.City.</p>
-            <a href="/hotell/@destination.Slug"
-               class="inline-flex items-center bg-amber-600 text-white px-5 py-2.5 rounded-lg hover:bg-amber-700 transition-colors font-medium">
-                Hitta hotell i @destination.City &rarr;
-            </a>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+            <div class="bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-xl p-6">
+                <h2 class="text-lg font-semibold text-gray-800 mb-3">Hotell i @destination.City</h2>
+                <p class="text-gray-600 mb-4">Jämför hotellpriser och hitta billigt boende.</p>
+                <a href="/hotell/@destination.Slug"
+                   class="inline-flex items-center bg-amber-600 text-white px-5 py-2.5 rounded-lg hover:bg-amber-700 transition-colors font-medium">
+                    Hitta hotell &rarr;
+                </a>
+            </div>
+            <div class="bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200 rounded-xl p-6">
+                <h2 class="text-lg font-semibold text-gray-800 mb-3">Hyrbil i @destination.City</h2>
+                <p class="text-gray-600 mb-4">Jämför priser från flera uthyrare.</p>
+                <a href="/hyrbil/@destination.Slug"
+                   class="inline-flex items-center bg-emerald-600 text-white px-5 py-2.5 rounded-lg hover:bg-emerald-700 transition-colors font-medium">
+                    Hitta hyrbil &rarr;
+                </a>
+            </div>
+            <div class="bg-gradient-to-r from-purple-50 to-violet-50 border border-purple-200 rounded-xl p-6">
+                <h2 class="text-lg font-semibold text-gray-800 mb-3">Aktiviteter i @destination.City</h2>
+                <p class="text-gray-600 mb-4">Turer, upplevelser och saker att göra.</p>
+                <a href="/aktiviteter/@destination.Slug"
+                   class="inline-flex items-center bg-purple-600 text-white px-5 py-2.5 rounded-lg hover:bg-purple-700 transition-colors font-medium">
+                    Se aktiviteter &rarr;
+                </a>
+            </div>
         </div>
 
         <article class="prose prose-lg max-w-none mb-8">

@@ -168,4 +168,112 @@ app.MapGet("/go/hotellook", async (
     return Results.Redirect(affiliateUrl);
 });
 
+// Car rental affiliate click redirect endpoint
+app.MapGet("/go/rentalcars", async (
+    string city,
+    string pickup,
+    string dropoff,
+    HttpContext httpContext,
+    TravelpayoutsAffiliateLinkService affiliateService,
+    FlygioDbContext db) =>
+{
+    var pickUp = DateTime.Parse(pickup);
+    var dropOff = DateTime.Parse(dropoff);
+
+    var subId = TravelpayoutsAffiliateLinkService.BuildCarSubId(city);
+    var click = new AffiliateClick
+    {
+        Provider = "rentalcars",
+        OriginCode = "",
+        DestinationCode = city,
+        SubId = subId,
+        UserAgent = httpContext.Request.Headers.UserAgent.ToString(),
+        Referer = httpContext.Request.Headers.Referer.ToString(),
+        IpAddress = httpContext.Connection.RemoteIpAddress?.ToString()
+    };
+    db.AffiliateClicks.Add(click);
+    await db.SaveChangesAsync();
+
+    var affiliateUrl = affiliateService.GenerateRentalcarsLink(city, pickUp, dropOff);
+    return Results.Redirect(affiliateUrl);
+});
+
+app.MapGet("/go/economybookings", async (
+    string city,
+    string pickup,
+    string dropoff,
+    HttpContext httpContext,
+    TravelpayoutsAffiliateLinkService affiliateService,
+    FlygioDbContext db) =>
+{
+    var pickUp = DateTime.Parse(pickup);
+    var dropOff = DateTime.Parse(dropoff);
+
+    var subId = TravelpayoutsAffiliateLinkService.BuildCarSubId(city);
+    var click = new AffiliateClick
+    {
+        Provider = "economybookings",
+        OriginCode = "",
+        DestinationCode = city,
+        SubId = subId,
+        UserAgent = httpContext.Request.Headers.UserAgent.ToString(),
+        Referer = httpContext.Request.Headers.Referer.ToString(),
+        IpAddress = httpContext.Connection.RemoteIpAddress?.ToString()
+    };
+    db.AffiliateClicks.Add(click);
+    await db.SaveChangesAsync();
+
+    var affiliateUrl = affiliateService.GenerateEconomybookingsLink(city, pickUp, dropOff);
+    return Results.Redirect(affiliateUrl);
+});
+
+// Activity affiliate click redirect endpoint
+app.MapGet("/go/getyourguide", async (
+    string city,
+    HttpContext httpContext,
+    TravelpayoutsAffiliateLinkService affiliateService,
+    FlygioDbContext db) =>
+{
+    var subId = TravelpayoutsAffiliateLinkService.BuildActivitySubId(city);
+    var click = new AffiliateClick
+    {
+        Provider = "getyourguide",
+        OriginCode = "",
+        DestinationCode = city,
+        SubId = subId,
+        UserAgent = httpContext.Request.Headers.UserAgent.ToString(),
+        Referer = httpContext.Request.Headers.Referer.ToString(),
+        IpAddress = httpContext.Connection.RemoteIpAddress?.ToString()
+    };
+    db.AffiliateClicks.Add(click);
+    await db.SaveChangesAsync();
+
+    var affiliateUrl = affiliateService.GenerateGetYourGuideLink(city);
+    return Results.Redirect(affiliateUrl);
+});
+
+app.MapGet("/go/viator", async (
+    string city,
+    HttpContext httpContext,
+    TravelpayoutsAffiliateLinkService affiliateService,
+    FlygioDbContext db) =>
+{
+    var subId = TravelpayoutsAffiliateLinkService.BuildActivitySubId(city);
+    var click = new AffiliateClick
+    {
+        Provider = "viator",
+        OriginCode = "",
+        DestinationCode = city,
+        SubId = subId,
+        UserAgent = httpContext.Request.Headers.UserAgent.ToString(),
+        Referer = httpContext.Request.Headers.Referer.ToString(),
+        IpAddress = httpContext.Connection.RemoteIpAddress?.ToString()
+    };
+    db.AffiliateClicks.Add(click);
+    await db.SaveChangesAsync();
+
+    var affiliateUrl = affiliateService.GenerateViatorLink(city);
+    return Results.Redirect(affiliateUrl);
+});
+
 app.Run();

@@ -112,4 +112,107 @@ public class TravelpayoutsAffiliateLinkService(IOptions<TravelpayoutsSettings> s
     {
         return $"hotel_{city.ToLowerInvariant().Replace(" ", "_")}";
     }
+
+    /// <summary>
+    /// Generates a Rentalcars affiliate search link for car rentals via Travelpayouts.
+    /// </summary>
+    public string GenerateRentalcarsLink(string city, DateTime pickUp, DateTime dropOff)
+    {
+        var subId = BuildCarSubId(city);
+        var pickUpStr = pickUp.ToString("yyyy-MM-dd");
+        var dropOffStr = dropOff.ToString("yyyy-MM-dd");
+
+        return $"https://www.rentalcars.com/search-results?location={Uri.EscapeDataString(city)}" +
+               $"&puDay={pickUp.Day}&puMonth={pickUp.Month}&puYear={pickUp.Year}" +
+               $"&doDay={dropOff.Day}&doMonth={dropOff.Month}&doYear={dropOff.Year}" +
+               $"&marker={_settings.MarkerId}&sub_id={subId}";
+    }
+
+    /// <summary>
+    /// Generates an Economybookings affiliate search link for car rentals via Travelpayouts.
+    /// </summary>
+    public string GenerateEconomybookingsLink(string city, DateTime pickUp, DateTime dropOff)
+    {
+        var subId = BuildCarSubId(city);
+        var pickUpStr = pickUp.ToString("yyyy-MM-dd");
+        var dropOffStr = dropOff.ToString("yyyy-MM-dd");
+
+        return $"https://www.economybookings.com/search?location={Uri.EscapeDataString(city)}" +
+               $"&pick_up_date={pickUpStr}&drop_off_date={dropOffStr}" +
+               $"&marker={_settings.MarkerId}&sub_id={subId}";
+    }
+
+    /// <summary>
+    /// Returns the internal redirect URL for car rental affiliate clicks.
+    /// </summary>
+    public string GetCarRentalRedirectUrl(string provider, string city, DateTime pickUp, DateTime dropOff)
+    {
+        var pickUpStr = pickUp.ToString("yyyy-MM-dd");
+        var dropOffStr = dropOff.ToString("yyyy-MM-dd");
+        return $"/go/{provider}?city={Uri.EscapeDataString(city)}&pickup={pickUpStr}&dropoff={dropOffStr}";
+    }
+
+    /// <summary>
+    /// Resolves the final affiliate URL for a car rental provider.
+    /// </summary>
+    public string ResolveCarAffiliateUrl(string provider, string city, DateTime pickUp, DateTime dropOff)
+    {
+        return provider.ToLowerInvariant() switch
+        {
+            "rentalcars" => GenerateRentalcarsLink(city, pickUp, dropOff),
+            "economybookings" => GenerateEconomybookingsLink(city, pickUp, dropOff),
+            _ => GenerateRentalcarsLink(city, pickUp, dropOff)
+        };
+    }
+
+    /// <summary>
+    /// Generates a GetYourGuide affiliate link for activities via Travelpayouts.
+    /// </summary>
+    public string GenerateGetYourGuideLink(string city)
+    {
+        var subId = BuildActivitySubId(city);
+        return $"https://www.getyourguide.com/s/?q={Uri.EscapeDataString(city)}" +
+               $"&partner_id={_settings.MarkerId}&sub_id={subId}";
+    }
+
+    /// <summary>
+    /// Generates a Viator affiliate link for activities via Travelpayouts.
+    /// </summary>
+    public string GenerateViatorLink(string city)
+    {
+        var subId = BuildActivitySubId(city);
+        return $"https://www.viator.com/searchResults/all?text={Uri.EscapeDataString(city)}" +
+               $"&pid={_settings.MarkerId}&sub_id={subId}";
+    }
+
+    /// <summary>
+    /// Returns the internal redirect URL for activity affiliate clicks.
+    /// </summary>
+    public string GetActivityRedirectUrl(string provider, string city)
+    {
+        return $"/go/{provider}?city={Uri.EscapeDataString(city)}";
+    }
+
+    /// <summary>
+    /// Resolves the final affiliate URL for an activity provider.
+    /// </summary>
+    public string ResolveActivityAffiliateUrl(string provider, string city)
+    {
+        return provider.ToLowerInvariant() switch
+        {
+            "getyourguide" => GenerateGetYourGuideLink(city),
+            "viator" => GenerateViatorLink(city),
+            _ => GenerateGetYourGuideLink(city)
+        };
+    }
+
+    public static string BuildCarSubId(string city)
+    {
+        return $"car_{city.ToLowerInvariant().Replace(" ", "_")}";
+    }
+
+    public static string BuildActivitySubId(string city)
+    {
+        return $"activity_{city.ToLowerInvariant().Replace(" ", "_")}";
+    }
 }

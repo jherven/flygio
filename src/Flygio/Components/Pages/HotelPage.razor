@@ -140,13 +140,31 @@
             </div>
         </div>
 
-        <div class="bg-blue-50 border border-blue-200 rounded-xl p-6 mb-8">
-            <h2 class="text-lg font-semibold text-gray-800 mb-3">Flyg till @destination.City</h2>
-            <p class="text-gray-600 mb-4">Behöver du flyg också? Jämför flygpriser från Sverige till @destination.City.</p>
-            <a href="/flyg-till/@destination.Slug"
-               class="inline-flex items-center bg-blue-600 text-white px-5 py-2.5 rounded-lg hover:bg-blue-700 transition-colors font-medium">
-                Se flygpriser till @destination.City &rarr;
-            </a>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+            <div class="bg-blue-50 border border-blue-200 rounded-xl p-6">
+                <h2 class="text-lg font-semibold text-gray-800 mb-3">Flyg till @destination.City</h2>
+                <p class="text-gray-600 mb-4">Jämför flygpriser från Sverige.</p>
+                <a href="/flyg-till/@destination.Slug"
+                   class="inline-flex items-center bg-blue-600 text-white px-5 py-2.5 rounded-lg hover:bg-blue-700 transition-colors font-medium">
+                    Se flygpriser &rarr;
+                </a>
+            </div>
+            <div class="bg-emerald-50 border border-emerald-200 rounded-xl p-6">
+                <h2 class="text-lg font-semibold text-gray-800 mb-3">Hyrbil i @destination.City</h2>
+                <p class="text-gray-600 mb-4">Jämför priser från flera uthyrare.</p>
+                <a href="/hyrbil/@destination.Slug"
+                   class="inline-flex items-center bg-emerald-600 text-white px-5 py-2.5 rounded-lg hover:bg-emerald-700 transition-colors font-medium">
+                    Hitta hyrbil &rarr;
+                </a>
+            </div>
+            <div class="bg-purple-50 border border-purple-200 rounded-xl p-6">
+                <h2 class="text-lg font-semibold text-gray-800 mb-3">Aktiviteter i @destination.City</h2>
+                <p class="text-gray-600 mb-4">Turer, upplevelser och saker att göra.</p>
+                <a href="/aktiviteter/@destination.Slug"
+                   class="inline-flex items-center bg-purple-600 text-white px-5 py-2.5 rounded-lg hover:bg-purple-700 transition-colors font-medium">
+                    Se aktiviteter &rarr;
+                </a>
+            </div>
         </div>
 
         @if (relatedDestinations.Count > 0)
@@ -165,9 +183,11 @@
             </div>
         }
 
-        <div class="flex gap-4">
+        <div class="flex flex-wrap gap-4">
             <a href="/hotell" class="text-amber-600 hover:underline">&larr; Alla hotelldestinationer</a>
             <a href="/flyg-till/@destination.Slug" class="text-blue-600 hover:underline">Flyg till @destination.City</a>
+            <a href="/hyrbil/@destination.Slug" class="text-emerald-600 hover:underline">Hyrbil i @destination.City</a>
+            <a href="/aktiviteter/@destination.Slug" class="text-purple-600 hover:underline">Aktiviteter i @destination.City</a>
         </div>
     }
 </section>

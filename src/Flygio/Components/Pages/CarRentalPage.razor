@@ -1,0 +1,219 @@
+@page "/hyrbil/{Slug}"
+@rendermode InteractiveServer
+@using Flygio.Data
+@using Flygio.Data.Models
+@using Flygio.Services
+@using Microsoft.EntityFrameworkCore
+@inject FlygioDbContext Db
+@inject TravelpayoutsAffiliateLinkService AffiliateService
+@inject NavigationManager Nav
+
+@if (destination is not null)
+{
+    <PageTitle>Hyrbil i @destination.City - Jamfor priser | Flygio</PageTitle>
+    <HeadContent>
+        <meta name="description" content="Hitta billig hyrbil i @destination.City, @destination.Country. Jamfor priser fran Rentalcars och Economybookings." />
+        <meta property="og:title" content="Hyrbil i @destination.City - Jamfor priser | Flygio" />
+        <meta property="og:description" content="Hitta billig hyrbil i @destination.City, @destination.Country. Jamfor priser fran flera uthyrare." />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://flygio.se/hyrbil/@destination.Slug" />
+        <link rel="canonical" href="https://flygio.se/hyrbil/@destination.Slug" />
+        <script type="application/ld+json">
+        {
+            "@@context": "https://schema.org",
+            "@@type": "FAQPage",
+            "mainEntity": [
+                {
+                    "@@type": "Question",
+                    "name": "Var hittar jag billig hyrbil i @destination.City?",
+                    "acceptedAnswer": {
+                        "@@type": "Answer",
+                        "text": "Jamfor priser pa hyrbil i @destination.City via Flygio for att hitta de basta erbjudandena fran flera uthyrare."
+                    }
+                },
+                {
+                    "@@type": "Question",
+                    "name": "Nar ar det billigast att hyra bil i @destination.City?",
+                    "acceptedAnswer": {
+                        "@@type": "Answer",
+                        "text": "Hyrbilspriserna i @destination.City varierar beroende pa sasong och efterfragan. Boka i forvag och jamfor priser for basta pris."
+                    }
+                }
+            ]
+        }
+        </script>
+    </HeadContent>
+}
+
+<section class="max-w-4xl mx-auto px-4 py-8">
+    @if (destination is null)
+    {
+        @if (notFound)
+        {
+            <div class="text-center py-16">
+                <h1 class="text-3xl font-bold text-gray-800 mb-4">Destinationen hittades inte</h1>
+                <p class="text-gray-600 mb-6">Sidan du letar efter finns inte.</p>
+                <a href="/hyrbil" class="inline-block bg-emerald-600 text-white px-6 py-3 rounded-lg hover:bg-emerald-700 transition-colors">Alla hyrbilsdestinationer</a>
+            </div>
+        }
+        else
+        {
+            <div class="text-center py-16">
+                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-600 mx-auto mb-4"></div>
+                <p class="text-gray-600">Laddar destination...</p>
+            </div>
+        }
+    }
+    else
+    {
+        <nav class="text-sm text-gray-500 mb-6">
+            <a href="/" class="hover:text-blue-600">Hem</a> &rsaquo;
+            <a href="/hyrbil" class="hover:text-emerald-600">Hyrbil</a> &rsaquo;
+            <span class="text-gray-800">Hyrbil i @destination.City</span>
+        </nav>
+
+        <h1 class="text-4xl font-bold text-gray-900 mb-2">Hyrbil i @destination.City</h1>
+        <p class="text-lg text-gray-500 mb-8">@destination.Country &middot; Jamfor priser fran flera uthyrare</p>
+
+        <div class="bg-gradient-to-r from-emerald-50 to-teal-50 rounded-xl p-6 mb-8 border border-emerald-200">
+            <h2 class="text-lg font-semibold text-gray-800 mb-4">Sok hyrbil i @destination.City</h2>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Hamta</label>
+                    <input type="date" @bind="pickUp"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500" />
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Lamna</label>
+                    <input type="date" @bind="dropOff"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500" />
+                </div>
+            </div>
+            <div class="flex flex-wrap gap-3">
+                <a href="@AffiliateService.GetCarRentalRedirectUrl("rentalcars", destination.City, pickUp, dropOff)"
+                   target="_blank" rel="noopener sponsored"
+                   class="inline-flex items-center bg-emerald-600 text-white px-6 py-3 rounded-lg hover:bg-emerald-700 transition-colors font-medium">
+                    Sok pa Rentalcars &rarr;
+                </a>
+                <a href="@AffiliateService.GetCarRentalRedirectUrl("economybookings", destination.City, pickUp, dropOff)"
+                   target="_blank" rel="noopener sponsored"
+                   class="inline-flex items-center bg-teal-600 text-white px-6 py-3 rounded-lg hover:bg-teal-700 transition-colors font-medium">
+                    Sok pa Economybookings &rarr;
+                </a>
+            </div>
+        </div>
+
+        <div class="bg-white border border-gray-200 rounded-xl p-6 mb-8">
+            <h2 class="text-xl font-semibold text-gray-800 mb-4">Tips for att hitta billig hyrbil i @destination.City</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="flex gap-3">
+                    <span class="text-2xl">&#128197;</span>
+                    <div>
+                        <h3 class="font-medium text-gray-800">Boka i forvag</h3>
+                        <p class="text-sm text-gray-600">Hyrbilspriser stiger narmare avhamtning. Boka minst 2-3 veckor fore for bast pris.</p>
+                    </div>
+                </div>
+                <div class="flex gap-3">
+                    <span class="text-2xl">&#128200;</span>
+                    <div>
+                        <h3 class="font-medium text-gray-800">Jamfor uthyrare</h3>
+                        <p class="text-sm text-gray-600">Olika uthyrare kan ha vitt skilda priser for samma biltyp. Jamfor alltid flera.</p>
+                    </div>
+                </div>
+                <div class="flex gap-3">
+                    <span class="text-2xl">&#9981;</span>
+                    <div>
+                        <h3 class="font-medium text-gray-800">Tank pa forsakring</h3>
+                        <p class="text-sm text-gray-600">Kontrollera vad som ingar i priset. Ibland ar det billigare att teckna egen forsakring.</p>
+                    </div>
+                </div>
+                <div class="flex gap-3">
+                    <span class="text-2xl">&#128205;</span>
+                    <div>
+                        <h3 class="font-medium text-gray-800">Hamta pa flygplatsen</h3>
+                        <p class="text-sm text-gray-600">Flygplatskontor ar bekvama men kan vara dyrare. Jamfor med stadskontor.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+            <div class="bg-blue-50 border border-blue-200 rounded-xl p-6">
+                <h2 class="text-lg font-semibold text-gray-800 mb-3">Flyg till @destination.City</h2>
+                <p class="text-gray-600 mb-4">Behover du flyg ocksa? Jamfor flygpriser fran Sverige.</p>
+                <a href="/flyg-till/@destination.Slug"
+                   class="inline-flex items-center bg-blue-600 text-white px-5 py-2.5 rounded-lg hover:bg-blue-700 transition-colors font-medium">
+                    Se flygpriser &rarr;
+                </a>
+            </div>
+            <div class="bg-amber-50 border border-amber-200 rounded-xl p-6">
+                <h2 class="text-lg font-semibold text-gray-800 mb-3">Hotell i @destination.City</h2>
+                <p class="text-gray-600 mb-4">Behover du boende? Jamfor hotellpriser.</p>
+                <a href="/hotell/@destination.Slug"
+                   class="inline-flex items-center bg-amber-600 text-white px-5 py-2.5 rounded-lg hover:bg-amber-700 transition-colors font-medium">
+                    Hitta hotell &rarr;
+                </a>
+            </div>
+        </div>
+
+        <div class="bg-purple-50 border border-purple-200 rounded-xl p-6 mb-8">
+            <h2 class="text-lg font-semibold text-gray-800 mb-3">Aktiviteter i @destination.City</h2>
+            <p class="text-gray-600 mb-4">Utforska turer, upplevelser och aktiviteter i @destination.City.</p>
+            <a href="/aktiviteter/@destination.Slug"
+               class="inline-flex items-center bg-purple-600 text-white px-5 py-2.5 rounded-lg hover:bg-purple-700 transition-colors font-medium">
+                Se aktiviteter &rarr;
+            </a>
+        </div>
+
+        @if (relatedDestinations.Count > 0)
+        {
+            <div class="border-t border-gray-200 pt-8 mb-8">
+                <h2 class="text-xl font-semibold text-gray-800 mb-4">Hyrbil i andra populara stader</h2>
+                <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                    @foreach (var rd in relatedDestinations)
+                    {
+                        <a href="/hyrbil/@rd.Slug" class="bg-white border border-gray-200 rounded-lg p-3 hover:shadow-md hover:border-emerald-300 transition-all text-center">
+                            <p class="font-medium text-gray-800">Hyrbil i @rd.City</p>
+                            <p class="text-xs text-gray-500">@rd.Country</p>
+                        </a>
+                    }
+                </div>
+            </div>
+        }
+
+        <div class="flex gap-4">
+            <a href="/hyrbil" class="text-emerald-600 hover:underline">&larr; Alla hyrbilsdestinationer</a>
+            <a href="/flyg-till/@destination.Slug" class="text-blue-600 hover:underline">Flyg till @destination.City</a>
+            <a href="/aktiviteter/@destination.Slug" class="text-purple-600 hover:underline">Aktiviteter i @destination.City</a>
+        </div>
+    }
+</section>
+
+@code {
+    [Parameter]
+    public string Slug { get; set; } = "";
+
+    private Destination? destination;
+    private bool notFound;
+    private List<Destination> relatedDestinations = [];
+    private DateTime pickUp = DateTime.Today.AddDays(14);
+    private DateTime dropOff = DateTime.Today.AddDays(21);
+
+    protected override async Task OnInitializedAsync()
+    {
+        destination = await Db.Destinations
+            .FirstOrDefaultAsync(d => d.Slug == Slug && d.IsPublished);
+
+        if (destination is null)
+        {
+            notFound = true;
+            return;
+        }
+
+        relatedDestinations = await Db.Destinations
+            .Where(d => d.IsPublished && d.Id != destination.Id)
+            .OrderBy(d => d.City)
+            .Take(8)
+            .ToListAsync();
+    }
+}
