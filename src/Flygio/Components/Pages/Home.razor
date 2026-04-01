@@ -20,8 +20,11 @@
 </HeadContent>
 
 <section class="hero-search">
-    <h1>Hitta billiga flyg från Sverige</h1>
-    <p>Jämför flygpriser och boka direkt hos flygbolagen</p>
+    <div class="hero-overlay"></div>
+    <div class="hero-content">
+        <h1>Hitta billiga flyg från Sverige</h1>
+        <p>Jämför flygpriser och boka direkt hos flygbolagen</p>
+    </div>
 
     <div class="search-form">
         <div class="trip-toggle">
@@ -196,18 +199,54 @@ else if (SearchResult is not null)
     </section>
 }
 
-<section class="max-w-5xl mx-auto px-4 py-12">
-    <h2 class="text-2xl font-bold text-gray-800 mb-6 text-center">Populära destinationer från Sverige</h2>
-    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+<section class="why-flygio">
+    <h2>Varför Flygio?</h2>
+    <div class="why-grid">
+        <div class="why-card">
+            <div class="why-icon">
+                <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 21l-4.35-4.35M11 19a8 8 0 100-16 8 8 0 000 16z" stroke-linecap="round"/></svg>
+            </div>
+            <h3>Jämför priser</h3>
+            <p>Vi söker igenom flygbolag och resebyråer för att hitta det lägsta priset åt dig.</p>
+        </div>
+        <div class="why-card">
+            <div class="why-icon">
+                <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+            <h3>Prisbevakning</h3>
+            <p>Sätt ett målpris och få mejl direkt när priset sjunker till din nivå.</p>
+        </div>
+        <div class="why-card">
+            <div class="why-icon">
+                <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+            <h3>Direkt hos flygbolagen</h3>
+            <p>Vi skickar dig direkt till flygbolaget — inga mellanhänder, inga dolda avgifter.</p>
+        </div>
+        <div class="why-card">
+            <div class="why-icon">
+                <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+            <h3>100% gratis</h3>
+            <p>Flygio är helt gratis att använda. Sök, jämför och boka utan kostnad.</p>
+        </div>
+    </div>
+</section>
+
+<section class="popular-destinations">
+    <h2>Populära destinationer från Sverige</h2>
+    <div class="dest-grid">
         @foreach (var dest in PopularDestinations)
         {
-            <a href="/flyg-till/@dest.Slug" class="bg-white border border-gray-200 rounded-lg p-3 hover:shadow-md hover:border-blue-300 transition-all text-center">
-                <span class="font-medium text-gray-800">@dest.City</span>
+            <a href="/flyg-till/@dest.Slug" class="dest-card" style="background-image: url('https://source.unsplash.com/400x300/?@(dest.Slug),travel')">
+                <div class="dest-card-overlay">
+                    <span class="dest-card-name">@dest.City</span>
+                </div>
             </a>
         }
     </div>
-    <div class="text-center mt-4">
-        <a href="/flyg-till" class="text-blue-600 hover:underline">Se alla destinationer &rarr;</a>
+    <div class="dest-more">
+        <a href="/flyg-till">Se alla destinationer &rarr;</a>
     </div>
 </section>
 
