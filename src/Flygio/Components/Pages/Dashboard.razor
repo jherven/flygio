@@ -13,6 +13,10 @@
     <div class="dashboard-header">
         <h1>Mitt konto</h1>
         <p class="dashboard-email">@userEmail</p>
+        @if (isPremium)
+        {
+            <span class="pro-badge">Pro</span>
+        }
     </div>
 
     @if (isLoading)
@@ -113,6 +117,29 @@
             </div>
         </div>
 
+        <!-- Subscription -->
+        <div class="dashboard-section">
+            <h2>Prenumeration</h2>
+            @if (isPremium)
+            {
+                <div class="subscription-active">
+                    <p><strong>Flygio Pro</strong> &mdash; Aktiv</p>
+                    @if (subscriptionEnd.HasValue)
+                    {
+                        <p class="sub-detail">Nästa betalning: @subscriptionEnd.Value.ToString("d MMMM yyyy")</p>
+                    }
+                    <a href="/api/stripe/portal" class="btn-manage-sub">Hantera prenumeration</a>
+                </div>
+            }
+            else
+            {
+                <div class="subscription-inactive">
+                    <p>Du har inget Pro-abonnemang.</p>
+                    <a href="/pro" class="btn-upgrade">Uppgradera till Pro</a>
+                </div>
+            }
+        </div>
+
         <div class="dashboard-footer">
             <a href="/auth/logout" class="btn-logout">Logga ut</a>
         </div>
@@ -125,6 +152,8 @@
     private string userEmail = "";
     private int userId;
     private bool isLoading = true;
+    private bool isPremium;
+    private DateTime? subscriptionEnd;
     private List<PriceAlert> alerts = [];
     private List<SavedRoute> savedRoutes = [];
     private List<SavedSearch> savedSearches = [];
@@ -158,6 +187,13 @@
         alerts = await UserSession.GetUserAlertsAsync(userId);
         savedRoutes = await UserSession.GetUserSavedRoutesAsync(userId);
         savedSearches = await UserSession.GetUserSavedSearchesAsync(userId);
+
+        var userInfo = await UserSession.GetUserByIdAsync(userId);
+        if (userInfo is not null)
+        {
+            isPremium = userInfo.IsPremium;
+            subscriptionEnd = userInfo.SubscriptionCurrentPeriodEnd;
+        }
     }
 
     private async Task RemoveRoute(int routeId)

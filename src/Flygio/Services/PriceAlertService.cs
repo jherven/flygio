@@ -51,6 +51,7 @@ public class PriceAlertService(
         var db = scope.ServiceProvider.GetRequiredService<FlygioDbContext>();
 
         var activeAlerts = await db.PriceAlerts
+            .Include(a => a.User)
             .Where(a => a.IsActive)
             .ToListAsync(ct);
 
@@ -63,7 +64,12 @@ public class PriceAlertService(
         logger.LogInformation("Checking {Count} active price alerts", activeAlerts.Count);
         var emailsSent = 0;
 
-        foreach (var alert in activeAlerts)
+        // Pro users get notified first (30 min head start)
+        var proAlerts = activeAlerts.Where(a => a.User?.IsPremium == true).ToList();
+        var freeAlerts = activeAlerts.Where(a => a.User?.IsPremium != true).ToList();
+        var orderedAlerts = proAlerts.Concat(freeAlerts);
+
+        foreach (var alert in orderedAlerts)
         {
             if (ct.IsCancellationRequested) break;
 

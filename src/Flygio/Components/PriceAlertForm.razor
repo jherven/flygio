@@ -88,6 +88,18 @@
             return;
         }
 
+        // Free tier: max 3 active alerts
+        var user = await Db.Users.FirstOrDefaultAsync(u => u.Email == email);
+        if (user is null || !user.IsPremium)
+        {
+            var activeCount = await Db.PriceAlerts.CountAsync(a => a.Email == email && a.IsActive);
+            if (activeCount >= 3)
+            {
+                errorMessage = "Gratisanvändare kan ha max 3 aktiva prisvarningar. Uppgradera till Pro för obegränsade varningar!";
+                return;
+            }
+        }
+
         isSubmitting = true;
 
         try

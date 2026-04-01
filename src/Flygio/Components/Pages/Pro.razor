@@ -1,0 +1,128 @@
+@page "/pro"
+@using System.Security.Claims
+@using Flygio.Services
+@using Microsoft.AspNetCore.Authorization
+@inject StripeService Stripe
+@inject NavigationManager Navigation
+@rendermode InteractiveServer
+
+<PageTitle>Flygio Pro - Premium flygbevakning</PageTitle>
+
+<section class="pro-page">
+    <div class="pro-hero">
+        <h1>Flygio Pro</h1>
+        <p>Få tillgång till premiumfunktioner och hitta de bästa flygpriserna före alla andra.</p>
+    </div>
+
+    <div class="pro-pricing">
+        <div class="pricing-card">
+            <div class="pricing-header">
+                <h2>Gratis</h2>
+                <div class="pricing-amount">0 kr<span>/mån</span></div>
+            </div>
+            <ul class="pricing-features">
+                <li class="feature-included">Sök flyg obegränsat</li>
+                <li class="feature-included">3 prisvarningar</li>
+                <li class="feature-included">Spara rutter & sökningar</li>
+                <li class="feature-included">Nyhetsbrev varje vecka</li>
+                <li class="feature-excluded">Tidig prisdroppsavisering</li>
+                <li class="feature-excluded">Obegränsade prisvarningar</li>
+                <li class="feature-excluded">Annonsfri upplevelse</li>
+            </ul>
+            <a href="/konto/logga-in" class="btn-pricing btn-pricing-free">Kom igång</a>
+        </div>
+
+        <div class="pricing-card pricing-card-pro">
+            <div class="pricing-badge">Populär</div>
+            <div class="pricing-header">
+                <h2>Pro</h2>
+                <div class="pricing-amount">79 kr<span>/mån</span></div>
+            </div>
+            <ul class="pricing-features">
+                <li class="feature-included">Sök flyg obegränsat</li>
+                <li class="feature-included feature-highlight">Obegränsade prisvarningar</li>
+                <li class="feature-included">Spara rutter & sökningar</li>
+                <li class="feature-included">Nyhetsbrev varje vecka</li>
+                <li class="feature-included feature-highlight">Tidig prisdroppsavisering (30 min försprång)</li>
+                <li class="feature-included feature-highlight">Obegränsade prisvarningar</li>
+                <li class="feature-included feature-highlight">Annonsfri upplevelse</li>
+            </ul>
+            <AuthorizeView>
+                <Authorized>
+                    <button @onclick="StartSubscription" disabled="@isRedirecting" class="btn-pricing btn-pricing-pro">
+                        @(isRedirecting ? "Omdirigerar..." : "Uppgradera till Pro")
+                    </button>
+                </Authorized>
+                <NotAuthorized>
+                    <a href="/konto/logga-in" class="btn-pricing btn-pricing-pro">Logga in & uppgradera</a>
+                </NotAuthorized>
+            </AuthorizeView>
+            @if (errorMessage is not null)
+            {
+                <p class="pricing-error">@errorMessage</p>
+            }
+        </div>
+    </div>
+
+    <div class="pro-features-detail">
+        <h2>Varför Pro?</h2>
+        <div class="pro-features-grid">
+            <div class="pro-feature">
+                <h3>30 minuters försprång</h3>
+                <p>Pro-medlemmar får prisdroppsaviseringar 30 minuter före gratisanvändare. Boka innan priserna stiger igen.</p>
+            </div>
+            <div class="pro-feature">
+                <h3>Obegränsade prisvarningar</h3>
+                <p>Bevaka så många rutter du vill. Gratisanvändare är begränsade till 3 aktiva prisvarningar.</p>
+            </div>
+            <div class="pro-feature">
+                <h3>Annonsfri upplevelse</h3>
+                <p>Ingen reklam, bara rena flygpriser och fokuserad sökning.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+@code {
+    [CascadingParameter] private Task<AuthenticationState>? AuthState { get; set; }
+
+    private bool isRedirecting;
+    private string? errorMessage;
+
+    private async Task StartSubscription()
+    {
+        if (AuthState is null) return;
+        var state = await AuthState;
+        var user = state.User;
+
+        if (user.Identity?.IsAuthenticated != true)
+        {
+            Navigation.NavigateTo("/konto/logga-in");
+            return;
+        }
+
+        var idClaim = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        var emailClaim = user.FindFirst(ClaimTypes.Email)?.Value;
+        if (idClaim is null || emailClaim is null || !int.TryParse(idClaim, out var userId))
+        {
+            errorMessage = "Kunde inte identifiera användaren.";
+            return;
+        }
+
+        isRedirecting = true;
+        try
+        {
+            var baseUrl = Navigation.BaseUri.TrimEnd('/');
+            var checkoutUrl = await Stripe.CreateCheckoutSessionAsync(
+                userId, emailClaim,
+                successUrl: $"{baseUrl}/konto?upgraded=true",
+                cancelUrl: $"{baseUrl}/pro");
+            Navigation.NavigateTo(checkoutUrl, forceLoad: true);
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Kunde inte starta betalningen: {ex.Message}";
+            isRedirecting = false;
+        }
+    }
+}

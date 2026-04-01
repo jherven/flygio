@@ -1866,3 +1866,283 @@
   color: #ef4444;
   margin-top: 0.5rem;
 }
+
+/* ===== Pro / Pricing Page ===== */
+
+.pro-page {
+  max-width: 64rem;
+  margin: 0 auto;
+  padding: 2rem 1.5rem;
+}
+
+.pro-hero {
+  text-align: center;
+  margin-bottom: 2.5rem;
+}
+
+.pro-hero h1 {
+  font-size: 2.25rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin-bottom: 0.5rem;
+}
+
+.pro-hero p {
+  font-size: 1.1rem;
+  color: #64748b;
+}
+
+.pro-pricing {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  max-width: 48rem;
+  margin: 0 auto 3rem;
+}
+
+@media (max-width: 640px) {
+  .pro-pricing {
+    grid-template-columns: 1fr;
+  }
+}
+
+.pricing-card {
+  background: white;
+  border-radius: 0.75rem;
+  padding: 2rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+.pricing-card-pro {
+  border: 2px solid #6366f1;
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.15);
+}
+
+.pricing-badge {
+  position: absolute;
+  top: -0.75rem;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #6366f1;
+  color: white;
+  padding: 0.25rem 1rem;
+  border-radius: 1rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.pricing-header {
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+.pricing-header h2 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #1e293b;
+  margin-bottom: 0.5rem;
+}
+
+.pricing-amount {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.pricing-amount span {
+  font-size: 1rem;
+  font-weight: 400;
+  color: #64748b;
+}
+
+.pricing-features {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 1.5rem 0;
+  flex: 1;
+}
+
+.pricing-features li {
+  padding: 0.5rem 0;
+  padding-left: 1.5rem;
+  position: relative;
+  font-size: 0.9rem;
+  color: #374151;
+}
+
+.feature-included::before {
+  content: "\2713";
+  position: absolute;
+  left: 0;
+  color: #22c55e;
+  font-weight: bold;
+}
+
+.feature-excluded::before {
+  content: "\2717";
+  position: absolute;
+  left: 0;
+  color: #d1d5db;
+}
+
+.feature-excluded {
+  color: #9ca3af;
+}
+
+.feature-highlight {
+  font-weight: 600;
+}
+
+.btn-pricing {
+  display: block;
+  text-align: center;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  font-size: 1rem;
+  text-decoration: none;
+  border: none;
+  cursor: pointer;
+}
+
+.btn-pricing-free {
+  background: #f1f5f9;
+  color: #475569;
+}
+
+.btn-pricing-free:hover {
+  background: #e2e8f0;
+}
+
+.btn-pricing-pro {
+  background: #6366f1;
+  color: white;
+}
+
+.btn-pricing-pro:hover {
+  background: #4f46e5;
+}
+
+.btn-pricing-pro:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.pricing-error {
+  color: #ef4444;
+  font-size: 0.85rem;
+  margin-top: 0.5rem;
+  text-align: center;
+}
+
+.pro-features-detail {
+  margin-top: 2rem;
+}
+
+.pro-features-detail h2 {
+  text-align: center;
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #1e293b;
+  margin-bottom: 1.5rem;
+}
+
+.pro-features-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+  gap: 1.5rem;
+}
+
+.pro-feature {
+  background: white;
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.pro-feature h3 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #1e293b;
+  margin-bottom: 0.5rem;
+}
+
+.pro-feature p {
+  font-size: 0.9rem;
+  color: #64748b;
+  line-height: 1.5;
+}
+
+/* ===== Subscription in Dashboard ===== */
+
+.pro-badge {
+  display: inline-block;
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  color: white;
+  padding: 0.2rem 0.75rem;
+  border-radius: 1rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-left: 0.5rem;
+  vertical-align: middle;
+}
+
+.subscription-active {
+  padding: 1rem;
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-radius: 0.5rem;
+}
+
+.subscription-active p {
+  margin: 0;
+}
+
+.sub-detail {
+  font-size: 0.875rem;
+  color: #64748b;
+  margin-top: 0.25rem;
+}
+
+.btn-manage-sub {
+  display: inline-block;
+  margin-top: 0.75rem;
+  padding: 0.5rem 1rem;
+  background: #f1f5f9;
+  color: #475569;
+  border-radius: 0.375rem;
+  text-decoration: none;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.btn-manage-sub:hover {
+  background: #e2e8f0;
+}
+
+.subscription-inactive p {
+  margin: 0 0 0.75rem 0;
+  color: #64748b;
+}
+
+.btn-upgrade {
+  display: inline-block;
+  padding: 0.5rem 1rem;
+  background: #6366f1;
+  color: white;
+  border-radius: 0.375rem;
+  text-decoration: none;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.btn-upgrade:hover {
+  background: #4f46e5;
+}

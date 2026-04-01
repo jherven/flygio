@@ -69,6 +69,10 @@ builder.Services.AddHostedService<PriceAlertService>();
 // Newsletter service
 builder.Services.AddSingleton<NewsletterService>();
 
+// Stripe payments
+builder.Services.Configure<StripeSettings>(builder.Configuration.GetSection(StripeSettings.SectionName));
+builder.Services.AddSingleton<StripeService>();
+
 // User accounts & auth
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
@@ -370,6 +374,45 @@ app.MapGet("/auth/logout", async (HttpContext httpContext) =>
     await httpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
     return Results.Redirect("/");
 });
+
+// Stripe webhook
+app.MapPost("/api/webhooks/stripe", async (HttpContext httpContext, StripeService stripeService, ILogger<Program> logger) =>
+{
+    var json = await new StreamReader(httpContext.Request.Body).ReadToEndAsync();
+    var signature = httpContext.Request.Headers["Stripe-Signature"].FirstOrDefault();
+
+    if (string.IsNullOrEmpty(signature))
+        return Results.BadRequest("Missing Stripe-Signature header");
+
+    try
+    {
+        await stripeService.HandleWebhookEventAsync(json, signature);
+        return Results.Ok();
+    }
+    catch (Stripe.StripeException ex)
+    {
+        logger.LogWarning(ex, "Stripe webhook signature verification failed");
+        return Results.BadRequest("Invalid signature");
+    }
+});
+
+// Stripe customer portal redirect
+app.MapGet("/api/stripe/portal", async (HttpContext httpContext, StripeService stripeService) =>
+{
+    var userId = httpContext.User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+    if (userId is null || !int.TryParse(userId, out var id))
+        return Results.Unauthorized();
+
+    try
+    {
+        var portalUrl = await stripeService.CreateCustomerPortalSessionAsync(id, "https://flygio.se/konto");
+        return Results.Redirect(portalUrl);
+    }
+    catch (InvalidOperationException)
+    {
+        return Results.BadRequest("No active subscription");
+    }
+}).RequireAuthorization();
 
 // XML Sitemap
 app.MapGet("/sitemap.xml", async (FlygioDbContext db) =>

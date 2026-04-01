@@ -6,6 +6,10 @@ public class AppUser
     public required string Email { get; set; }
     public string? DisplayName { get; set; }
     public bool IsPremium { get; set; }
+    public string? StripeCustomerId { get; set; }
+    public string? StripeSubscriptionId { get; set; }
+    public string? SubscriptionStatus { get; set; }
+    public DateTime? SubscriptionCurrentPeriodEnd { get; set; }
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime? LastLoginAt { get; set; }
 

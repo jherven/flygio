@@ -73,6 +73,7 @@ public class FlygioDbContext(DbContextOptions<FlygioDbContext> options) : DbCont
         modelBuilder.Entity<AppUser>(entity =>
         {
             entity.HasIndex(e => e.Email).IsUnique();
+            entity.HasIndex(e => e.StripeCustomerId);
         });
 
         modelBuilder.Entity<MagicLink>(entity =>
