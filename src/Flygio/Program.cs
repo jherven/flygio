@@ -136,4 +136,36 @@ app.MapGet("/go/{provider}", async (
     return Results.Redirect(affiliateUrl);
 });
 
+// Hotel affiliate click redirect endpoint
+app.MapGet("/go/hotellook", async (
+    string city,
+    string checkin,
+    string checkout,
+    int? adults,
+    HttpContext httpContext,
+    TravelpayoutsAffiliateLinkService affiliateService,
+    FlygioDbContext db) =>
+{
+    var checkIn = DateTime.Parse(checkin);
+    var checkOut = DateTime.Parse(checkout);
+    var guestCount = adults ?? 2;
+
+    var subId = TravelpayoutsAffiliateLinkService.BuildHotelSubId(city);
+    var click = new AffiliateClick
+    {
+        Provider = "hotellook",
+        OriginCode = "",
+        DestinationCode = city,
+        SubId = subId,
+        UserAgent = httpContext.Request.Headers.UserAgent.ToString(),
+        Referer = httpContext.Request.Headers.Referer.ToString(),
+        IpAddress = httpContext.Connection.RemoteIpAddress?.ToString()
+    };
+    db.AffiliateClicks.Add(click);
+    await db.SaveChangesAsync();
+
+    var affiliateUrl = affiliateService.GenerateHotellookLink(city, checkIn, checkOut, guestCount);
+    return Results.Redirect(affiliateUrl);
+});
+
 app.Run();

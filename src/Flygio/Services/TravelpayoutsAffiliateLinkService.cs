@@ -79,8 +79,37 @@ public class TravelpayoutsAffiliateLinkService(IOptions<TravelpayoutsSettings> s
         };
     }
 
+    /// <summary>
+    /// Generates a Hotellook affiliate search link for hotels.
+    /// </summary>
+    public string GenerateHotellookLink(string city, DateTime checkIn, DateTime checkOut, int adults = 2)
+    {
+        var subId = $"hotel_{city.ToLowerInvariant().Replace(" ", "_")}";
+        var checkInStr = checkIn.ToString("yyyy-MM-dd");
+        var checkOutStr = checkOut.ToString("yyyy-MM-dd");
+
+        return $"https://search.hotellook.com/hotels?destination={Uri.EscapeDataString(city)}" +
+               $"&checkIn={checkInStr}&checkOut={checkOutStr}&adults={adults}" +
+               $"&marker={_settings.MarkerId}&locale=sv&sub_id={subId}";
+    }
+
+    /// <summary>
+    /// Returns the internal redirect URL for hotel affiliate clicks.
+    /// </summary>
+    public string GetHotelRedirectUrl(string city, DateTime checkIn, DateTime checkOut, int adults = 2)
+    {
+        var checkInStr = checkIn.ToString("yyyy-MM-dd");
+        var checkOutStr = checkOut.ToString("yyyy-MM-dd");
+        return $"/go/hotellook?city={Uri.EscapeDataString(city)}&checkin={checkInStr}&checkout={checkOutStr}&adults={adults}";
+    }
+
     public static string BuildSubId(string originCode, string destinationCode)
     {
         return $"{originCode}_{destinationCode}".ToLowerInvariant();
+    }
+
+    public static string BuildHotelSubId(string city)
+    {
+        return $"hotel_{city.ToLowerInvariant().Replace(" ", "_")}";
     }
 }

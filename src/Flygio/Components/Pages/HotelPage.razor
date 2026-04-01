@@ -1,0 +1,203 @@
+@page "/hotell/{Slug}"
+@rendermode InteractiveServer
+@using Flygio.Data
+@using Flygio.Data.Models
+@using Flygio.Services
+@using Microsoft.EntityFrameworkCore
+@inject FlygioDbContext Db
+@inject TravelpayoutsAffiliateLinkService AffiliateService
+@inject NavigationManager Nav
+
+@if (destination is not null)
+{
+    <PageTitle>Hotell i @destination.City – Jämför hotellpriser | Flygio</PageTitle>
+    <HeadContent>
+        <meta name="description" content="Hitta billiga hotell i @destination.City, @destination.Country. Jämför hotellpriser och boka boende till bästa pris." />
+        <meta property="og:title" content="Hotell i @destination.City – Jämför hotellpriser | Flygio" />
+        <meta property="og:description" content="Hitta billiga hotell i @destination.City, @destination.Country. Jämför hotellpriser och boka boende till bästa pris." />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://flygio.se/hotell/@destination.Slug" />
+        <link rel="canonical" href="https://flygio.se/hotell/@destination.Slug" />
+        <script type="application/ld+json">
+        {
+            "@@context": "https://schema.org",
+            "@@type": "FAQPage",
+            "mainEntity": [
+                {
+                    "@@type": "Question",
+                    "name": "Var hittar jag billiga hotell i @destination.City?",
+                    "acceptedAnswer": {
+                        "@@type": "Answer",
+                        "text": "Jämför hotellpriser i @destination.City via Flygio för att hitta de bästa erbjudandena. Vi söker igenom flera bokningssajter åt dig."
+                    }
+                },
+                {
+                    "@@type": "Question",
+                    "name": "När är det billigast att bo på hotell i @destination.City?",
+                    "acceptedAnswer": {
+                        "@@type": "Answer",
+                        "text": "Hotellpriserna i @destination.City varierar beroende på säsong. Boka i förväg och jämför priser för att hitta bästa erbjudandena."
+                    }
+                }
+            ]
+        }
+        </script>
+    </HeadContent>
+}
+
+<section class="max-w-4xl mx-auto px-4 py-8">
+    @if (destination is null)
+    {
+        @if (notFound)
+        {
+            <div class="text-center py-16">
+                <h1 class="text-3xl font-bold text-gray-800 mb-4">Destinationen hittades inte</h1>
+                <p class="text-gray-600 mb-6">Sidan du letar efter finns inte.</p>
+                <a href="/hotell" class="inline-block bg-amber-600 text-white px-6 py-3 rounded-lg hover:bg-amber-700 transition-colors">Alla hotelldestinationer</a>
+            </div>
+        }
+        else
+        {
+            <div class="text-center py-16">
+                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-amber-600 mx-auto mb-4"></div>
+                <p class="text-gray-600">Laddar destination...</p>
+            </div>
+        }
+    }
+    else
+    {
+        <nav class="text-sm text-gray-500 mb-6">
+            <a href="/" class="hover:text-blue-600">Hem</a> &rsaquo;
+            <a href="/hotell" class="hover:text-amber-600">Hotell</a> &rsaquo;
+            <span class="text-gray-800">Hotell i @destination.City</span>
+        </nav>
+
+        <h1 class="text-4xl font-bold text-gray-900 mb-2">Hotell i @destination.City</h1>
+        <p class="text-lg text-gray-500 mb-8">@destination.Country &middot; Hitta billigt boende</p>
+
+        <div class="bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl p-6 mb-8 border border-amber-200">
+            <h2 class="text-lg font-semibold text-gray-800 mb-4">Sök hotell i @destination.City</h2>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Incheckning</label>
+                    <input type="date" @bind="checkIn"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500" />
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Utcheckning</label>
+                    <input type="date" @bind="checkOut"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500" />
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Gäster</label>
+                    <select @bind="guests"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500">
+                        <option value="1">1 gäst</option>
+                        <option value="2">2 gäster</option>
+                        <option value="3">3 gäster</option>
+                        <option value="4">4 gäster</option>
+                    </select>
+                </div>
+            </div>
+            <a href="@AffiliateService.GetHotelRedirectUrl(destination.City, checkIn, checkOut, guests)"
+               target="_blank" rel="noopener sponsored"
+               class="inline-flex items-center bg-amber-600 text-white px-6 py-3 rounded-lg hover:bg-amber-700 transition-colors font-medium">
+                Sök hotell i @destination.City &rarr;
+            </a>
+        </div>
+
+        <div class="bg-white border border-gray-200 rounded-xl p-6 mb-8">
+            <h2 class="text-xl font-semibold text-gray-800 mb-4">Tips för att hitta billiga hotell i @destination.City</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="flex gap-3">
+                    <span class="text-2xl">&#128197;</span>
+                    <div>
+                        <h3 class="font-medium text-gray-800">Boka i förväg</h3>
+                        <p class="text-sm text-gray-600">Hotellpriserna stiger ofta närmare incheckning. Boka minst 2-3 veckor före för bäst pris.</p>
+                    </div>
+                </div>
+                <div class="flex gap-3">
+                    <span class="text-2xl">&#128200;</span>
+                    <div>
+                        <h3 class="font-medium text-gray-800">Jämför priser</h3>
+                        <p class="text-sm text-gray-600">Samma hotell kan ha olika priser på olika sajter. Jämför alltid innan du bokar.</p>
+                    </div>
+                </div>
+                <div class="flex gap-3">
+                    <span class="text-2xl">&#127769;</span>
+                    <div>
+                        <h3 class="font-medium text-gray-800">Flexibla datum</h3>
+                        <p class="text-sm text-gray-600">Mitt i veckan och lågsäsong ger ofta lägre hotellpriser.</p>
+                    </div>
+                </div>
+                <div class="flex gap-3">
+                    <span class="text-2xl">&#128205;</span>
+                    <div>
+                        <h3 class="font-medium text-gray-800">Läge vs pris</h3>
+                        <p class="text-sm text-gray-600">Hotell lite utanför centrum kan vara betydligt billigare med bra kollektivtrafik.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-blue-50 border border-blue-200 rounded-xl p-6 mb-8">
+            <h2 class="text-lg font-semibold text-gray-800 mb-3">Flyg till @destination.City</h2>
+            <p class="text-gray-600 mb-4">Behöver du flyg också? Jämför flygpriser från Sverige till @destination.City.</p>
+            <a href="/flyg-till/@destination.Slug"
+               class="inline-flex items-center bg-blue-600 text-white px-5 py-2.5 rounded-lg hover:bg-blue-700 transition-colors font-medium">
+                Se flygpriser till @destination.City &rarr;
+            </a>
+        </div>
+
+        @if (relatedDestinations.Count > 0)
+        {
+            <div class="border-t border-gray-200 pt-8 mb-8">
+                <h2 class="text-xl font-semibold text-gray-800 mb-4">Hotell i andra populära städer</h2>
+                <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                    @foreach (var rd in relatedDestinations)
+                    {
+                        <a href="/hotell/@rd.Slug" class="bg-white border border-gray-200 rounded-lg p-3 hover:shadow-md hover:border-amber-300 transition-all text-center">
+                            <p class="font-medium text-gray-800">Hotell i @rd.City</p>
+                            <p class="text-xs text-gray-500">@rd.Country</p>
+                        </a>
+                    }
+                </div>
+            </div>
+        }
+
+        <div class="flex gap-4">
+            <a href="/hotell" class="text-amber-600 hover:underline">&larr; Alla hotelldestinationer</a>
+            <a href="/flyg-till/@destination.Slug" class="text-blue-600 hover:underline">Flyg till @destination.City</a>
+        </div>
+    }
+</section>
+
+@code {
+    [Parameter]
+    public string Slug { get; set; } = "";
+
+    private Destination? destination;
+    private bool notFound;
+    private List<Destination> relatedDestinations = [];
+    private DateTime checkIn = DateTime.Today.AddDays(14);
+    private DateTime checkOut = DateTime.Today.AddDays(17);
+    private int guests = 2;
+
+    protected override async Task OnInitializedAsync()
+    {
+        destination = await Db.Destinations
+            .FirstOrDefaultAsync(d => d.Slug == Slug && d.IsPublished);
+
+        if (destination is null)
+        {
+            notFound = true;
+            return;
+        }
+
+        relatedDestinations = await Db.Destinations
+            .Where(d => d.IsPublished && d.Id != destination.Id)
+            .OrderBy(d => d.City)
+            .Take(8)
+            .ToListAsync();
+    }
+}
