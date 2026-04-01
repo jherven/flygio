@@ -44,6 +44,8 @@ public class FlygioDbContext(DbContextOptions<FlygioDbContext> options) : DbCont
         {
             entity.HasIndex(e => e.ClickedAt);
             entity.HasIndex(e => new { e.Provider, e.SubId });
+            entity.HasIndex(e => e.LinkType);
+            entity.HasIndex(e => e.SourcePage);
         });
 
         modelBuilder.Entity<SearchEvent>(entity =>

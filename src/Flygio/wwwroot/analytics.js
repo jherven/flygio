@@ -18,12 +18,13 @@ window.flygio.trackSearch = function (origin, destination, departureDate, return
     });
 };
 
-window.flygio.trackAffiliateClick = function (provider, origin, destination, price) {
+window.flygio.trackAffiliateClick = function (provider, origin, destination, price, sourcePage) {
     window.flygio.trackEvent('affiliate_click', {
         provider: provider,
         origin: origin,
         destination: destination,
         price: price,
-        route: origin + '_' + destination
+        route: origin + '_' + destination,
+        source_page: sourcePage || 'unknown'
     });
 };

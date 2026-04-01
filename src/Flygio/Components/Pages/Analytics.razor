@@ -56,13 +56,15 @@
     </div>
 
     <div class="analytics-section">
-        <h2>Klick per leverantör</h2>
+        <h2>Klick per leverantör (med CTR)</h2>
         <table class="analytics-table">
             <thead>
                 <tr>
                     <th>Leverantör</th>
                     <th>Klick</th>
                     <th>Andel</th>
+                    <th>CTR (sök → klick)</th>
+                    <th>Uppskattad intäkt</th>
                 </tr>
             </thead>
             <tbody>
@@ -72,6 +74,63 @@
                         <td>@provider.Name</td>
                         <td>@provider.Count</td>
                         <td>@(TotalClicks > 0 ? (provider.Count * 100.0 / TotalClicks).ToString("F1") : "0")%</td>
+                        <td>@(TotalSearches > 0 ? (provider.Count * 100.0 / TotalSearches).ToString("F1") : "0")%</td>
+                        <td>@EstimateRevenue(provider.Count) kr</td>
+                    </tr>
+                }
+            </tbody>
+            <tfoot>
+                <tr class="font-semibold">
+                    <td>Totalt</td>
+                    <td>@TotalClicks</td>
+                    <td>100%</td>
+                    <td>@ConversionRate.ToString("F1")%</td>
+                    <td>@EstimateRevenue(TotalClicks) kr</td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+
+    <div class="analytics-section">
+        <h2>Klick per kategori</h2>
+        <table class="analytics-table">
+            <thead>
+                <tr>
+                    <th>Kategori</th>
+                    <th>Klick</th>
+                    <th>Andel</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var lt in ClicksByLinkType)
+                {
+                    <tr>
+                        <td>@(lt.Name ?? "okänd")</td>
+                        <td>@lt.Count</td>
+                        <td>@(TotalClicks > 0 ? (lt.Count * 100.0 / TotalClicks).ToString("F1") : "0")%</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <div class="analytics-section">
+        <h2>Klick per källsida</h2>
+        <table class="analytics-table">
+            <thead>
+                <tr>
+                    <th>Sida</th>
+                    <th>Klick</th>
+                    <th>Andel</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var sp in ClicksBySourcePage)
+                {
+                    <tr>
+                        <td>@(sp.Name ?? "direkt/okänd")</td>
+                        <td>@sp.Count</td>
+                        <td>@(TotalClicks > 0 ? (sp.Count * 100.0 / TotalClicks).ToString("F1") : "0")%</td>
                     </tr>
                 }
             </tbody>
@@ -164,6 +223,8 @@
     private int newsletterFailedCount;
     private string? newsletterError;
     private List<ProviderStat> ClicksByProvider = [];
+    private List<ProviderStat> ClicksByLinkType = [];
+    private List<ProviderStat> ClicksBySourcePage = [];
     private List<RouteStat> TopRoutes = [];
     private List<DailyStat> DailyStats = [];
     private List<Data.Models.SearchEvent> RecentSearches = [];
@@ -182,6 +243,18 @@
         ClicksByProvider = await Db.AffiliateClicks
             .GroupBy(c => c.Provider)
             .Select(g => new ProviderStat { Name = g.Key, Count = g.Count() })
+            .OrderByDescending(p => p.Count)
+            .ToListAsync();
+
+        ClicksByLinkType = await Db.AffiliateClicks
+            .GroupBy(c => c.LinkType)
+            .Select(g => new ProviderStat { Name = g.Key ?? "okänd", Count = g.Count() })
+            .OrderByDescending(p => p.Count)
+            .ToListAsync();
+
+        ClicksBySourcePage = await Db.AffiliateClicks
+            .GroupBy(c => c.SourcePage)
+            .Select(g => new ProviderStat { Name = g.Key ?? "direkt", Count = g.Count() })
             .OrderByDescending(p => p.Count)
             .ToListAsync();
 
@@ -246,6 +319,9 @@
             isSendingNewsletter = false;
         }
     }
+
+    // Estimated revenue: ~1.5% conversion from click to booking, avg commission ~15 SEK per booking
+    private static string EstimateRevenue(int clicks) => (clicks * 0.015m * 15m).ToString("N0");
 
     private class ProviderStat { public string Name { get; set; } = ""; public int Count { get; set; } }
     private class RouteStat { public string Origin { get; set; } = ""; public string Destination { get; set; } = ""; public int Count { get; set; } public DateTime LastClick { get; set; } }

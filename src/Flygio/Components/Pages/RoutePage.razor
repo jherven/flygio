@@ -190,40 +190,85 @@
             </div>
         }
 
-        @* Book flights CTA *@
-        <div class="bg-amber-50 border border-amber-200 rounded-xl p-6 mb-8">
-            <h2 class="text-lg font-semibold text-gray-800 mb-3">Boka flyg @route.Origin &rarr; @route.Destination</h2>
-            <p class="text-gray-600 mb-4">Jämför priser från flera flygbolag och hitta det bästa erbjudandet.</p>
-            <div class="flex flex-wrap gap-3">
-                <a href="@AffiliateService.GetRedirectUrl("aviasales", route.OriginCode, route.DestinationCode, DateTime.UtcNow.AddDays(14), DateTime.UtcNow.AddDays(21))"
-                   target="_blank" rel="noopener sponsored"
-                   class="inline-flex items-center bg-blue-600 text-white px-5 py-2.5 rounded-lg hover:bg-blue-700 transition-colors font-medium">
-                    Sök på Aviasales &rarr;
-                </a>
-                <a href="@AffiliateService.GetRedirectUrl("kiwi", route.OriginCode, route.DestinationCode, DateTime.UtcNow.AddDays(14), DateTime.UtcNow.AddDays(21))"
-                   target="_blank" rel="noopener sponsored"
-                   class="inline-flex items-center bg-white text-blue-600 border border-blue-600 px-5 py-2.5 rounded-lg hover:bg-blue-50 transition-colors font-medium">
-                    Sök på Kiwi.com &rarr;
-                </a>
+        @* Price comparison cards - compare across providers *@
+        <div class="mb-8">
+            <h2 class="text-xl font-semibold text-gray-800 mb-4">Jämför priser @route.Origin &rarr; @route.Destination</h2>
+            <p class="text-gray-600 mb-4">Se priser hos flera leverantörer och välj det bästa erbjudandet.</p>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div class="bg-white border-2 border-blue-200 rounded-xl p-5 hover:shadow-lg transition-shadow">
+                    <div class="flex items-center justify-between mb-3">
+                        <span class="font-bold text-gray-800">Aviasales</span>
+                        <span class="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">Populär</span>
+                    </div>
+                    <p class="text-sm text-gray-500 mb-4">Jämför 700+ flygbolag</p>
+                    <a href="@AffiliateService.GetRedirectUrl("aviasales", route.OriginCode, route.DestinationCode, DateTime.UtcNow.AddDays(14), DateTime.UtcNow.AddDays(21), "route")"
+                       target="_blank" rel="noopener sponsored"
+                       class="block text-center bg-blue-600 text-white px-4 py-2.5 rounded-lg hover:bg-blue-700 transition-colors font-medium">
+                        Sök flyg &rarr;
+                    </a>
+                </div>
+                <div class="bg-white border-2 border-green-200 rounded-xl p-5 hover:shadow-lg transition-shadow">
+                    <div class="flex items-center justify-between mb-3">
+                        <span class="font-bold text-gray-800">Kiwi.com</span>
+                        <span class="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full">Flexibelt</span>
+                    </div>
+                    <p class="text-sm text-gray-500 mb-4">Kombinera lågprisflygbolag</p>
+                    <a href="@AffiliateService.GetRedirectUrl("kiwi", route.OriginCode, route.DestinationCode, DateTime.UtcNow.AddDays(14), DateTime.UtcNow.AddDays(21), "route")"
+                       target="_blank" rel="noopener sponsored"
+                       class="block text-center bg-green-600 text-white px-4 py-2.5 rounded-lg hover:bg-green-700 transition-colors font-medium">
+                        Sök flyg &rarr;
+                    </a>
+                </div>
+                <div class="bg-white border-2 border-purple-200 rounded-xl p-5 hover:shadow-lg transition-shadow">
+                    <div class="flex items-center justify-between mb-3">
+                        <span class="font-bold text-gray-800">WayAway</span>
+                        <span class="text-xs bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full">Cashback</span>
+                    </div>
+                    <p class="text-sm text-gray-500 mb-4">Få cashback på bokningen</p>
+                    <a href="@AffiliateService.GetRedirectUrl("wayaway", route.OriginCode, route.DestinationCode, DateTime.UtcNow.AddDays(14), DateTime.UtcNow.AddDays(21), "route")"
+                       target="_blank" rel="noopener sponsored"
+                       class="block text-center bg-purple-600 text-white px-4 py-2.5 rounded-lg hover:bg-purple-700 transition-colors font-medium">
+                        Sök flyg &rarr;
+                    </a>
+                </div>
             </div>
         </div>
 
-        @* Cross-links to destination services *@
+        @* Contextual affiliate CTAs for destination services *@
         @if (destDestination is not null)
         {
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-                <a href="/hotell/@destDestination.Slug" class="bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-xl p-5 hover:shadow-md transition-shadow">
-                    <h3 class="font-semibold text-gray-800 mb-1">Hotell i @route.Destination</h3>
-                    <p class="text-sm text-gray-600">Jämför hotellpriser &rarr;</p>
-                </a>
-                <a href="/hyrbil/@destDestination.Slug" class="bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200 rounded-xl p-5 hover:shadow-md transition-shadow">
-                    <h3 class="font-semibold text-gray-800 mb-1">Hyrbil i @route.Destination</h3>
-                    <p class="text-sm text-gray-600">Jämför hyrbilar &rarr;</p>
-                </a>
-                <a href="/aktiviteter/@destDestination.Slug" class="bg-gradient-to-r from-purple-50 to-violet-50 border border-purple-200 rounded-xl p-5 hover:shadow-md transition-shadow">
-                    <h3 class="font-semibold text-gray-800 mb-1">Aktiviteter i @route.Destination</h3>
-                    <p class="text-sm text-gray-600">Turer och upplevelser &rarr;</p>
-                </a>
+            <div class="bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl p-6 mb-8 border border-amber-200">
+                <h2 class="text-lg font-semibold text-gray-800 mb-3">Planera hela resan till @route.Destination</h2>
+                <p class="text-gray-600 mb-4">Boka hotell, hyrbil och aktiviteter direkt — allt du behöver för resan.</p>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="bg-white rounded-lg p-4 shadow-sm">
+                        <h3 class="font-semibold text-gray-800 mb-2">Hitta hotell</h3>
+                        <p class="text-sm text-gray-500 mb-3">Jämför boende i @route.Destination</p>
+                        <a href="@AffiliateService.GetHotelRedirectUrl(route.Destination, DateTime.UtcNow.AddDays(14), DateTime.UtcNow.AddDays(21), 2, "route")"
+                           target="_blank" rel="noopener sponsored"
+                           class="block text-center bg-amber-500 text-white px-4 py-2 rounded-lg hover:bg-amber-600 transition-colors font-medium text-sm">
+                            Boka hotell &rarr;
+                        </a>
+                    </div>
+                    <div class="bg-white rounded-lg p-4 shadow-sm">
+                        <h3 class="font-semibold text-gray-800 mb-2">Hyr bil</h3>
+                        <p class="text-sm text-gray-500 mb-3">Hyrbil i @route.Destination</p>
+                        <a href="@AffiliateService.GetCarRentalRedirectUrl("rentalcars", route.Destination, DateTime.UtcNow.AddDays(14), DateTime.UtcNow.AddDays(21), "route")"
+                           target="_blank" rel="noopener sponsored"
+                           class="block text-center bg-emerald-500 text-white px-4 py-2 rounded-lg hover:bg-emerald-600 transition-colors font-medium text-sm">
+                            Jämför hyrbilar &rarr;
+                        </a>
+                    </div>
+                    <div class="bg-white rounded-lg p-4 shadow-sm">
+                        <h3 class="font-semibold text-gray-800 mb-2">Upplev staden</h3>
+                        <p class="text-sm text-gray-500 mb-3">Turer och upplevelser</p>
+                        <a href="@AffiliateService.GetActivityRedirectUrl("getyourguide", route.Destination, "route")"
+                           target="_blank" rel="noopener sponsored"
+                           class="block text-center bg-purple-500 text-white px-4 py-2 rounded-lg hover:bg-purple-600 transition-colors font-medium text-sm">
+                            Se aktiviteter &rarr;
+                        </a>
+                    </div>
+                </div>
             </div>
         }
 

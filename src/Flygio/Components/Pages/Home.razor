@@ -483,6 +483,6 @@ else if (SearchResult is not null)
     {
         if (SearchResult is null) return;
         await JS.InvokeVoidAsync("flygio.trackAffiliateClick",
-            provider, SearchResult.OriginCode, SearchResult.DestinationCode, price);
+            provider, SearchResult.OriginCode, SearchResult.DestinationCode, price, "home");
     }
 }

@@ -171,8 +171,8 @@ else if (ShowResults)
             @for (int i = 0; i < Legs.Count; i++)
             {
                 var leg = Legs[i];
-                var aviasalesUrl = AffiliateService.GetRedirectUrl("aviasales", leg.OriginCode!, leg.DestinationCode!, leg.DepartureDate, null);
-                var kiwiUrl = AffiliateService.GetRedirectUrl("kiwi", leg.OriginCode!, leg.DestinationCode!, leg.DepartureDate, null);
+                var aviasalesUrl = AffiliateService.GetRedirectUrl("aviasales", leg.OriginCode!, leg.DestinationCode!, leg.DepartureDate, null, "trip-planner");
+                var kiwiUrl = AffiliateService.GetRedirectUrl("kiwi", leg.OriginCode!, leg.DestinationCode!, leg.DepartureDate, null, "trip-planner");
                 <div class="trip-leg-card">
                     <div class="leg-card-header">
                         <span class="leg-card-number">Flyg @(i + 1)</span>
@@ -184,9 +184,26 @@ else if (ShowResults)
                         <span class="leg-dest">@GetCityName(leg.DestinationCode) <small>(@leg.DestinationCode)</small></span>
                     </div>
                     <div class="leg-card-actions">
-                        <a href="@aviasalesUrl" target="_blank" rel="noopener" class="btn-book-leg">Sök på Aviasales</a>
-                        <a href="@kiwiUrl" target="_blank" rel="noopener" class="btn-book-leg btn-book-alt">Sök på Kiwi</a>
+                        <a href="@aviasalesUrl" target="_blank" rel="noopener sponsored" class="btn-book-leg">Sök på Aviasales</a>
+                        <a href="@kiwiUrl" target="_blank" rel="noopener sponsored" class="btn-book-leg btn-book-alt">Sök på Kiwi</a>
                     </div>
+                    @{
+                        var destCity = GetCityName(leg.DestinationCode);
+                        var isLastLeg = i == Legs.Count - 1;
+                    }
+                    @if (!isLastLeg && destCity != "?")
+                    {
+                        <div class="leg-card-extras">
+                            <a href="@AffiliateService.GetHotelRedirectUrl(destCity, leg.DepartureDate, leg.DepartureDate.AddDays(3), 2, "trip-planner")"
+                               target="_blank" rel="noopener sponsored" class="btn-extra">
+                                Boka hotell i @destCity
+                            </a>
+                            <a href="@AffiliateService.GetActivityRedirectUrl("getyourguide", destCity, "trip-planner")"
+                               target="_blank" rel="noopener sponsored" class="btn-extra">
+                                Aktiviteter i @destCity
+                            </a>
+                        </div>
+                    }
                 </div>
             }
         </div>

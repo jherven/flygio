@@ -16,7 +16,8 @@ public class TravelpayoutsAffiliateLinkService(IOptions<TravelpayoutsSettings> s
         var returnStr = returnDate?.ToString("ddMM") ?? "";
         var route = $"{originCode}{dateStr}{destinationCode}{returnStr}1";
 
-        return $"https://www.aviasales.com/search/{route}?marker={_settings.MarkerId}&with_request=true&t=flygio_{subId}";
+        return $"https://www.aviasales.com/search/{route}?marker={_settings.MarkerId}&with_request=true&t=flygio_{subId}" +
+               $"&utm_source=flygio&utm_medium=affiliate&utm_campaign=flight";
     }
 
     /// <summary>
@@ -31,7 +32,8 @@ public class TravelpayoutsAffiliateLinkService(IOptions<TravelpayoutsSettings> s
         if (returnDate.HasValue)
             url += $"/{returnDate.Value:yyyy-MM-dd}";
 
-        return $"{url}?marker={_settings.MarkerId}&utm_source=flygio&sub_id={subId}";
+        return $"{url}?marker={_settings.MarkerId}&sub_id={subId}" +
+               $"&utm_source=flygio&utm_medium=affiliate&utm_campaign=flight";
     }
 
     /// <summary>
@@ -50,18 +52,20 @@ public class TravelpayoutsAffiliateLinkService(IOptions<TravelpayoutsSettings> s
         if (returnDate.HasValue)
             url += $"&return={returnDate.Value:dd/MM/yyyy}";
 
-        return $"{url}&sub_id={subId}";
+        return $"{url}&sub_id={subId}&utm_source=flygio&utm_medium=affiliate&utm_campaign=flight";
     }
 
     /// <summary>
     /// Returns the internal redirect URL that logs clicks before redirecting.
     /// </summary>
-    public string GetRedirectUrl(string provider, string originCode, string destinationCode, DateTime departureDate, DateTime? returnDate = null)
+    public string GetRedirectUrl(string provider, string originCode, string destinationCode, DateTime departureDate, DateTime? returnDate = null, string? sourcePage = null)
     {
         var dep = departureDate.ToString("yyyy-MM-dd");
         var url = $"/go/{provider}?origin={originCode}&dest={destinationCode}&dep={dep}";
         if (returnDate.HasValue)
             url += $"&ret={returnDate.Value:yyyy-MM-dd}";
+        if (!string.IsNullOrEmpty(sourcePage))
+            url += $"&src={sourcePage}";
         return url;
     }
 
@@ -90,17 +94,21 @@ public class TravelpayoutsAffiliateLinkService(IOptions<TravelpayoutsSettings> s
 
         return $"https://search.hotellook.com/hotels?destination={Uri.EscapeDataString(city)}" +
                $"&checkIn={checkInStr}&checkOut={checkOutStr}&adults={adults}" +
-               $"&marker={_settings.MarkerId}&locale=sv&sub_id={subId}";
+               $"&marker={_settings.MarkerId}&locale=sv&sub_id={subId}" +
+               $"&utm_source=flygio&utm_medium=affiliate&utm_campaign=hotel";
     }
 
     /// <summary>
     /// Returns the internal redirect URL for hotel affiliate clicks.
     /// </summary>
-    public string GetHotelRedirectUrl(string city, DateTime checkIn, DateTime checkOut, int adults = 2)
+    public string GetHotelRedirectUrl(string city, DateTime checkIn, DateTime checkOut, int adults = 2, string? sourcePage = null)
     {
         var checkInStr = checkIn.ToString("yyyy-MM-dd");
         var checkOutStr = checkOut.ToString("yyyy-MM-dd");
-        return $"/go/hotellook?city={Uri.EscapeDataString(city)}&checkin={checkInStr}&checkout={checkOutStr}&adults={adults}";
+        var url = $"/go/hotellook?city={Uri.EscapeDataString(city)}&checkin={checkInStr}&checkout={checkOutStr}&adults={adults}";
+        if (!string.IsNullOrEmpty(sourcePage))
+            url += $"&src={sourcePage}";
+        return url;
     }
 
     public static string BuildSubId(string originCode, string destinationCode)
@@ -125,7 +133,8 @@ public class TravelpayoutsAffiliateLinkService(IOptions<TravelpayoutsSettings> s
         return $"https://www.rentalcars.com/search-results?location={Uri.EscapeDataString(city)}" +
                $"&puDay={pickUp.Day}&puMonth={pickUp.Month}&puYear={pickUp.Year}" +
                $"&doDay={dropOff.Day}&doMonth={dropOff.Month}&doYear={dropOff.Year}" +
-               $"&marker={_settings.MarkerId}&sub_id={subId}";
+               $"&marker={_settings.MarkerId}&sub_id={subId}" +
+               $"&utm_source=flygio&utm_medium=affiliate&utm_campaign=car";
     }
 
     /// <summary>
@@ -139,17 +148,21 @@ public class TravelpayoutsAffiliateLinkService(IOptions<TravelpayoutsSettings> s
 
         return $"https://www.economybookings.com/search?location={Uri.EscapeDataString(city)}" +
                $"&pick_up_date={pickUpStr}&drop_off_date={dropOffStr}" +
-               $"&marker={_settings.MarkerId}&sub_id={subId}";
+               $"&marker={_settings.MarkerId}&sub_id={subId}" +
+               $"&utm_source=flygio&utm_medium=affiliate&utm_campaign=car";
     }
 
     /// <summary>
     /// Returns the internal redirect URL for car rental affiliate clicks.
     /// </summary>
-    public string GetCarRentalRedirectUrl(string provider, string city, DateTime pickUp, DateTime dropOff)
+    public string GetCarRentalRedirectUrl(string provider, string city, DateTime pickUp, DateTime dropOff, string? sourcePage = null)
     {
         var pickUpStr = pickUp.ToString("yyyy-MM-dd");
         var dropOffStr = dropOff.ToString("yyyy-MM-dd");
-        return $"/go/{provider}?city={Uri.EscapeDataString(city)}&pickup={pickUpStr}&dropoff={dropOffStr}";
+        var url = $"/go/{provider}?city={Uri.EscapeDataString(city)}&pickup={pickUpStr}&dropoff={dropOffStr}";
+        if (!string.IsNullOrEmpty(sourcePage))
+            url += $"&src={sourcePage}";
+        return url;
     }
 
     /// <summary>
@@ -172,7 +185,8 @@ public class TravelpayoutsAffiliateLinkService(IOptions<TravelpayoutsSettings> s
     {
         var subId = BuildActivitySubId(city);
         return $"https://www.getyourguide.com/s/?q={Uri.EscapeDataString(city)}" +
-               $"&partner_id={_settings.MarkerId}&sub_id={subId}";
+               $"&partner_id={_settings.MarkerId}&sub_id={subId}" +
+               $"&utm_source=flygio&utm_medium=affiliate&utm_campaign=activity";
     }
 
     /// <summary>
@@ -182,15 +196,19 @@ public class TravelpayoutsAffiliateLinkService(IOptions<TravelpayoutsSettings> s
     {
         var subId = BuildActivitySubId(city);
         return $"https://www.viator.com/searchResults/all?text={Uri.EscapeDataString(city)}" +
-               $"&pid={_settings.MarkerId}&sub_id={subId}";
+               $"&pid={_settings.MarkerId}&sub_id={subId}" +
+               $"&utm_source=flygio&utm_medium=affiliate&utm_campaign=activity";
     }
 
     /// <summary>
     /// Returns the internal redirect URL for activity affiliate clicks.
     /// </summary>
-    public string GetActivityRedirectUrl(string provider, string city)
+    public string GetActivityRedirectUrl(string provider, string city, string? sourcePage = null)
     {
-        return $"/go/{provider}?city={Uri.EscapeDataString(city)}";
+        var url = $"/go/{provider}?city={Uri.EscapeDataString(city)}";
+        if (!string.IsNullOrEmpty(sourcePage))
+            url += $"&src={sourcePage}";
+        return url;
     }
 
     /// <summary>
