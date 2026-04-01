@@ -1,0 +1,69 @@
+@page "/flygrutter"
+@rendermode InteractiveServer
+@using Flygio.Data
+@using Flygio.Data.Models
+@using Flygio.Services
+@using Microsoft.EntityFrameworkCore
+@inject FlygioDbContext Db
+
+<PageTitle>Flygrutter från Sverige – Jämför priser | Flygio</PageTitle>
+<HeadContent>
+    <meta name="description" content="Utforska flygrutter från Sverige till hela världen. Jämför priser på populära flyglinjer från Stockholm, Göteborg, Malmö och fler." />
+    <meta property="og:title" content="Flygrutter från Sverige – Jämför priser | Flygio" />
+    <meta property="og:description" content="Utforska flygrutter från Sverige till hela världen. Jämför priser på populära flyglinjer." />
+    <link rel="canonical" href="https://flygio.se/flygrutter" />
+</HeadContent>
+
+<section class="max-w-6xl mx-auto px-4 py-8">
+    <nav class="text-sm text-gray-500 mb-6">
+        <a href="/" class="hover:text-blue-600">Hem</a> &rsaquo;
+        <span class="text-gray-800">Flygrutter</span>
+    </nav>
+
+    <h1 class="text-4xl font-bold text-gray-900 mb-2">Flygrutter från Sverige</h1>
+    <p class="text-lg text-gray-500 mb-8">Jämför priser på @routes.Count flygrutter till populära destinationer världen över.</p>
+
+    @foreach (var group in routesByOrigin)
+    {
+        <div class="mb-10">
+            <h2 class="text-2xl font-semibold text-gray-800 mb-4">Flyg från @group.Key</h2>
+            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+                @foreach (var r in group.Value)
+                {
+                    <a href="/flyg/@(SlugHelper.ToSlug(r.Origin))-till-@(SlugHelper.ToSlug(r.Destination))"
+                       class="bg-white border border-gray-200 rounded-lg p-3 hover:shadow-md hover:border-blue-300 transition-all text-center">
+                        <p class="font-medium text-gray-800 text-sm">@r.Destination</p>
+                        <p class="text-xs text-gray-500">@r.OriginCode &rarr; @r.DestinationCode</p>
+                        @if (r.IsPopular)
+                        {
+                            <span class="inline-block mt-1 text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">Populär</span>
+                        }
+                    </a>
+                }
+            </div>
+        </div>
+    }
+
+    <div class="flex gap-4 mt-8">
+        <a href="/flyg-till" class="text-blue-600 hover:underline">&larr; Alla destinationer</a>
+        <a href="/" class="text-blue-600 hover:underline">Sök flyg</a>
+    </div>
+</section>
+
+@code {
+    private List<FlightRoute> routes = [];
+    private Dictionary<string, List<FlightRoute>> routesByOrigin = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        routes = await Db.FlightRoutes
+            .OrderBy(r => r.Origin)
+            .ThenByDescending(r => r.IsPopular)
+            .ThenBy(r => r.Destination)
+            .ToListAsync();
+
+        routesByOrigin = routes
+            .GroupBy(r => r.Origin)
+            .ToDictionary(g => g.Key, g => g.ToList());
+    }
+}

@@ -204,6 +204,39 @@
             @((MarkupString)destination.Description)
         </article>
 
+        @if (routesToDest.Count > 0)
+        {
+            <div class="mb-8">
+                <h2 class="text-xl font-semibold text-gray-800 mb-4">Flyg till @destination.City från Sverige</h2>
+                <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                    @foreach (var r in routesToDest)
+                    {
+                        <a href="/flyg/@(SlugHelper.ToSlug(r.Origin))-till-@(SlugHelper.ToSlug(r.Destination))"
+                           class="bg-white border border-gray-200 rounded-lg p-3 hover:shadow-md hover:border-blue-300 transition-all text-center">
+                            <p class="font-medium text-gray-800 text-sm">Från @r.Origin</p>
+                            <p class="text-xs text-gray-500">@r.OriginCode &rarr; @destination.AirportCode</p>
+                        </a>
+                    }
+                </div>
+            </div>
+        }
+
+        @if (relatedArticles.Count > 0)
+        {
+            <div class="mb-8">
+                <h2 class="text-xl font-semibold text-gray-800 mb-4">Läs mer om @destination.City</h2>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    @foreach (var article in relatedArticles)
+                    {
+                        <a href="/artiklar/@article.Slug" class="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                            <p class="font-medium text-gray-800">@article.Title</p>
+                            <p class="text-sm text-gray-500 mt-1">@article.MetaDescription</p>
+                        </a>
+                    }
+                </div>
+            </div>
+        }
+
         @if (relatedDestinations.Count > 0)
         {
             <div class="border-t border-gray-200 pt-8 mb-8">
@@ -239,6 +272,8 @@
     private int pricePointCount;
     private List<OriginPrice> originPrices = [];
     private List<Destination> relatedDestinations = [];
+    private List<FlightRoute> routesToDest = [];
+    private List<Article> relatedArticles = [];
 
     protected override async Task OnInitializedAsync()
     {
@@ -292,6 +327,24 @@
             .OrderBy(d => d.City)
             .Take(8)
             .ToListAsync();
+
+        // Routes to this destination for internal linking
+        routesToDest = await Db.FlightRoutes
+            .Where(r => r.DestinationCode == destination.AirportCode)
+            .OrderByDescending(r => r.IsPopular)
+            .Take(8)
+            .ToListAsync();
+
+        // Related articles (travel guides, route articles)
+        var destSlug = destination.Slug;
+        relatedArticles = await Db.Articles
+            .Where(a => a.IsPublished)
+            .ToListAsync();
+        relatedArticles = relatedArticles
+            .Where(a => a.Title.Contains(destination.City, StringComparison.OrdinalIgnoreCase)
+                        || a.Slug.Contains(destSlug))
+            .Take(4)
+            .ToList();
     }
 
     private string GetPriceAnswerText()

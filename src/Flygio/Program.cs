@@ -54,6 +54,9 @@ if (!app.Environment.IsDevelopment())
     await db.Database.MigrateAsync();
     await ArticleSeeder.SeedAsync(db);
     await DestinationSeeder.SeedAsync(db);
+    await RouteSeeder.SeedAsync(db);
+    await SeoContentSeeder.SeedMonthlyPriceTrendArticlesAsync(db);
+    await SeoContentSeeder.SeedTravelGuideArticlesAsync(db);
 
     app.UseExceptionHandler("/Error", createScopeForErrors: true);
 }
@@ -63,6 +66,9 @@ else
     var db = scope.ServiceProvider.GetRequiredService<FlygioDbContext>();
     await ArticleSeeder.SeedAsync(db);
     await DestinationSeeder.SeedAsync(db);
+    await RouteSeeder.SeedAsync(db);
+    await SeoContentSeeder.SeedMonthlyPriceTrendArticlesAsync(db);
+    await SeoContentSeeder.SeedTravelGuideArticlesAsync(db);
 }
 app.UseStatusCodePagesWithReExecute("/not-found");
 app.UseAntiforgery();
@@ -274,6 +280,24 @@ app.MapGet("/go/viator", async (
 
     var affiliateUrl = affiliateService.GenerateViatorLink(city);
     return Results.Redirect(affiliateUrl);
+});
+
+// XML Sitemap
+app.MapGet("/sitemap.xml", async (FlygioDbContext db) =>
+{
+    var xml = await SitemapGenerator.GenerateAsync(db);
+    return Results.Content(xml, "application/xml");
+});
+
+// Robots.txt
+app.MapGet("/robots.txt", () =>
+{
+    var content = """
+        User-agent: *
+        Allow: /
+        Sitemap: https://flygio.se/sitemap.xml
+        """;
+    return Results.Content(content, "text/plain");
 });
 
 app.Run();
