@@ -13,6 +13,7 @@ services:
       - Resend__ApiKey=${RESEND_API_KEY}
       - Resend__FromEmail=${RESEND_FROM_EMAIL:-noreply@flygio.se}
       - Resend__FromName=${RESEND_FROM_NAME:-Flygio}
+      - Sentry__Dsn=${SENTRY_DSN:-}
     depends_on:
       postgres:
         condition: service_healthy

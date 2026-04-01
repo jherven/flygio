@@ -15,6 +15,16 @@ CultureInfo.DefaultThreadCurrentUICulture = svCulture;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Sentry error monitoring
+builder.WebHost.UseSentry(o =>
+{
+    o.Dsn = builder.Configuration["Sentry:Dsn"] ?? "";
+    o.TracesSampleRate = 0.2;
+    o.SendDefaultPii = false;
+    o.MinimumEventLevel = LogLevel.Error;
+    o.Environment = builder.Environment.EnvironmentName;
+});
+
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
@@ -22,7 +32,16 @@ builder.Services.AddDbContext<FlygioDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 builder.Services.AddHealthChecks()
-    .AddDbContextCheck<FlygioDbContext>();
+    .AddDbContextCheck<FlygioDbContext>()
+    .AddUrlGroup(new Uri("https://test.api.amadeus.com/v1/security/oauth2/token"), "amadeus-api", tags: ["external"]);
+
+builder.Services.AddOutputCache(options =>
+{
+    options.AddBasePolicy(builder => builder.NoCache());
+    options.AddPolicy("SitemapCache", builder => builder.Expire(TimeSpan.FromHours(1)));
+    options.AddPolicy("ApiCache", builder => builder.Expire(TimeSpan.FromMinutes(5)));
+    options.AddPolicy("StaticContent", builder => builder.Expire(TimeSpan.FromHours(24)));
+});
 
 // Amadeus API
 builder.Services.Configure<AmadeusSettings>(builder.Configuration.GetSection(AmadeusSettings.SectionName));
@@ -66,6 +85,8 @@ builder.Services.AddScoped<UserSessionService>();
 
 var app = builder.Build();
 
+app.UseSentryTracing();
+
 // Auto-migrate and seed in production
 if (!app.Environment.IsDevelopment())
 {
@@ -94,8 +115,21 @@ app.UseStatusCodePagesWithReExecute("/not-found");
 app.UseAuthentication();
 app.UseAuthorization();
 app.UseAntiforgery();
+app.UseOutputCache();
+
+app.UseStaticFiles(new StaticFileOptions
+{
+    OnPrepareResponse = ctx =>
+    {
+        ctx.Context.Response.Headers.CacheControl = "public, max-age=604800, immutable";
+    }
+});
 
 app.MapHealthChecks("/healthz");
+app.MapHealthChecks("/healthz/ready", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions
+{
+    Predicate = check => check.Tags.Contains("external")
+});
 app.MapStaticAssets();
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
@@ -130,7 +164,7 @@ app.MapGet("/api/price-history/{airportCode}", async (
         .ToListAsync();
 
     return Results.Json(points);
-});
+}).CacheOutput("ApiCache");
 
 // Affiliate click redirect endpoint
 app.MapGet("/go/{provider}", async (
@@ -339,7 +373,7 @@ app.MapGet("/sitemap.xml", async (FlygioDbContext db) =>
 {
     var xml = await SitemapGenerator.GenerateAsync(db);
     return Results.Content(xml, "application/xml");
-});
+}).CacheOutput("SitemapCache");
 
 // Robots.txt
 app.MapGet("/robots.txt", () =>
@@ -350,6 +384,6 @@ app.MapGet("/robots.txt", () =>
         Sitemap: https://flygio.se/sitemap.xml
         """;
     return Results.Content(content, "text/plain");
-});
+}).CacheOutput("StaticContent");
 
 app.Run();
