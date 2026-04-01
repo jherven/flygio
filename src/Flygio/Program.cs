@@ -102,6 +102,21 @@ if (!app.Environment.IsDevelopment())
 {
     using var scope = app.Services.CreateScope();
     var db = scope.ServiceProvider.GetRequiredService<FlygioDbContext>();
+
+    // Fix table ownership before running migrations — in some deployments (e.g. Coolify)
+    // tables may have been created by a different PostgreSQL role than the current user
+    await db.Database.ExecuteSqlRawAsync("""
+        DO $$
+        DECLARE r RECORD;
+        BEGIN
+            FOR r IN SELECT tablename FROM pg_tables WHERE schemaname = 'public' LOOP
+                EXECUTE format('ALTER TABLE %I OWNER TO CURRENT_USER', r.tablename);
+            END LOOP;
+        EXCEPTION WHEN insufficient_privilege THEN
+            RAISE NOTICE 'Could not reassign table ownership — may need superuser';
+        END $$;
+        """);
+
     await db.Database.MigrateAsync();
     await ArticleSeeder.SeedAsync(db);
     await DestinationSeeder.SeedAsync(db);
