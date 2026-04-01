@@ -17,8 +17,10 @@
         <meta property="og:description" content="@destination.MetaDescription" />
         <meta property="og:type" content="website" />
         <meta property="og:url" content="https://flygio.se/flyg-till/@destination.Slug" />
+        <meta property="og:image" content="https://flygio.se/og-image/destination/@destination.Slug" />
         <meta name="twitter:title" content="Flyg till @destination.City – Billiga flygbiljetter | Flygio" />
         <meta name="twitter:description" content="@destination.MetaDescription" />
+        <meta name="twitter:image" content="https://flygio.se/og-image/destination/@destination.Slug" />
         <link rel="canonical" href="https://flygio.se/flyg-till/@destination.Slug" />
         <script type="application/ld+json">
         {
@@ -102,7 +104,12 @@
         </nav>
 
         <h1 class="text-4xl font-bold text-gray-900 mb-2">Flyg till @destination.City</h1>
-        <p class="text-lg text-gray-500 mb-8">@destination.Country &middot; Flygplats: @destination.AirportCode</p>
+        <p class="text-lg text-gray-500 mb-4">@destination.Country &middot; Flygplats: @destination.AirportCode</p>
+
+        <div class="mb-8">
+            <ShareButtons Url="@($"https://flygio.se/flyg-till/{destination.Slug}")"
+                          Title="@($"Flyg till {destination.City} – Flygio")" />
+        </div>
 
         @if (lowestPrice.HasValue)
         {

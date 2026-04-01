@@ -17,8 +17,10 @@
         <meta property="og:description" content="@metaDescription" />
         <meta property="og:type" content="website" />
         <meta property="og:url" content="https://flygio.se/flyg/@OriginSlug-till-@DestSlug" />
+        <meta property="og:image" content="https://flygio.se/og-image/route/@OriginSlug-till-@DestSlug" />
         <meta name="twitter:title" content="Flyg från @route.Origin till @route.Destination – Jämför priser | Flygio" />
         <meta name="twitter:description" content="@metaDescription" />
+        <meta name="twitter:image" content="https://flygio.se/og-image/route/@OriginSlug-till-@DestSlug" />
         <link rel="canonical" href="https://flygio.se/flyg/@OriginSlug-till-@DestSlug" />
         <script type="application/ld+json">
         {
@@ -107,7 +109,12 @@
         </nav>
 
         <h1 class="text-4xl font-bold text-gray-900 mb-2">Flyg från @route.Origin till @route.Destination</h1>
-        <p class="text-lg text-gray-500 mb-8">@route.OriginCode &rarr; @route.DestinationCode</p>
+        <p class="text-lg text-gray-500 mb-4">@route.OriginCode &rarr; @route.DestinationCode</p>
+
+        <div class="mb-8">
+            <ShareButtons Url="@($"https://flygio.se/flyg/{OriginSlug}-till-{DestSlug}")"
+                          Title="@($"Flyg från {route.Origin} till {route.Destination} – Flygio")" />
+        </div>
 
         @* Price overview *@
         @if (lowestPrice.HasValue)

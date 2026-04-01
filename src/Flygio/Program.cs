@@ -69,6 +69,9 @@ builder.Services.AddHostedService<PriceAlertService>();
 // Newsletter service
 builder.Services.AddSingleton<NewsletterService>();
 
+// OG image generation
+builder.Services.AddSingleton<OgImageService>();
+
 // Stripe payments
 builder.Services.Configure<StripeSettings>(builder.Configuration.GetSection(StripeSettings.SectionName));
 builder.Services.AddSingleton<StripeService>();
@@ -431,6 +434,56 @@ app.MapGet("/api/stripe/portal", async (HttpContext httpContext, StripeService s
         return Results.BadRequest("No active subscription");
     }
 }).RequireAuthorization();
+
+// OG image endpoints
+app.MapGet("/og-image/default", (OgImageService ogService) =>
+{
+    var bytes = ogService.GenerateDefaultImage();
+    return Results.File(bytes, "image/png");
+}).CacheOutput("StaticContent");
+
+app.MapGet("/og-image/route/{originSlug}-till-{destSlug}", async (
+    string originSlug,
+    string destSlug,
+    FlygioDbContext db,
+    OgImageService ogService) =>
+{
+    var routes = await db.FlightRoutes.ToListAsync();
+    var route = routes.FirstOrDefault(r =>
+        SlugHelper.ToSlug(r.Origin) == originSlug &&
+        SlugHelper.ToSlug(r.Destination) == destSlug);
+
+    if (route is null)
+        return Results.NotFound();
+
+    var thirtyDaysAgo = DateTime.UtcNow.AddDays(-30);
+    var lowestPrice = await db.PricePoints
+        .Where(p => p.FlightRoute.OriginCode == route.OriginCode
+                    && p.FlightRoute.DestinationCode == route.DestinationCode
+                    && p.ScrapedAt >= thirtyDaysAgo)
+        .MinAsync(p => (decimal?)p.Price);
+
+    var bytes = ogService.GenerateRouteImage(route.Origin, route.Destination, route.OriginCode, route.DestinationCode, lowestPrice);
+    return Results.File(bytes, "image/png");
+}).CacheOutput("StaticContent");
+
+app.MapGet("/og-image/destination/{slug}", async (
+    string slug,
+    FlygioDbContext db,
+    OgImageService ogService) =>
+{
+    var dest = await db.Destinations.FirstOrDefaultAsync(d => d.Slug == slug && d.IsPublished);
+    if (dest is null)
+        return Results.NotFound();
+
+    var thirtyDaysAgo = DateTime.UtcNow.AddDays(-30);
+    var lowestPrice = await db.PricePoints
+        .Where(p => p.FlightRoute.DestinationCode == dest.AirportCode && p.ScrapedAt >= thirtyDaysAgo)
+        .MinAsync(p => (decimal?)p.Price);
+
+    var bytes = ogService.GenerateDestinationImage(dest.City, dest.Country, dest.AirportCode, lowestPrice);
+    return Results.File(bytes, "image/png");
+}).CacheOutput("StaticContent");
 
 // XML Sitemap
 app.MapGet("/sitemap.xml", async (FlygioDbContext db) =>
