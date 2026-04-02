@@ -32,8 +32,7 @@ builder.Services.AddDbContext<FlygioDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 builder.Services.AddHealthChecks()
-    .AddDbContextCheck<FlygioDbContext>()
-    .AddUrlGroup(new Uri("https://test.api.amadeus.com/v1/security/oauth2/token"), "amadeus-api", tags: ["external"]);
+    .AddDbContextCheck<FlygioDbContext>();
 
 builder.Services.AddOutputCache(options =>
 {
@@ -187,10 +186,6 @@ app.UseStaticFiles(new StaticFileOptions
 });
 
 app.MapHealthChecks("/healthz");
-app.MapHealthChecks("/healthz/ready", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions
-{
-    Predicate = check => check.Tags.Contains("external")
-});
 app.MapStaticAssets();
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
