@@ -7,16 +7,16 @@
 @inject IJSRuntime JS
 @rendermode InteractiveServer
 
-<PageTitle>Flygio - Hitta billiga flyg från Sverige</PageTitle>
+<PageTitle>Flygio - Sök flyg från Sverige</PageTitle>
 <HeadContent>
-    <meta name="description" content="Jämför flygpriser från Sverige till populära destinationer. Hitta billiga flygbiljetter och boka direkt hos flygbolagen." />
-    <meta property="og:title" content="Flygio - Hitta billiga flyg från Sverige" />
-    <meta property="og:description" content="Jämför flygpriser från Sverige till populära destinationer. Hitta billiga flygbiljetter och boka direkt hos flygbolagen." />
+    <meta name="description" content="Sök flygpriser från Sverige via Amadeus. Flygio visar priser och länkar till resebyråer som Aviasales och Kiwi.com. Prisbevakning och flygrutter." />
+    <meta property="og:title" content="Flygio - Sök flyg från Sverige" />
+    <meta property="og:description" content="Sök flygpriser från Sverige via Amadeus. Flygio visar priser och länkar till resebyråer som Aviasales och Kiwi.com." />
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://flygio.se/" />
     <meta property="og:image" content="https://flygio.se/og-image/default" />
-    <meta name="twitter:title" content="Flygio - Hitta billiga flyg från Sverige" />
-    <meta name="twitter:description" content="Jämför flygpriser från Sverige till populära destinationer. Hitta billiga flygbiljetter och boka direkt." />
+    <meta name="twitter:title" content="Flygio - Sök flyg från Sverige" />
+    <meta name="twitter:description" content="Sök flygpriser från Sverige via Amadeus. Flygio visar priser och länkar till resebyråer." />
     <meta name="twitter:image" content="https://flygio.se/og-image/default" />
     <link rel="canonical" href="https://flygio.se/" />
 </HeadContent>
@@ -24,8 +24,8 @@
 <section class="hero-search">
     <div class="hero-overlay"></div>
     <div class="hero-content">
-        <h1>Hitta billiga flyg från Sverige</h1>
-        <p>Jämför flygpriser och boka direkt hos flygbolagen</p>
+        <h1>Sök flyg från Sverige</h1>
+        <p>Vi söker priser via Amadeus och länkar till resebyråer för bokning</p>
     </div>
 
     <div class="search-form">
@@ -135,7 +135,7 @@
 {
     <div class="loading-state">
         <div class="spinner"></div>
-        <p>Söker efter de bästa flygpriserna...</p>
+        <p>Söker flygpriser via Amadeus...</p>
     </div>
 }
 else if (ErrorMessage is not null)
@@ -202,35 +202,35 @@ else if (SearchResult is not null)
 }
 
 <section class="why-flygio">
-    <h2>Varför Flygio?</h2>
+    <h2>Så funkar Flygio</h2>
     <div class="why-grid">
         <div class="why-card">
             <div class="why-icon">
                 <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 21l-4.35-4.35M11 19a8 8 0 100-16 8 8 0 000 16z" stroke-linecap="round"/></svg>
             </div>
-            <h3>Jämför priser</h3>
-            <p>Vi söker igenom flygbolag och resebyråer för att hitta det lägsta priset åt dig.</p>
+            <h3>Vi söker via Amadeus</h3>
+            <p>Priserna kommer från Amadeus API — samma källa som många resebyråer använder. Vi visar det vi får, varken mer eller mindre.</p>
         </div>
         <div class="why-card">
             <div class="why-icon">
                 <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0" stroke-linecap="round" stroke-linejoin="round"/></svg>
             </div>
             <h3>Prisbevakning</h3>
-            <p>Sätt ett målpris och få mejl direkt när priset sjunker till din nivå.</p>
+            <p>Sätt ett målpris så meddelar vi dig om priset sjunker. Vi kollar automatiskt, men garanterar inte att vi fångar alla ändringar.</p>
         </div>
         <div class="why-card">
             <div class="why-icon">
                 <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" stroke-linecap="round" stroke-linejoin="round"/></svg>
             </div>
-            <h3>Direkt hos flygbolagen</h3>
-            <p>Vi skickar dig direkt till flygbolaget — inga mellanhänder, inga dolda avgifter.</p>
+            <h3>Affiliatelänkar</h3>
+            <p>När du klickar "Boka" skickas du till en resebyrå som Aviasales eller Kiwi.com. Vi får en liten ersättning — det kostar dig inget extra.</p>
         </div>
         <div class="why-card">
             <div class="why-icon">
                 <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" stroke-linecap="round" stroke-linejoin="round"/></svg>
             </div>
-            <h3>100% gratis</h3>
-            <p>Flygio är helt gratis att använda. Sök, jämför och boka utan kostnad.</p>
+            <h3>Vi är inte störst</h3>
+            <p>Skyscanner och Google Flights har fler resultat. Vi är en liten sajt som fokuserar på Sverige och försöker vara rakt på sak.</p>
         </div>
     </div>
 </section>
