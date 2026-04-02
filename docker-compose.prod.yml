@@ -13,6 +13,13 @@ services:
       - Resend__ApiKey=${RESEND_API_KEY}
       - Resend__FromEmail=${RESEND_FROM_EMAIL:-noreply@flygio.se}
       - Resend__FromName=${RESEND_FROM_NAME:-Flygio}
+      - Amadeus__BaseUrl=${AMADEUS_BASE_URL:-https://api.amadeus.com}
+      - Amadeus__ClientId=${AMADEUS_CLIENT_ID}
+      - Amadeus__ClientSecret=${AMADEUS_CLIENT_SECRET}
+      - Stripe__SecretKey=${STRIPE_SECRET_KEY:-}
+      - Stripe__PublishableKey=${STRIPE_PUBLISHABLE_KEY:-}
+      - Stripe__WebhookSecret=${STRIPE_WEBHOOK_SECRET:-}
+      - Stripe__PriceId=${STRIPE_PRICE_ID:-}
       - Sentry__Dsn=${SENTRY_DSN:-}
       - POSTGRES_USER=${POSTGRES_USER:-flygio}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
