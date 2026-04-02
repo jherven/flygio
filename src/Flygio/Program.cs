@@ -42,13 +42,8 @@ builder.Services.AddOutputCache(options =>
     options.AddPolicy("StaticContent", builder => builder.Expire(TimeSpan.FromHours(24)));
 });
 
-// Amadeus API
-builder.Services.Configure<AmadeusSettings>(builder.Configuration.GetSection(AmadeusSettings.SectionName));
 builder.Services.AddMemoryCache();
-builder.Services.AddHttpClient<AmadeusTokenService>();
-builder.Services.AddSingleton<AmadeusTokenService>();
-builder.Services.AddHttpClient<AmadeusFlightSearchService>();
-builder.Services.AddScoped<AmadeusFlightSearchService>();
+builder.Services.AddHttpClient();
 
 // Travelpayouts affiliate
 builder.Services.Configure<TravelpayoutsSettings>(builder.Configuration.GetSection(TravelpayoutsSettings.SectionName));

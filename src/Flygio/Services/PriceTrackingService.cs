@@ -2,6 +2,7 @@ using Flygio.Data;
 using Flygio.Data.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using System.Text.Json;
 
 namespace Flygio.Services;
 
@@ -17,9 +18,12 @@ public class PriceTrackingSettings
 public class PriceTrackingService(
     IServiceScopeFactory scopeFactory,
     IOptions<PriceTrackingSettings> settings,
+    IOptions<TravelpayoutsSettings> tpSettings,
+    IHttpClientFactory httpClientFactory,
     ILogger<PriceTrackingService> logger) : BackgroundService
 {
     private readonly PriceTrackingSettings _settings = settings.Value;
+    private readonly string _tpToken = tpSettings.Value.ApiToken;
 
     private static readonly (string OriginCode, string Origin, string DestCode, string Dest)[] PopularRoutes =
     [
@@ -37,10 +41,9 @@ public class PriceTrackingService(
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        logger.LogInformation("PriceTrackingService started. Interval: {Hours}h, DaysAhead: {Days}, MaxCalls: {Max}",
-            _settings.IntervalHours, _settings.DaysAhead, _settings.MaxCallsPerRun);
+        logger.LogInformation("PriceTrackingService started (Travelpayouts). Interval: {Hours}h",
+            _settings.IntervalHours);
 
-        // Wait a bit on startup to let the app fully initialize
         await Task.Delay(TimeSpan.FromSeconds(30), stoppingToken);
 
         while (!stoppingToken.IsCancellationRequested)
@@ -60,62 +63,55 @@ public class PriceTrackingService(
 
     private async Task TrackPricesAsync(CancellationToken ct)
     {
-        logger.LogInformation("Starting price tracking run for {Count} routes", PopularRoutes.Length);
+        if (string.IsNullOrEmpty(_tpToken))
+        {
+            logger.LogWarning("Travelpayouts API token not configured, skipping price tracking");
+            return;
+        }
+
+        logger.LogInformation("Starting price tracking run for {Count} routes via Travelpayouts", PopularRoutes.Length);
 
         using var scope = scopeFactory.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<FlygioDbContext>();
-        var tokenService = scope.ServiceProvider.GetRequiredService<AmadeusTokenService>();
-        var httpClientFactory = scope.ServiceProvider.GetRequiredService<IHttpClientFactory>();
 
         await EnsureRoutesExistAsync(db);
 
-        var departureDate = DateTime.UtcNow.Date.AddDays(14);
-        var returnDate = departureDate.AddDays(7);
+        var httpClient = httpClientFactory.CreateClient();
         var callsMade = 0;
 
         foreach (var route in PopularRoutes)
         {
             if (ct.IsCancellationRequested) break;
-            if (callsMade >= _settings.MaxCallsPerRun)
-            {
-                logger.LogWarning("Reached max API calls per run ({Max}), stopping early", _settings.MaxCallsPerRun);
-                break;
-            }
+            if (callsMade >= _settings.MaxCallsPerRun) break;
 
             try
             {
-                var token = await tokenService.GetAccessTokenAsync(ct);
-                var httpClient = httpClientFactory.CreateClient();
-                httpClient.DefaultRequestHeaders.Authorization =
-                    new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
-
-                var url = $"{scope.ServiceProvider.GetRequiredService<IOptions<AmadeusSettings>>().Value.BaseUrl}" +
-                          $"/v2/shopping/flight-offers" +
-                          $"?originLocationCode={route.OriginCode}" +
-                          $"&destinationLocationCode={route.DestCode}" +
-                          $"&departureDate={departureDate:yyyy-MM-dd}" +
-                          $"&returnDate={returnDate:yyyy-MM-dd}" +
-                          $"&adults=1&max=5&currencyCode=SEK";
+                // Travelpayouts /v1/prices/cheap — returns cheapest tickets for a route
+                var url = $"https://api.travelpayouts.com/v1/prices/cheap" +
+                          $"?origin={route.OriginCode}" +
+                          $"&destination={route.DestCode}" +
+                          $"&currency=SEK" +
+                          $"&token={_tpToken}";
 
                 var response = await httpClient.GetAsync(url, ct);
 
                 if ((int)response.StatusCode == 429)
                 {
-                    logger.LogWarning("Amadeus rate limit hit, pausing for 60s");
-                    await Task.Delay(TimeSpan.FromSeconds(60), ct);
+                    logger.LogWarning("Travelpayouts rate limit hit, pausing for 30s");
+                    await Task.Delay(TimeSpan.FromSeconds(30), ct);
                     continue;
                 }
 
                 response.EnsureSuccessStatusCode();
                 callsMade++;
 
-                var json = await response.Content.ReadFromJsonAsync<System.Text.Json.JsonElement>(ct);
-                await PersistPricesAsync(db, route.OriginCode, route.DestCode, departureDate, returnDate, json);
+                var json = await response.Content.ReadFromJsonAsync<JsonElement>(ct);
+                await PersistTravelpayoutsPricesAsync(db, route.OriginCode, route.DestCode, json);
 
-                logger.LogInformation("Tracked {Origin}->{Dest}: prices persisted", route.OriginCode, route.DestCode);
+                logger.LogInformation("Tracked {Origin}->{Dest}: prices persisted via Travelpayouts",
+                    route.OriginCode, route.DestCode);
 
-                // Small delay between calls to be respectful of rate limits
-                await Task.Delay(TimeSpan.FromSeconds(2), ct);
+                await Task.Delay(TimeSpan.FromSeconds(1), ct);
             }
             catch (HttpRequestException ex)
             {
@@ -149,32 +145,51 @@ public class PriceTrackingService(
         await db.SaveChangesAsync();
     }
 
-    private static async Task PersistPricesAsync(
+    private static async Task PersistTravelpayoutsPricesAsync(
         FlygioDbContext db,
         string originCode,
         string destCode,
-        DateTime departureDate,
-        DateTime? returnDate,
-        System.Text.Json.JsonElement json)
+        JsonElement json)
     {
+        if (!json.TryGetProperty("success", out var success) || !success.GetBoolean())
+            return;
+
+        if (!json.TryGetProperty("data", out var data))
+            return;
+
+        if (!data.TryGetProperty(destCode, out var destData))
+            return;
+
         var flightRoute = await db.FlightRoutes
             .FirstAsync(r => r.OriginCode == originCode && r.DestinationCode == destCode);
 
-        if (!json.TryGetProperty("data", out var data)) return;
-
-        foreach (var offer in data.EnumerateArray())
+        // Travelpayouts returns data keyed by transfer count: "0" = direct, "1" = 1 stop, etc.
+        foreach (var transferGroup in destData.EnumerateObject())
         {
-            var price = offer.GetProperty("price");
-            var priceTotal = decimal.Parse(price.GetProperty("grandTotal").GetString()!);
-            var currency = price.GetProperty("currency").GetString()!;
+            var ticket = transferGroup.Value;
+            if (!ticket.TryGetProperty("price", out var priceEl)) continue;
+
+            var price = priceEl.GetDecimal();
+
+            DateTime? departureDate = null;
+            if (ticket.TryGetProperty("departure_at", out var depEl))
+                departureDate = DateTime.Parse(depEl.GetString()!);
+
+            DateTime? returnDate = null;
+            if (ticket.TryGetProperty("return_at", out var retEl))
+            {
+                var retStr = retEl.GetString();
+                if (!string.IsNullOrEmpty(retStr))
+                    returnDate = DateTime.Parse(retStr);
+            }
 
             db.PricePoints.Add(new PricePoint
             {
                 FlightRouteId = flightRoute.Id,
-                Provider = "Amadeus",
-                Price = priceTotal,
-                Currency = currency,
-                DepartureDate = departureDate,
+                Provider = "Travelpayouts",
+                Price = price,
+                Currency = "SEK",
+                DepartureDate = departureDate ?? DateTime.UtcNow.Date.AddDays(14),
                 ReturnDate = returnDate,
                 ScrapedAt = DateTime.UtcNow
             });

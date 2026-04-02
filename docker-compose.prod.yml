@@ -13,9 +13,7 @@ services:
       - Resend__ApiKey=${RESEND_API_KEY}
       - Resend__FromEmail=${RESEND_FROM_EMAIL:-noreply@flygio.se}
       - Resend__FromName=${RESEND_FROM_NAME:-Flygio}
-      - Amadeus__BaseUrl=${AMADEUS_BASE_URL:-https://test.api.amadeus.com}
-      - Amadeus__ClientId=${AMADEUS_CLIENT_ID}
-      - Amadeus__ClientSecret=${AMADEUS_CLIENT_SECRET}
+      - Travelpayouts__ApiToken=${TRAVELPAYOUTS_API_TOKEN:-}
       - Stripe__SecretKey=${STRIPE_SECRET_KEY:-}
       - Stripe__PublishableKey=${STRIPE_PUBLISHABLE_KEY:-}
       - Stripe__WebhookSecret=${STRIPE_WEBHOOK_SECRET:-}

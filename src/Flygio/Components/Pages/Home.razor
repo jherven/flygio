@@ -2,21 +2,21 @@
 @using Flygio.Data
 @using Flygio.Data.Models
 @using Flygio.Services
-@inject AmadeusFlightSearchService FlightSearch
+@using Microsoft.Extensions.Options
 @inject FlygioDbContext Db
 @inject IJSRuntime JS
-@rendermode InteractiveServer
+@inject IOptions<TravelpayoutsSettings> TpSettings
 
 <PageTitle>Flygio - Sök flyg från Sverige</PageTitle>
 <HeadContent>
-    <meta name="description" content="Sök flygpriser från Sverige via Amadeus. Flygio visar priser och länkar till resebyråer som Aviasales och Kiwi.com. Prisbevakning och flygrutter." />
+    <meta name="description" content="Sök flygpriser från Sverige. Flygio jämför priser via Aviasales och länkar till resebyråer. Prisbevakning och flygrutter." />
     <meta property="og:title" content="Flygio - Sök flyg från Sverige" />
-    <meta property="og:description" content="Sök flygpriser från Sverige via Amadeus. Flygio visar priser och länkar till resebyråer som Aviasales och Kiwi.com." />
+    <meta property="og:description" content="Sök flygpriser från Sverige. Flygio jämför priser och länkar till resebyråer som Aviasales och Kiwi.com." />
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://flygio.se/" />
     <meta property="og:image" content="https://flygio.se/og-image/default" />
     <meta name="twitter:title" content="Flygio - Sök flyg från Sverige" />
-    <meta name="twitter:description" content="Sök flygpriser från Sverige via Amadeus. Flygio visar priser och länkar till resebyråer." />
+    <meta name="twitter:description" content="Sök flygpriser från Sverige. Jämför priser och boka via resebyråer." />
     <meta name="twitter:image" content="https://flygio.se/og-image/default" />
     <link rel="canonical" href="https://flygio.se/" />
 </HeadContent>
@@ -25,181 +25,13 @@
     <div class="hero-overlay"></div>
     <div class="hero-content">
         <h1>Sök flyg från Sverige</h1>
-        <p>Vi söker priser via Amadeus och länkar till resebyråer för bokning</p>
+        <p>Vi jämför flygpriser och länkar till resebyråer för bokning</p>
     </div>
 
-    <div class="search-form">
-        <div class="trip-toggle">
-            <button class="@(IsRoundTrip ? "" : "active")" @onclick="() => IsRoundTrip = false">Enkel resa</button>
-            <button class="@(IsRoundTrip ? "active" : "")" @onclick="() => IsRoundTrip = true">Tur & retur</button>
-        </div>
-
-        <div class="form-grid">
-            <div class="form-group @(showValidation && string.IsNullOrEmpty(SelectedOriginCode) ? "field-error" : "")">
-                <label>Från</label>
-                <input type="text"
-                       placeholder="T.ex. Stockholm"
-                       @bind="OriginInput"
-                       @bind:event="oninput"
-                       @onfocus="() => ShowOriginDropdown = true"
-                       @onblur="() => DelayHideDropdown(nameof(ShowOriginDropdown))"
-                       autocomplete="off" />
-                @if (ShowOriginDropdown && FilteredOriginAirports.Any())
-                {
-                    <div class="autocomplete-dropdown">
-                        @foreach (var airport in FilteredOriginAirports)
-                        {
-                            <div class="autocomplete-item" @onmousedown="() => SelectOrigin(airport)">
-                                <span class="airport-name">@airport.City - @airport.Name</span>
-                                <span class="airport-code">@airport.Code</span>
-                            </div>
-                        }
-                    </div>
-                }
-                @if (showValidation && string.IsNullOrEmpty(SelectedOriginCode))
-                {
-                    <span class="validation-msg">Välj avgångsflygplats</span>
-                }
-            </div>
-
-            <div class="form-group @(showValidation && string.IsNullOrEmpty(SelectedDestinationCode) ? "field-error" : "")">
-                <label>Till</label>
-                <input type="text"
-                       placeholder="T.ex. London"
-                       @bind="DestinationInput"
-                       @bind:event="oninput"
-                       @onfocus="() => ShowDestDropdown = true"
-                       @onblur="() => DelayHideDropdown(nameof(ShowDestDropdown))"
-                       autocomplete="off" />
-                @if (ShowDestDropdown && FilteredDestAirports.Any())
-                {
-                    <div class="autocomplete-dropdown">
-                        @foreach (var airport in FilteredDestAirports)
-                        {
-                            <div class="autocomplete-item" @onmousedown="() => SelectDestination(airport)">
-                                <span class="airport-name">@airport.City - @airport.Name</span>
-                                <span class="airport-code">@airport.Code</span>
-                            </div>
-                        }
-                    </div>
-                }
-                @if (showValidation && string.IsNullOrEmpty(SelectedDestinationCode))
-                {
-                    <span class="validation-msg">Välj destination</span>
-                }
-            </div>
-
-            <div class="form-group @(showValidation && DepartureDate == default ? "field-error" : "")">
-                <label>Avresa</label>
-                <input type="date" @bind="DepartureDate" min="@DateTime.Today.ToString("yyyy-MM-dd")" />
-                @if (showValidation && DepartureDate == default)
-                {
-                    <span class="validation-msg">Välj avresedatum</span>
-                }
-            </div>
-
-            @if (IsRoundTrip)
-            {
-                <div class="form-group">
-                    <label>Retur</label>
-                    <input type="date" @bind="ReturnDate"
-                           min="@(DepartureDate != default ? DepartureDate.ToString("yyyy-MM-dd") : DateTime.Today.ToString("yyyy-MM-dd"))" />
-                </div>
-            }
-
-            <div class="form-group">
-                <label>Resenärer</label>
-                <select @bind="Passengers">
-                    @for (int i = 1; i <= 9; i++)
-                    {
-                        <option value="@i">@i</option>
-                    }
-                </select>
-            </div>
-
-            <button class="btn-search" @onclick="SearchFlights" disabled="@IsLoading">
-                @if (IsLoading)
-                {
-                    <span>Söker...</span>
-                }
-                else
-                {
-                    <span>Sök flyg</span>
-                }
-            </button>
-        </div>
+    <div class="search-widget-container">
+        <div id="aviasales-widget"></div>
     </div>
 </section>
-
-@if (IsLoading)
-{
-    <div class="loading-state">
-        <div class="spinner"></div>
-        <p>Söker flygpriser via Amadeus...</p>
-    </div>
-}
-else if (ErrorMessage is not null)
-{
-    <div class="error-state">
-        <p>@ErrorMessage</p>
-    </div>
-}
-else if (SearchResult is not null)
-{
-    <section class="results-section">
-        <div class="results-header">
-            <h2>@SearchResult.Origin &rarr; @SearchResult.Destination</h2>
-            <span class="results-count">@SearchResult.Offers.Count flyg hittade</span>
-        </div>
-
-        @if (!SearchResult.Offers.Any())
-        {
-            <div class="no-results">
-                <h3>Inga flyg hittades</h3>
-                <p>Prova andra datum eller en annan destination.</p>
-            </div>
-        }
-        else
-        {
-            @foreach (var offer in SearchResult.Offers)
-            {
-                <div class="flight-card">
-                    <div class="flight-info">
-                        <span class="flight-airline">@offer.Airline</span>
-                        <span class="flight-route">
-                            @SearchResult.OriginCode &rarr; @SearchResult.DestinationCode
-                            @if (offer.ReturnDate.HasValue)
-                            {
-                                <span> (tur & retur)</span>
-                            }
-                        </span>
-                        <div class="flight-details">
-                            <span class="flight-detail">@FormatDuration(offer.Duration)</span>
-                            <span class="flight-detail">@FormatStops(offer.Stops)</span>
-                            <span class="flight-detail">@offer.DepartureDate.ToString("d MMM yyyy")</span>
-                            @if (offer.ReturnDate.HasValue)
-                            {
-                                <span class="flight-detail">Retur @offer.ReturnDate.Value.ToString("d MMM yyyy")</span>
-                            }
-                        </div>
-                    </div>
-                    <div class="flight-price-col">
-                        <span class="flight-price">@offer.Price.ToString("N0") <span class="flight-currency">@offer.Currency</span></span>
-                    </div>
-                    @if (!string.IsNullOrEmpty(offer.BookingUrl))
-                    {
-                        <a href="@offer.BookingUrl" target="_blank" rel="noopener" class="btn-book"
-                           @onclick="() => TrackAffiliateClick(offer.Provider, offer.Price)">Boka</a>
-                    }
-                </div>
-            }
-        }
-
-        <PriceAlertForm OriginCode="@SelectedOriginCode"
-                        DestinationCode="@SelectedDestinationCode"
-                        SuggestedPrice="@SearchResult.Offers.Select(o => o.Price).DefaultIfEmpty(0).Min()" />
-    </section>
-}
 
 <section class="why-flygio">
     <h2>Så funkar Flygio</h2>
@@ -208,8 +40,8 @@ else if (SearchResult is not null)
             <div class="why-icon">
                 <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 21l-4.35-4.35M11 19a8 8 0 100-16 8 8 0 000 16z" stroke-linecap="round"/></svg>
             </div>
-            <h3>Vi söker via Amadeus</h3>
-            <p>Priserna kommer från Amadeus API — samma källa som många resebyråer använder. Vi visar det vi får, varken mer eller mindre.</p>
+            <h3>Vi jämför priser</h3>
+            <p>Sök bland hundratals flygbolag och resebyråer. Resultaten visar riktiga priser med direktlänkar till bokning.</p>
         </div>
         <div class="why-card">
             <div class="why-icon">
@@ -253,23 +85,6 @@ else if (SearchResult is not null)
 </section>
 
 @code {
-    private string OriginInput { get; set; } = "";
-    private string DestinationInput { get; set; } = "";
-    private string? SelectedOriginCode { get; set; }
-    private string? SelectedDestinationCode { get; set; }
-    private DateTime DepartureDate { get; set; }
-    private DateTime? ReturnDate { get; set; }
-    private int Passengers { get; set; } = 1;
-    private bool IsRoundTrip { get; set; } = true;
-
-    private bool ShowOriginDropdown { get; set; }
-    private bool ShowDestDropdown { get; set; }
-
-    private bool IsLoading { get; set; }
-    private string? ErrorMessage { get; set; }
-    private FlightSearchResult? SearchResult { get; set; }
-    private bool showValidation;
-
     private record DestLink(string City, string Slug);
 
     private static readonly DestLink[] PopularDestinations =
@@ -281,210 +96,12 @@ else if (SearchResult is not null)
         new("Prag", "prag"), new("Budapest", "budapest"), new("New York", "new-york"),
     ];
 
-    private record Airport(string Code, string Name, string City, string Country);
-
-    private static readonly Airport[] Airports =
-    [
-        // Swedish airports
-        new("ARN", "Arlanda", "Stockholm", "Sverige"),
-        new("GOT", "Landvetter", "Göteborg", "Sverige"),
-        new("BMA", "Bromma", "Stockholm", "Sverige"),
-        new("MMX", "Sturup", "Malmö", "Sverige"),
-        new("NYO", "Skavsta", "Stockholm", "Sverige"),
-        new("VST", "Västerås", "Stockholm", "Sverige"),
-        new("UME", "Umeå Airport", "Umeå", "Sverige"),
-        new("LLA", "Kallax", "Luleå", "Sverige"),
-        new("KRN", "Kiruna Airport", "Kiruna", "Sverige"),
-        new("OSD", "Åre Östersund", "Östersund", "Sverige"),
-        new("VXO", "Småland Airport", "Växjö", "Sverige"),
-        new("RNB", "Kallinge", "Ronneby", "Sverige"),
-        new("KSD", "Karlstad Airport", "Karlstad", "Sverige"),
-        new("HAD", "Halmstad City", "Halmstad", "Sverige"),
-        new("SDL", "Sundsvall-Timrå", "Sundsvall", "Sverige"),
-        // Popular European destinations
-        new("LHR", "Heathrow", "London", "Storbritannien"),
-        new("LGW", "Gatwick", "London", "Storbritannien"),
-        new("STN", "Stansted", "London", "Storbritannien"),
-        new("CDG", "Charles de Gaulle", "Paris", "Frankrike"),
-        new("ORY", "Orly", "Paris", "Frankrike"),
-        new("BCN", "El Prat", "Barcelona", "Spanien"),
-        new("MAD", "Barajas", "Madrid", "Spanien"),
-        new("AGP", "Málaga", "Málaga", "Spanien"),
-        new("ALC", "Alicante", "Alicante", "Spanien"),
-        new("PMI", "Palma de Mallorca", "Palma", "Spanien"),
-        new("FCO", "Fiumicino", "Rom", "Italien"),
-        new("MXP", "Malpensa", "Milano", "Italien"),
-        new("BER", "Brandenburg", "Berlin", "Tyskland"),
-        new("MUC", "Franz Josef Strauss", "München", "Tyskland"),
-        new("FRA", "Frankfurt Airport", "Frankfurt", "Tyskland"),
-        new("AMS", "Schiphol", "Amsterdam", "Nederländerna"),
-        new("CPH", "Kastrup", "Köpenhamn", "Danmark"),
-        new("OSL", "Gardermoen", "Oslo", "Norge"),
-        new("HEL", "Vanda", "Helsingfors", "Finland"),
-        new("ATH", "Eleftherios Venizelos", "Aten", "Grekland"),
-        new("IST", "Istanbul Airport", "Istanbul", "Turkiet"),
-        new("DUB", "Dublin Airport", "Dublin", "Irland"),
-        new("LIS", "Humberto Delgado", "Lissabon", "Portugal"),
-        new("WAW", "Chopin", "Warszawa", "Polen"),
-        new("PRG", "Václav Havel", "Prag", "Tjeckien"),
-        new("BUD", "Ferenc Liszt", "Budapest", "Ungern"),
-        new("VIE", "Wien-Schwechat", "Wien", "Österrike"),
-        new("ZRH", "Zürich Airport", "Zürich", "Schweiz"),
-        new("BRU", "Zaventem", "Bryssel", "Belgien"),
-        // Popular long-haul
-        new("JFK", "John F. Kennedy", "New York", "USA"),
-        new("LAX", "Los Angeles Intl", "Los Angeles", "USA"),
-        new("BKK", "Suvarnabhumi", "Bangkok", "Thailand"),
-        new("DXB", "Dubai Intl", "Dubai", "Förenade Arabemiraten"),
-    ];
-
-    private IEnumerable<Airport> FilteredOriginAirports =>
-        string.IsNullOrWhiteSpace(OriginInput) ? Airports.Where(a => a.Country == "Sverige") :
-        Airports.Where(a =>
-            a.City.Contains(OriginInput, StringComparison.OrdinalIgnoreCase) ||
-            a.Name.Contains(OriginInput, StringComparison.OrdinalIgnoreCase) ||
-            a.Code.Contains(OriginInput, StringComparison.OrdinalIgnoreCase) ||
-            a.Country.Contains(OriginInput, StringComparison.OrdinalIgnoreCase))
-        .Take(8);
-
-    private IEnumerable<Airport> FilteredDestAirports =>
-        string.IsNullOrWhiteSpace(DestinationInput) ? Airports.Take(12) :
-        Airports.Where(a =>
-            a.City.Contains(DestinationInput, StringComparison.OrdinalIgnoreCase) ||
-            a.Name.Contains(DestinationInput, StringComparison.OrdinalIgnoreCase) ||
-            a.Code.Contains(DestinationInput, StringComparison.OrdinalIgnoreCase) ||
-            a.Country.Contains(DestinationInput, StringComparison.OrdinalIgnoreCase))
-        .Take(8);
-
-    private void SelectOrigin(Airport airport)
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        OriginInput = $"{airport.City} ({airport.Code})";
-        SelectedOriginCode = airport.Code;
-        ShowOriginDropdown = false;
-    }
-
-    private void SelectDestination(Airport airport)
-    {
-        DestinationInput = $"{airport.City} ({airport.Code})";
-        SelectedDestinationCode = airport.Code;
-        ShowDestDropdown = false;
-    }
-
-    private async Task DelayHideDropdown(string dropdownName)
-    {
-        await Task.Delay(200);
-        if (dropdownName == nameof(ShowOriginDropdown))
-            ShowOriginDropdown = false;
-        else
-            ShowDestDropdown = false;
-    }
-
-    private async Task SearchFlights()
-    {
-        showValidation = true;
-        ErrorMessage = null;
-
-        if (string.IsNullOrEmpty(SelectedOriginCode) || string.IsNullOrEmpty(SelectedDestinationCode))
-            return;
-
-        if (DepartureDate == default || DepartureDate < DateTime.Today)
+        if (firstRender)
         {
-            ErrorMessage = "Välj ett giltigt avresedatum.";
-            return;
+            var markerId = TpSettings.Value.MarkerId;
+            await JS.InvokeVoidAsync("flygio.initAviasalesWidget", markerId);
         }
-
-        if (IsRoundTrip && ReturnDate.HasValue && ReturnDate.Value < DepartureDate)
-        {
-            ErrorMessage = "Returdatum måste vara efter avresedatumet.";
-            return;
-        }
-
-        IsLoading = true;
-        SearchResult = null;
-        StateHasChanged();
-
-        try
-        {
-            SearchResult = await FlightSearch.SearchAsync(
-                SelectedOriginCode,
-                SelectedDestinationCode,
-                DepartureDate,
-                IsRoundTrip ? ReturnDate : null,
-                Passengers);
-
-            // Log search event to database
-            var searchEvent = new SearchEvent
-            {
-                OriginCode = SelectedOriginCode,
-                DestinationCode = SelectedDestinationCode,
-                DepartureDate = DepartureDate,
-                ReturnDate = IsRoundTrip ? ReturnDate : null,
-                Passengers = Passengers,
-                ResultCount = SearchResult?.Offers.Count ?? 0
-            };
-            Db.SearchEvents.Add(searchEvent);
-            await Db.SaveChangesAsync();
-
-            // Track in Umami
-            await JS.InvokeVoidAsync("flygio.trackSearch",
-                SelectedOriginCode, SelectedDestinationCode,
-                DepartureDate.ToString("yyyy-MM-dd"),
-                IsRoundTrip && ReturnDate.HasValue ? ReturnDate.Value.ToString("yyyy-MM-dd") : null,
-                Passengers, SearchResult?.Offers.Count ?? 0);
-        }
-        catch (HttpRequestException ex)
-        {
-            ErrorMessage = "Kunde inte ansluta till flygsöktjänsten. Försök igen senare.";
-            _ = ex;
-        }
-        catch (Exception ex)
-        {
-            ErrorMessage = "Ett oväntat fel uppstod. Försök igen.";
-            _ = ex;
-        }
-        finally
-        {
-            IsLoading = false;
-            showValidation = false;
-        }
-    }
-
-    private static string FormatDuration(string isoDuration)
-    {
-        // Amadeus returns ISO 8601 duration like "PT2H30M"
-        if (string.IsNullOrEmpty(isoDuration))
-            return "";
-
-        var duration = isoDuration.Replace("PT", "");
-        var result = "";
-
-        var hIndex = duration.IndexOf('H');
-        if (hIndex >= 0)
-        {
-            result += duration[..hIndex] + "h ";
-            duration = duration[(hIndex + 1)..];
-        }
-
-        var mIndex = duration.IndexOf('M');
-        if (mIndex >= 0)
-        {
-            result += duration[..mIndex] + "m";
-        }
-
-        return result.Trim();
-    }
-
-    private static string FormatStops(int stops) => stops switch
-    {
-        0 => "Direktflyg",
-        1 => "1 mellanlandning",
-        _ => $"{stops} mellanlandningar"
-    };
-
-    private async Task TrackAffiliateClick(string provider, decimal price)
-    {
-        if (SearchResult is null) return;
-        await JS.InvokeVoidAsync("flygio.trackAffiliateClick",
-            provider, SearchResult.OriginCode, SearchResult.DestinationCode, price, "home");
     }
 }
