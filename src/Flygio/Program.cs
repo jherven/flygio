@@ -102,6 +102,41 @@ if (!app.Environment.IsDevelopment())
 {
     using var scope = app.Services.CreateScope();
     var db = scope.ServiceProvider.GetRequiredService<FlygioDbContext>();
+
+    // Fix table ownership using superuser credentials before running migrations.
+    // Set ADMIN_DATABASE_URL in Coolify to the superuser (POSTGRES_USER) connection string.
+    var adminConnStr = app.Configuration.GetConnectionString("AdminConnection")
+                     ?? app.Configuration["ADMIN_DATABASE_URL"];
+    if (!string.IsNullOrEmpty(adminConnStr))
+    {
+        try
+        {
+            using var adminConn = new Npgsql.NpgsqlConnection(adminConnStr);
+            await adminConn.OpenAsync();
+            // Get the app user from the regular connection
+            var appConnStr = app.Configuration.GetConnectionString("DefaultConnection")!;
+            var appUser = new Npgsql.NpgsqlConnectionStringBuilder(appConnStr).Username ?? "flygio";
+            using var cmd = adminConn.CreateCommand();
+            cmd.CommandText = $"""
+                DO $$
+                DECLARE r RECORD;
+                BEGIN
+                    FOR r IN SELECT tablename FROM pg_tables WHERE schemaname = 'public' LOOP
+                        EXECUTE format('ALTER TABLE %I OWNER TO {0}', r.tablename);
+                    END LOOP;
+                    FOR r IN SELECT sequencename FROM pg_sequences WHERE schemaname = 'public' LOOP
+                        EXECUTE format('ALTER SEQUENCE %I OWNER TO {0}', r.sequencename);
+                    END LOOP;
+                END $$;
+                """.Replace("{0}", appUser);
+            await cmd.ExecuteNonQueryAsync();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Warning: Could not fix table ownership: {ex.Message}");
+        }
+    }
+
     await db.Database.MigrateAsync();
     await ArticleSeeder.SeedAsync(db);
     await DestinationSeeder.SeedAsync(db);
