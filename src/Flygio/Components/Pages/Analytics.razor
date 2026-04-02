@@ -5,7 +5,7 @@
 @attribute [Authorize]
 @inject FlygioDbContext Db
 @inject NewsletterService Newsletter
-@rendermode InteractiveServer
+@rendermode @(new InteractiveServerRenderMode(prerender: false))
 
 <PageTitle>Flygio - Analysöversikt</PageTitle>
 
