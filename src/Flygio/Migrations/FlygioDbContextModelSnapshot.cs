@@ -40,9 +40,6 @@ namespace Flygio.Migrations
                     b.Property<string>("IpAddress")
                         .HasColumnType("text");
 
-                    b.Property<string>("LinkType")
-                        .HasColumnType("text");
-
                     b.Property<string>("OriginCode")
                         .IsRequired()
                         .HasColumnType("text");
@@ -52,9 +49,6 @@ namespace Flygio.Migrations
                         .HasColumnType("text");
 
                     b.Property<string>("Referer")
-                        .HasColumnType("text");
-
-                    b.Property<string>("SourcePage")
                         .HasColumnType("text");
 
                     b.Property<string>("SubId")
@@ -67,10 +61,6 @@ namespace Flygio.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("ClickedAt");
-
-                    b.HasIndex("LinkType");
-
-                    b.HasIndex("SourcePage");
 
                     b.HasIndex("Provider", "SubId");
 

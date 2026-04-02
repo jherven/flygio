@@ -183,7 +183,6 @@ app.MapGet("/go/{provider}", async (
     string dest,
     string dep,
     string? ret,
-    string? src,
     HttpContext httpContext,
     TravelpayoutsAffiliateLinkService affiliateService,
     FlygioDbContext db) =>
@@ -198,8 +197,7 @@ app.MapGet("/go/{provider}", async (
         OriginCode = origin,
         DestinationCode = dest,
         SubId = subId,
-        LinkType = "flight",
-        SourcePage = src,
+
         UserAgent = httpContext.Request.Headers.UserAgent.ToString(),
         Referer = httpContext.Request.Headers.Referer.ToString(),
         IpAddress = httpContext.Connection.RemoteIpAddress?.ToString()
@@ -217,7 +215,6 @@ app.MapGet("/go/hotellook", async (
     string checkin,
     string checkout,
     int? adults,
-    string? src,
     HttpContext httpContext,
     TravelpayoutsAffiliateLinkService affiliateService,
     FlygioDbContext db) =>
@@ -233,8 +230,7 @@ app.MapGet("/go/hotellook", async (
         OriginCode = "",
         DestinationCode = city,
         SubId = subId,
-        LinkType = "hotel",
-        SourcePage = src,
+
         UserAgent = httpContext.Request.Headers.UserAgent.ToString(),
         Referer = httpContext.Request.Headers.Referer.ToString(),
         IpAddress = httpContext.Connection.RemoteIpAddress?.ToString()
@@ -251,7 +247,6 @@ app.MapGet("/go/rentalcars", async (
     string city,
     string pickup,
     string dropoff,
-    string? src,
     HttpContext httpContext,
     TravelpayoutsAffiliateLinkService affiliateService,
     FlygioDbContext db) =>
@@ -266,8 +261,7 @@ app.MapGet("/go/rentalcars", async (
         OriginCode = "",
         DestinationCode = city,
         SubId = subId,
-        LinkType = "car",
-        SourcePage = src,
+
         UserAgent = httpContext.Request.Headers.UserAgent.ToString(),
         Referer = httpContext.Request.Headers.Referer.ToString(),
         IpAddress = httpContext.Connection.RemoteIpAddress?.ToString()
@@ -283,7 +277,6 @@ app.MapGet("/go/economybookings", async (
     string city,
     string pickup,
     string dropoff,
-    string? src,
     HttpContext httpContext,
     TravelpayoutsAffiliateLinkService affiliateService,
     FlygioDbContext db) =>
@@ -298,8 +291,7 @@ app.MapGet("/go/economybookings", async (
         OriginCode = "",
         DestinationCode = city,
         SubId = subId,
-        LinkType = "car",
-        SourcePage = src,
+
         UserAgent = httpContext.Request.Headers.UserAgent.ToString(),
         Referer = httpContext.Request.Headers.Referer.ToString(),
         IpAddress = httpContext.Connection.RemoteIpAddress?.ToString()
@@ -314,7 +306,6 @@ app.MapGet("/go/economybookings", async (
 // Activity affiliate click redirect endpoint
 app.MapGet("/go/getyourguide", async (
     string city,
-    string? src,
     HttpContext httpContext,
     TravelpayoutsAffiliateLinkService affiliateService,
     FlygioDbContext db) =>
@@ -326,8 +317,7 @@ app.MapGet("/go/getyourguide", async (
         OriginCode = "",
         DestinationCode = city,
         SubId = subId,
-        LinkType = "activity",
-        SourcePage = src,
+
         UserAgent = httpContext.Request.Headers.UserAgent.ToString(),
         Referer = httpContext.Request.Headers.Referer.ToString(),
         IpAddress = httpContext.Connection.RemoteIpAddress?.ToString()
@@ -341,7 +331,6 @@ app.MapGet("/go/getyourguide", async (
 
 app.MapGet("/go/viator", async (
     string city,
-    string? src,
     HttpContext httpContext,
     TravelpayoutsAffiliateLinkService affiliateService,
     FlygioDbContext db) =>
@@ -353,8 +342,7 @@ app.MapGet("/go/viator", async (
         OriginCode = "",
         DestinationCode = city,
         SubId = subId,
-        LinkType = "activity",
-        SourcePage = src,
+
         UserAgent = httpContext.Request.Headers.UserAgent.ToString(),
         Referer = httpContext.Request.Headers.Referer.ToString(),
         IpAddress = httpContext.Connection.RemoteIpAddress?.ToString()

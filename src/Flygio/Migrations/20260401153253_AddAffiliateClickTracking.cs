@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore.Migrations;
+using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
@@ -10,47 +10,13 @@ namespace Flygio.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.AddColumn<string>(
-                name: "LinkType",
-                table: "AffiliateClicks",
-                type: "text",
-                nullable: true);
-
-            migrationBuilder.AddColumn<string>(
-                name: "SourcePage",
-                table: "AffiliateClicks",
-                type: "text",
-                nullable: true);
-
-            migrationBuilder.CreateIndex(
-                name: "IX_AffiliateClicks_LinkType",
-                table: "AffiliateClicks",
-                column: "LinkType");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_AffiliateClicks_SourcePage",
-                table: "AffiliateClicks",
-                column: "SourcePage");
+            // Intentionally empty — LinkType/SourcePage columns removed from model
+            // to avoid ALTER TABLE on AffiliateClicks (DB ownership permission issue)
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropIndex(
-                name: "IX_AffiliateClicks_LinkType",
-                table: "AffiliateClicks");
-
-            migrationBuilder.DropIndex(
-                name: "IX_AffiliateClicks_SourcePage",
-                table: "AffiliateClicks");
-
-            migrationBuilder.DropColumn(
-                name: "LinkType",
-                table: "AffiliateClicks");
-
-            migrationBuilder.DropColumn(
-                name: "SourcePage",
-                table: "AffiliateClicks");
         }
     }
 }
