@@ -104,9 +104,25 @@ if (!app.Environment.IsDevelopment())
     var db = scope.ServiceProvider.GetRequiredService<FlygioDbContext>();
 
     // Fix table ownership using superuser credentials before running migrations.
-    // Set ADMIN_DATABASE_URL in Coolify to the superuser (POSTGRES_USER) connection string.
+    // Derives admin connection from POSTGRES_USER/POSTGRES_PASSWORD env vars (already set for the postgres container).
     var adminConnStr = app.Configuration.GetConnectionString("AdminConnection")
                      ?? app.Configuration["ADMIN_DATABASE_URL"];
+    if (string.IsNullOrEmpty(adminConnStr))
+    {
+        // Build admin connection from the postgres container's superuser env vars
+        var pgUser = Environment.GetEnvironmentVariable("POSTGRES_USER");
+        var pgPassword = Environment.GetEnvironmentVariable("POSTGRES_PASSWORD");
+        if (!string.IsNullOrEmpty(pgUser) && !string.IsNullOrEmpty(pgPassword))
+        {
+            var appConnStr = app.Configuration.GetConnectionString("DefaultConnection")!;
+            var csb = new Npgsql.NpgsqlConnectionStringBuilder(appConnStr)
+            {
+                Username = pgUser,
+                Password = pgPassword
+            };
+            adminConnStr = csb.ConnectionString;
+        }
+    }
     if (!string.IsNullOrEmpty(adminConnStr))
     {
         try

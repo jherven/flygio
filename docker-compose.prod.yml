@@ -14,6 +14,8 @@ services:
       - Resend__FromEmail=${RESEND_FROM_EMAIL:-noreply@flygio.se}
       - Resend__FromName=${RESEND_FROM_NAME:-Flygio}
       - Sentry__Dsn=${SENTRY_DSN:-}
+      - POSTGRES_USER=${POSTGRES_USER:-flygio}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
     depends_on:
       postgres:
         condition: service_healthy
